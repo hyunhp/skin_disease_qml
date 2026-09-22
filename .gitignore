@@ -1,0 +1,10 @@
+# 내부 업무 메모 (공개 README는 .github/README.md)
+/README.md
+day1/_backup/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+# 로컬 학습 산출물·원본 데이터 (배포 자산은 day3/assets/만 커밋)
+checkpoints/
+ham10000/
+*.zip
