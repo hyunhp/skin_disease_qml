@@ -1,20 +1,29 @@
 # -*- coding: utf-8 -*-
 """
-[10월 준비 스크립트] QGAN 증강 모델 실제 학습 — HAM10000 DF(소수) vs NV(다수) 세그멘테이션 이미지.
-컨설팅-목표.xlsx 10월4주차 계획: "QGAN 증강 모델 체크포인트 ... 사전 학습 완료" 항목에 대응.
+[준비 스크립트 ②] QGAN 체크포인트 학습 — HAM10000 DF(소수클래스) 세그멘테이션 이미지.
 
-실행 전 준비물:
-1. HAM10000_metadata.csv + 이미지 폴더(HAM10000_images_part_1/2) — Kaggle에서 다운로드
-   !kaggle datasets download -d kmader/skin-cancer-mnist-ham10000
-2. 이 스크립트와 같은 폴더에 data_pipeline.py, qgan_model.py가 있어야 함(2일차 노트북과 공유하는 모듈)
+2026-10-01 커리큘럼 재설계 반영 — 확정 스펙이 기본값이다:
+  **16x16 · 서브제너레이터 2개 · depth 10 (데이터 7 + 보조 1 = 8큐빗, patch 128)**
+  → 큐빗 수·patch 크기가 논문 스펙과 정확히 일치하고, 실측 1.45s/step으로 가장 빠르다.
+     (서브제너레이터가 적을수록 빠른 이유: 회로 호출 횟수가 상태벡터 크기보다 지배적. 근거는 README 실측표)
+재설계 후 2일차(11/20)는 학생이 이 학습을 **라이브로** 돌린다(600스텝 약 20분). 이 스크립트는
+3일차 비교 기준본이 될 강사 체크포인트를 미리 만들어두는 용도다.
 
-실행:
-    python train_qgan_checkpoint.py --metadata HAM10000_metadata.csv --img_dir ./ham10000 \
-        --out_dir ./checkpoints --epochs 300 --img_size 8
+입력은 두 가지 중 하나:
+  (A) --npy  전처리 완료 npy(0~1) — **Kaggle 불필요, 로컬에서 바로 실행 가능(권장)**
+  (B) --metadata + --img_dir  HAM10000 원본에서 세그멘테이션까지 직접 수행(Kaggle 필요)
 
-⚠ 참고: 원 논문은 2000 epoch으로 1~1.5시간이 걸렸다(Table 10). 이 스크립트는 --epochs로 조절 가능하게
-해뒀으니, 실제 시간을 보면서 강의에 쓸 수준(품질 vs 소요시간)으로 타협해서 돌릴 것 — 강의 3일차
-실습에서는 "학습"이 아니라 "이 체크포인트를 불러와서 생성"만 하므로, 여기서 한 번 잘 돌려두면 된다.
+실행 예:
+    # (A) 권장 — 저장소의 16x16 전처리 npy로 로컬 학습
+    C:/qmlvenv/Scripts/python.exe -X utf8 train_qgan_checkpoint.py \
+        --npy assets/df_preprocessed.npy --out_dir ./checkpoints --epochs 600
+
+    # (B) 원본에서 전처리까지
+    C:/qmlvenv/Scripts/python.exe -X utf8 train_qgan_checkpoint.py \
+        --metadata HAM10000_metadata.csv --img_dir ./ham10000 --out_dir ./checkpoints
+
+⚠ 원 논문은 2000 epoch으로 1~1.5시간이 걸렸다(Table 10). 여기서 1 epoch은 데이터 1회 순회가 아니라
+  **랜덤 배치 1스텝**이다 — 즉 --epochs 600 = 600스텝(실측 약 20분).
 """
 import argparse
 import sys
@@ -48,17 +57,19 @@ def build_dataset(metadata_csv, img_dir, target_class, img_size, max_n=None):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--metadata", required=True)
-    ap.add_argument("--img_dir", required=True)
+    ap.add_argument("--npy", help="전처리 완료 npy(0~1) 경로. 지정하면 Kaggle·원본 이미지가 필요 없음(권장)")
+    ap.add_argument("--metadata", help="--npy를 쓰지 않을 때만 필요(HAM10000_metadata.csv)")
+    ap.add_argument("--img_dir", help="--npy를 쓰지 않을 때만 필요(HAM10000 이미지 폴더)")
     ap.add_argument("--out_dir", default="./checkpoints")
     ap.add_argument("--target_class", default="df", choices=["akiec", "bcc", "bkl", "df", "mel", "vasc"],
                      help="증강할 소수클래스 (논문 기본값: df)")
-    ap.add_argument("--img_size", type=int, default=8, help="한 변 픽셀수(8,16,32...) — 전체 픽셀수(img_size^2)가 "
-                     "n_generators로 나누어떨어지고 그 몫이 2의 거듭제곱이어야 함")
-    ap.add_argument("--n_generators", type=int, default=4, help="서브제너레이터 개수(원논문 16 → 강의용 축소). "
-                     "각 서브제너레이터가 이미지의 1/n_generators만큼의 patch를 담당(patch들을 이어붙여 전체 이미지 생성)")
-    ap.add_argument("--q_depth", type=int, default=4, help="PQC depth(원논문 10 → 강의용 축소)")
-    ap.add_argument("--epochs", type=int, default=300)
+    ap.add_argument("--img_size", type=int, default=16, help="한 변 픽셀수 — 2026-10-01 확정 스펙은 16. "
+                     "전체 픽셀수(img_size^2)가 n_generators로 나누어떨어지고 그 몫이 2의 거듭제곱이어야 함")
+    ap.add_argument("--n_generators", type=int, default=2, help="서브제너레이터 개수 — 확정 스펙은 2 "
+                     "(데이터 7 + 보조 1 = 8큐빗, patch 128 = 논문 스펙과 정확히 일치). "
+                     "각 서브제너레이터가 이미지의 1/n_generators만큼의 patch를 담당(이어붙여 전체 이미지 생성)")
+    ap.add_argument("--q_depth", type=int, default=10, help="PQC depth — 확정 스펙은 논문과 같은 10")
+    ap.add_argument("--epochs", type=int, default=600, help="= 랜덤 배치 스텝 수(데이터 순회가 아님). 실측 600스텝 약 20분")
     ap.add_argument("--batch_size", type=int, default=8)
     ap.add_argument("--lr_g", type=float, default=0.05)
     ap.add_argument("--lr_d", type=float, default=0.001)
@@ -80,11 +91,26 @@ def main():
           f"({total_pixels}px), n_generators={args.n_generators}, patch당 {patch_pixels}px "
           f"→ n_data_qubits={n_data_qubits}, q_depth={args.q_depth}")
 
-    print("[1/3] 데이터 로드 + 세그멘테이션 전처리...")
-    imgs = build_dataset(args.metadata, args.img_dir, args.target_class, args.img_size)
-    print(f"  로드된 {args.target_class} 클래스 이미지: {len(imgs)}장")
+    if args.npy:
+        print(f"[1/3] 전처리 npy 로드: {args.npy}")
+        imgs = np.load(args.npy)
+        if imgs.ndim == 2:  # (N, img_size^2)로 저장된 경우도 허용
+            side = int(np.sqrt(imgs.shape[1]))
+            imgs = imgs.reshape(len(imgs), side, side)
+        if imgs.shape[1] != args.img_size:
+            raise SystemExit(f"npy 해상도 {imgs.shape[1]}x{imgs.shape[2]}가 --img_size {args.img_size}와 다름 "
+                             f"— 16x16 재생성이 안 된 파일일 수 있음(재생산 체인 ① 참고)")
+        if imgs.min() < -0.01 or imgs.max() > 1.01:
+            raise SystemExit(f"npy 값 범위가 0~1이 아님(min {imgs.min():.3f}, max {imgs.max():.3f}) — 척도 규약 위반")
+        print(f"  로드된 이미지: {len(imgs)}장 ({imgs.shape[1]}x{imgs.shape[2]}, 0~1)")
+    else:
+        if not (args.metadata and args.img_dir):
+            raise SystemExit("--npy 또는 (--metadata + --img_dir) 중 하나는 반드시 필요함")
+        print("[1/3] 원본 로드 + 세그멘테이션 전처리...")
+        imgs = build_dataset(args.metadata, args.img_dir, args.target_class, args.img_size)
+        print(f"  로드된 {args.target_class} 클래스 이미지: {len(imgs)}장")
     if len(imgs) == 0:
-        print("데이터가 없습니다 — metadata/img_dir 경로를 확인하세요. 종료합니다.")
+        print("데이터가 없습니다 — 입력 경로를 확인하세요. 종료합니다.")
         return
 
     real_flat = torch.tensor(imgs.reshape(len(imgs), -1))
@@ -98,11 +124,13 @@ def main():
     opt_g = torch.optim.Adam(gen.parameters(), lr=args.lr_g)
     opt_d = torch.optim.Adam(disc.parameters(), lr=args.lr_d)
 
+    history = {"loss_g": [], "loss_d": []}
     t0 = time.time()
     for epoch in range(args.epochs):
         idx = torch.randint(0, len(real_flat), (min(args.batch_size, len(real_flat)),))
         batch = real_flat[idx]
         lg, ld = train_step(gen, disc, batch, opt_g, opt_d)
+        history["loss_g"].append(lg); history["loss_d"].append(ld)
         if (epoch + 1) % max(1, args.epochs // 20) == 0:
             elapsed = time.time() - t0
             print(f"  epoch {epoch+1}/{args.epochs}  loss_g={lg:.4f}  loss_d={ld:.4f}  경과={elapsed/60:.1f}분")
@@ -116,14 +144,17 @@ def main():
     ckpt_path = out_dir / f"qgan_{args.target_class}_{args.img_size}px.pt"
     torch.save({
         "generator_state_dict": gen.state_dict(),
+        "discriminator_state_dict": disc.state_dict(),
         "config": {
             "n_generators": args.n_generators, "n_data_qubits": n_data_qubits,
             "n_ancillas": 1, "q_depth": args.q_depth, "img_size": args.img_size,
-            "target_class": args.target_class,
+            "target_class": args.target_class, "scale": "prob", "epochs": args.epochs,
         },
+        "history": history,  # 지표 ④ 손실곡선용
     }, ckpt_path)
     print(f"저장됨: {ckpt_path}")
-    print("이 파일을 3일차 노트북의 checkpoints/ 폴더에 넣고 Colab에 업로드(또는 Drive 공유)할 것.")
+    print("이 파일을 day3/assets/에 넣고 커밋·푸시하면 2·3일차 노트북이 git clone으로 바로 불러 씀.")
+    print("평가·시각화 시에는 gen_metrics.to_unit_scale(x, \"prob\")로 0~1로 되돌려 MediQ-GAN과 비교할 것.")
 
 
 if __name__ == "__main__":

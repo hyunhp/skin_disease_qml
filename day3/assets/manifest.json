@@ -1,0 +1,12 @@
+{
+  "img_size": 16,
+  "seg_size": [
+    64,
+    64
+  ],
+  "df_count": 115,
+  "nv_count": 345,
+  "scale": "0~1",
+  "source": "kmader/skin-cancer-mnist-ham10000",
+  "note": "2026-10-01 커리큘럼 재설계(16x16)용 재생성 자산 — 재생산 체인 ①"
+}
