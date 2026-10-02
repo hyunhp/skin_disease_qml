@@ -32,6 +32,8 @@ day3/  day3_practice.ipynb            3일차 실습 - 같은 방식으로 asset
        train_qgan_checkpoint.py        (강의 준비용) QGAN 체크포인트 학습
        train_mediqgan_checkpoint.py    (강의 준비용) MediQ-GAN 사전학습
        prep_day3_train_checkpoints.ipynb (옛 구성) QGAN·CNN 사전학습 - 현재 커리큘럼에서는 쓰지 않음
+docs/image/                            Kaggle API 토큰 발급 화면 캡처 (2일차 인증 안내용)
+paper/ MediQ-GAN 논문 PDF + 두 논문 서지사항·라이선스 (paper/README.md)
 prep_step1_16px_npy.ipynb              (강의 준비용) HAM10000 → 16×16 전처리 데이터 생성 (Colab)
 requirements.txt                       로컬 실행용 패키지 목록
 ```
@@ -43,3 +45,7 @@ requirements.txt                       로컬 실행용 패키지 목록
   **CC BY-NC 4.0**(비상업적 이용) 조건으로 공개됨 - 교육·연구 목적으로만 사용할 것.
 - Tschandl, P., Rosendahl, C. & Kittler, H. *The HAM10000 dataset, a large collection of multi-source dermatoscopic images of common pigmented skin lesions.* Sci. Data 5, 180161 (2018). https://doi.org/10.7910/DVN/DBW86T
 - 슬라이드의 MediQ-GAN 그림은 원 논문(CC BY 4.0)에서 출처를 밝혀 인용함. 그 외 도식은 원 논문 구조를 바탕으로 새로 그림.
+- **논문 PDF / Papers**: MediQ-GAN(arXiv:2506.21015)은 **CC BY 4.0**이라 [`paper/`](paper/)에 포함함.
+  HAM10000 QGAN 논문(Andra et al., *Quantum Machine Intelligence* 7, 90, 2025)은 Springer 독점 라이선스라
+  PDF를 포함하지 않고 DOI 링크만 둠: https://doi.org/10.1007/s42484-025-00315-y
+  실습 구현이 두 논문과 어디서 다른지는 [`paper/README.md`](paper/README.md)의 비교표 참고.

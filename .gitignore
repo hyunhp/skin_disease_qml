@@ -8,3 +8,8 @@ __pycache__/
 checkpoints/
 ham10000/
 *.zip
+
+# 논문 PDF는 재배포 가능한 것만 커밋 (paper/README.md 참고)
+# Springer 등 독점 라이선스 사본을 paper/에 두더라도 공개 저장소에 올라가지 않도록 막음
+paper/*.pdf
+!paper/MediQ-GAN_arXiv-2506.21015v2.pdf
