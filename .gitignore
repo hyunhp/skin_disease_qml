@@ -1,6 +1,6 @@
 # 내부 업무 메모 (공개 README는 .github/README.md)
 /README.md
-archive/day1_slides/_backup/
+practice/day1_slides/_backup/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/

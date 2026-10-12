@@ -7,13 +7,13 @@ Lecture materials for the QML course (Quantum GAN for skin-lesion image augmenta
 - **다루는 논문 / Papers**: HAM10000 QGAN (Andra et al., *Quantum Machine Intelligence* 7, 90, 2025) · MediQ-GAN (Jiao et al., arXiv:2506.21015)
 - 모든 실습은 **Google Colab(기본 CPU 런타임)** 에서 진행함 - 개인 PC 설치 불필요. / Everything runs on Google Colab (CPU runtime).
 - 생성 품질은 픽셀 통계 · 클래스 평균 상관계수 · 최근접 실제 이미지 거리 · 샘플 다양성 네 가지로 평가함(`practice/gen_metrics.py`). 두 모델을 같은 잣대로 비교함.
-- **학생이 여는 것은 [`practice/`](../practice/) 폴더뿐임** - 강의 준비용 스크립트·학습 코드·논문·1일차 슬라이드는 [`archive/`](../archive/)에 분리해둠. / Students only need `practice/`.
+- **학생이 여는 것은 [`practice/`](../practice/) 폴더뿐임**(1~3일차 자료 전부 이 안에 있음) - 강의 준비용 스크립트·학습 코드·논문은 [`archive/`](../archive/)에 분리해둠. / Students only need `practice/`.
 
 ## 실습 노트북 열기 / Open in Colab
 
 | 일차 | 내용 | 노트북 |
 |---|---|---|
-| 1일차 (11/13) | 이론 강의 슬라이드 | [`archive/day1_slides/day1_theory_slides.pptx`](../archive/day1_slides/day1_theory_slides.pptx) |
+| 1일차 (11/13) | 이론 강의 슬라이드 | [`practice/day1_slides/`](../practice/day1_slides/) - [pptx](../practice/day1_slides/day1_theory_slides.pptx) · [pdf](../practice/day1_slides/day1_theory_slides.pdf) |
 | 2일차 (11/20) | Colab 환경 · EDA · 세그멘테이션 · 회로 인코딩 → **QGAN 학습 · 생성 · 평가** | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) |
 | 3일차 (11/27) | **MediQ-GAN 학습(미세조정)** → QGAN과 동일 지표 비교 → 생성에서의 양자컴퓨팅 참고사항 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day3_practice.ipynb) |
 
@@ -24,7 +24,8 @@ Lecture materials for the QML course (Quantum GAN for skin-lesion image augmenta
 ## 폴더 구성 / Structure
 
 ```
-practice/                      학생 실습용 - 수업에서 여는 것은 이 폴더뿐
+practice/                      학생용 - 수업에서 여는 것은 이 폴더뿐
+  day1_slides/                 1일차 이론 강의 슬라이드 (pptx + pdf)
   day2_practice.ipynb          2일차 실습 (실행 시 이 저장소를 git clone해 assets/와 지표 모듈을 사용)
   day3_practice.ipynb          3일차 실습 (같은 방식으로 assets/의 체크포인트를 불러옴)
   gen_metrics.py               생성품질 지표 4종 - 2·3일차가 같은 잣대로 비교할 때 사용
@@ -32,7 +33,6 @@ practice/                      학생 실습용 - 수업에서 여는 것은 이
   docs/image/                  Kaggle API 토큰 발급 화면 캡처 (2일차 인증 안내용)
 
 archive/                       보관용 - 학생 실습에는 쓰지 않음
-  day1_slides/                 1일차 이론 강의 슬라이드
   prep/                        (강의 준비용) 전처리 npy 재생성·코드 리허설 노트북
   train/                       (강의 준비용) 체크포인트 학습 CLI + 모델·전처리 모듈
   assets_8px/                  2026-10-01 재설계 이전 8×8 자산 (현재 미사용, 근거 자료로 보존)

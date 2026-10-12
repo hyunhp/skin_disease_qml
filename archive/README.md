@@ -1,10 +1,9 @@
 # archive - 보관용 (학생 실습에서는 쓰지 않음)
 
-학생이 Colab에서 여는 실습 자료는 [`practice/`](../practice/)에 있다. 이 폴더는 **강의 준비·재생산·근거 자료**를 모아둔 곳이다.
+학생에게 배포하는 자료(1일차 슬라이드 + 2·3일차 노트북)는 모두 [`practice/`](../practice/)에 있다. 이 폴더는 **강의 준비·재생산·근거 자료**를 모아둔 곳이다.
 
 | 경로 | 내용 |
 |---|---|
-| `day1_slides/day1_theory_slides.pptx` | 1일차(11/13) 이론 강의 슬라이드. 실습이 없는 차시라 이쪽에 둠 |
 | `prep/prep_step1_16px_npy.ipynb` | (현행) HAM10000 → 16×16 전처리 npy 재생성. Kaggle 인증 필요, Colab에서 실행 |
 | `prep/prep_day2_eda_rehearsal.ipynb` | (현행) 2일차 코드 리허설 |
 | `prep/prep_day3_train_checkpoints.ipynb` | **(옛 구성, 실행 금지)** QGAN·CNN 사전학습용. 2026-10-01 재설계 이전 자산 6종 기준이고 본문 경로도 재편 전 기준이라 그대로 두었음 |
