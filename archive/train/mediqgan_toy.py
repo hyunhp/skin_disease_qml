@@ -11,7 +11,7 @@ MediQ-GAN(arXiv:2506.21015) dual-stream 생성자 — 개념 데모용 축소판
 남은 단순화는 classical encoder/decoder가 conv가 아니라 단순 MLP라는 점, 그리고 입력이 실제 64×64
 RGB가 아니라 2일차 파이프라인이 만든 8×8(64차원) 저해상도 흑백 벡터라는 점뿐이다 — 원본 HAM10000
 이미지(600×450)가 커도 문제되지 않는 이유는, 애초에 양자 인코딩 전에 `resize_for_encoding()`으로
-8×8까지 축소하기 때문(day3/data_pipeline.py 참고). 실제 정량 결과는 논문 Table 2(FID)를
+8×8까지 축소하기 때문(data_pipeline.py 참고). 실제 정량 결과는 논문 Table 2(FID)를
 그대로 인용해서 보여준다(별도 준비자료).
 
 양자회로 설정(`lightning.qubit` + `diff_method="adjoint"`, shots 미지정)은 공식 레포

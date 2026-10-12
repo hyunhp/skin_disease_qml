@@ -29,7 +29,7 @@
 실행 예:
     # 본 학습(로컬 밤샘) — 중간 체크포인트는 5에폭마다
     C:/qmlvenv/Scripts/python.exe -X utf8 train_mediqgan_checkpoint.py \
-        --npy assets/df_preprocessed.npy --out_dir ./checkpoints --epochs 30 --save_every 5
+        --npy ../../practice/assets/df_preprocessed.npy --out_dir ./checkpoints --epochs 30 --save_every 5
 
     # 중단된 학습 이어하기
     ... --resume ./checkpoints/mediqgan_last.pt
@@ -39,12 +39,16 @@
 """
 import argparse
 import json
+import sys
 import time
 from pathlib import Path
 
 import numpy as np
 import torch
 import torch.nn as nn
+
+# 품질 모니터링에 쓰는 gen_metrics는 학생 실습 폴더(practice/)에 있음 - 2026-10-12 폴더 재편으로 분리됨
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "practice"))
 
 from mediqgan_toy import ToyDualStreamGenerator
 from qgan_model import ClassicalDiscriminator

@@ -16,7 +16,7 @@
 실행 예:
     # (A) 권장 — 저장소의 16x16 전처리 npy로 로컬 학습
     C:/qmlvenv/Scripts/python.exe -X utf8 train_qgan_checkpoint.py \
-        --npy assets/df_preprocessed.npy --out_dir ./checkpoints --epochs 600
+        --npy ../../practice/assets/df_preprocessed.npy --out_dir ./checkpoints --epochs 600
 
     # (B) 원본에서 전처리까지
     C:/qmlvenv/Scripts/python.exe -X utf8 train_qgan_checkpoint.py \
@@ -153,7 +153,7 @@ def main():
         "history": history,  # 지표 ④ 손실곡선용
     }, ckpt_path)
     print(f"저장됨: {ckpt_path}")
-    print("이 파일을 day3/assets/에 넣고 커밋·푸시하면 2·3일차 노트북이 git clone으로 바로 불러 씀.")
+    print("이 파일을 practice/assets/에 넣고 커밋·푸시하면 2·3일차 노트북이 git clone으로 바로 불러 씀.")
     print("평가·시각화 시에는 gen_metrics.to_unit_scale(x, \"prob\")로 0~1로 되돌려 MediQ-GAN과 비교할 것.")
 
 

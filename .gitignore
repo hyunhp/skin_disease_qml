@@ -1,15 +1,16 @@
 # 내부 업무 메모 (공개 README는 .github/README.md)
 /README.md
-day1/_backup/
+archive/day1_slides/_backup/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
-# 로컬 학습 산출물·원본 데이터 (배포 자산은 day3/assets/만 커밋)
+# 로컬 학습 산출물·원본 데이터 (배포 자산은 practice/assets/만 커밋)
 checkpoints/
 ham10000/
 *.zip
 
-# 논문 PDF는 재배포 가능한 것만 커밋 (paper/README.md 참고)
-# Springer 등 독점 라이선스 사본을 paper/에 두더라도 공개 저장소에 올라가지 않도록 막음
-paper/*.pdf
-!paper/MediQ-GAN_arXiv-2506.21015v2.pdf
+# 논문 PDF는 재배포 가능한 것만 커밋 (archive/paper/README.md 참고)
+# Springer 등 독점 라이선스 사본을 archive/paper/에 두더라도 공개 저장소에 올라가지 않도록 막음
+archive/paper/*.pdf
+!archive/paper/MediQ-GAN_arXiv-2506.21015v2.pdf
+!archive/paper/HAM10000-QGAN_preprint_ResearchSquare_rs-5191116v1.pdf
