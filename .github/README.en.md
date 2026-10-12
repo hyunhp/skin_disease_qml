@@ -17,6 +17,7 @@ The core of the material is a side-by-side comparison of two different hybrid st
 | **Stack** | PennyLane (`default.qubit` / `lightning.qubit` + `adjoint`), PyTorch, scikit-fuzzy, OpenCV |
 | **Runtime** | Google Colab default CPU runtime - no local install, no GPU, no quantum-hardware account |
 | **Evaluation** | Four lightweight generation-quality metrics (pixel statistics, class-mean correlation, nearest-real distance, sample diversity) |
+| **License** | MIT for code and docs; CC BY-NC 4.0 for data derivatives (see [Licensing](#licensing)) |
 | **Deliverables** | 31 theory slides, 2 practice notebooks, 3 pretrained checkpoints, a metrics module, and reproduction CLIs |
 
 ### Design principles
@@ -134,6 +135,7 @@ archive/                       Preparation and provenance material
   paper/                       Paper PDFs, citations, licensing, implementation-difference table
 
 requirements.txt               Packages for local runs
+LICENSE                        MIT for code and docs, with the data/paper carve-outs
 ```
 
 ## Reproducing locally
@@ -162,9 +164,15 @@ C:/qmlvenv/Scripts/python.exe -X utf8 train_mediqgan_checkpoint.py --npy ../../p
 
 Copy the resulting checkpoints into `practice/assets/` and the notebooks pick them up unchanged. See [`archive/README.md`](../archive/README.md) for details.
 
-## Data and paper licensing
+## Licensing
 
-- The **HAM10000** images are not redistributed here; the day-2 notebook downloads them with `kagglehub`. Everything in `practice/assets/` is derived from HAM10000 and therefore inherits **CC BY-NC 4.0** (non-commercial) - use it for education and research only.
+- **Code and documentation: [MIT](../LICENSE)** - notebooks, Python modules, CLI scripts, README files and the lecture slides. Free to use, including commercially, as long as the notice is kept.
+- **Data derivatives: CC BY-NC 4.0** - the preprocessed `.npy` files and checkpoints in `practice/assets/`, and everything in `archive/assets_8px/`, are derived from HAM10000 and inherit its **non-commercial** terms. MIT does not apply to them.
+- **Paper PDFs**: governed by each paper's CC BY 4.0 terms (see [`archive/paper/README.md`](../archive/paper/README.md)).
+
+### Sources
+
+- The **HAM10000** images (~6 GB) are not redistributed here; the day-2 notebook downloads them with `kagglehub`. The dataset itself is **CC BY-NC 4.0**, so anything built from it - including the preprocessed data and checkpoints - is for education and research only.
 - The **MediQ-GAN** paper (arXiv:2506.21015) is CC BY 4.0, so its PDF is included in [`archive/paper/`](../archive/paper/).
 - The **HAM10000 QGAN** paper cannot be included because the published version is under an exclusive Springer Nature license; the **CC BY 4.0 author preprint** (Research Square rs-5191116v1) is provided instead. Cite the published version.
 - The MediQ-GAN figure in the slides is quoted from the paper (CC BY 4.0) with attribution; all other diagrams were redrawn from the papers' descriptions.
