@@ -4,7 +4,7 @@ A hands-on implementation of the **full quantum-GAN data-augmentation pipeline**
 
 > [한국어](README.md) | **English**
 
-Produced by the Quantum Innovation Lab at Megazone Cloud for weeks 11-13 of a graduate course at Dong-A University (fall 2026). The core of the material is a side-by-side comparison of two different hybrid strategies - **model-level** and **layer-level** - on the same data under the same metrics.
+The core of the material is a side-by-side comparison of two different hybrid strategies - **model-level** and **layer-level** - on the same data under the same metrics.
 
 ## At a glance
 
