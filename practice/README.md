@@ -1,10 +1,10 @@
 # practice
 
-**실제로 실행하는 것은 해당 폴더뿐**이다. Colab 링크는 저장소 첫 화면([`.github/README.md`](../.github/README.md))에 있다.
+**실습은 현재 폴더에서만 진행**합니다. Colab 링크는 Readme ([`.github/README.md`](../.github/README.md))에 있다.
 
 | 파일 | 내용 |
 |---|---|
-| `day1_slides/day1_theory_slides.pptx` · `.pdf` | 이론 강의 슬라이드(31장). 수정 전 백업은 `day1_slides/_backup/`(gitignore) |
+| `day1_slides/day1_theory_slides.pptx` · `.pdf` | 이론 강의 슬라이드(31장). |
 | `day2_practice.ipynb` | Colab 환경·EDA·세그멘테이션·회로 인코딩 → QGAN 라이브 학습·생성·평가 |
 | `day3_practice.ipynb` | MediQ-GAN 미세조정 → QGAN과 동일 지표 비교 → 참고사항·토론 |
 | `gen_metrics.py` | 생성품질 지표 4종. 두 노트북이 같은 잣대로 비교할 때 import함 |
