@@ -1,6 +1,6 @@
 # 피부병변 의료영상 양자 생성모델 - QGAN / MediQ-GAN
 
-**양자 GAN으로 의료영상 데이터를 증강하는 전 과정**(데이터 EDA → 세그멘테이션 전처리 → 양자 인코딩 → 학습 → 평가 → 고전 비교)을, 노트북 두 개로 **Google Colab 무료 CPU에서 끝까지 실행**할 수 있도록 구현한 실습 자료입니다.
+**양자 GAN으로 의료영상 데이터를 증강하는 전 과정** (데이터 EDA → 세그멘테이션 전처리 → 양자 인코딩 → 학습 → 평가 → 고전 비교)을, 노트북 두 개로 **Google Colab 무료 CPU에서 끝까지 실행**할 수 있도록 구현한 실습 자료입니다.
 
 > 한국어 | **[English](README.en.md)**
 
@@ -22,8 +22,8 @@
 
 ### 설계 원칙
 
-1. **양자 회로 스펙은 줄이지 않는다.** 시간을 줄이려고 큐빗 수나 깊이를 깎으면 "논문이 말한 모델"이 아니게 되므로, 대신 **데이터 해상도와 학습 구간**을 줄였습니다(MediQ-GAN 양자 스트림은 원 논문 스펙 그대로).
-2. **척도를 통일해 비교한다.** QGAN 출력은 확률(픽셀 합 = 1), MediQ-GAN 출력은 Tanh(-1~1), 전처리 데이터는 0~1로 세 척도가 섞여 있어, 공통 함수로 0~1로 되돌린 뒤에만 지표를 계산합니다. 이 과정을 생략하면 두 모델의 차이가 척도 차이에 묻힙니다.
+1. **양자 회로 스펙은 줄이지 않는다.** 시간을 줄이려고 큐빗 수나 깊이를 깎으면 "논문이 말한 모델"이 아니게 되므로, 대신 **데이터 해상도와 학습 구간**을 줄였습니다 (MediQ-GAN 양자 스트림은 원 논문 스펙 그대로).
+2. **척도를 통일해 비교한다.** QGAN 출력은 확률(픽셀 합 = 1), MediQ-GAN 출력은 Tanh(-1 ~ 1), 그리고 전처리 데이터는 0 ~ 1로 세 척도가 섞여 있어, 공통 함수로 0 ~ 1로 되돌린 뒤에만 지표를 계산합니다. 이 과정을 생략하면 두 모델의 차이가 척도 차이에 묻힙니다.
 3. **실패와 한계를 함께 기록한다.** 원 논문과 다른 점, 품질이 무너졌던 설정, 지표가 말해주지 못하는 것을 자료 본문에 고지합니다.
 
 ## 실습 자료 열기
@@ -34,7 +34,8 @@
 | 2일차 | EDA · 세그멘테이션 전처리 · 양자 인코딩 · **QGAN 라이브 학습 → 생성 → 평가** | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) |
 | 3일차 | **MediQ-GAN 미세조정** → QGAN과 동일 지표 비교 → 생성 모델에서의 양자컴퓨팅 한계·연구 방향 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day3_practice.ipynb) |
 
-노트북을 연 뒤 `파일(File) → Drive에 사본 저장`을 먼저 실행하면 실행 결과가 본인 Drive에 남습니다. 노트북은 실행 중 이 저장소를 `git clone`해 [`practice/assets/`](../practice/assets/)의 전처리 데이터·체크포인트와 [`practice/gen_metrics.py`](../practice/gen_metrics.py)를 불러옵니다. HAM10000 원본(약 6GB)만 `kagglehub`로 직접 내려받습니다.
+노트북을 연 뒤 `파일(File) → Drive에 사본 저장`을 먼저 실행하면 실행 결과가 본인 Drive에 남습니다. 
+노트북은 실행 중 저장소를 `git clone`해 [`practice/assets/`](../practice/assets/)의 전처리 데이터·체크포인트와 [`practice/gen_metrics.py`](../practice/gen_metrics.py)를 불러옵니다. HAM10000 원본(약 6GB)만 `kagglehub`로 직접 내려받습니다.
 
 ## 두 아키텍처
 
@@ -47,7 +48,8 @@
 
 ## 평가 설계
 
-16×16 저해상도에서는 **FID를 쓰지 않습니다** - Inception 특징이 의미를 갖지 못하는 해상도이고(MediQ-GAN 논문은 64×64 RGB 기준), 표본도 수백 장 규모입니다. 대신 해석 가능한 네 가지를 [`practice/gen_metrics.py`](../practice/gen_metrics.py)에 구현해 2·3일차가 같은 모듈을 import합니다.
+16×16 저해상도에서는 **FID를 쓰지 않습니다** - Inception 특징이 의미를 갖지 못하는 해상도이고(MediQ-GAN 논문은 64×64 RGB 기준), 표본도 수백 장 규모입니다. 
+대신 해석 가능한 네 가지를 [`practice/gen_metrics.py`](../practice/gen_metrics.py)에 구현해 2·3일차가 같은 모듈을 import합니다.
 
 | 지표 | 보는 것 | 읽는 법 |
 |---|---|---|
@@ -120,7 +122,7 @@ AUC는 0.004 올랐고 정확도는 떨어졌습니다 - 표본 92장 규모에�
 ## 저장소 구성
 
 ```
-practice/                      학생용 - 수업에서 여는 것은 이 폴더뿐
+practice/                      학생용 
   day1_slides/                 1일차 이론 강의 슬라이드 (pptx + pdf, 31장)
   day2_practice.ipynb          2일차 실습 - EDA·전처리·인코딩 → QGAN 학습·평가
   day3_practice.ipynb          3일차 실습 - MediQ-GAN 미세조정 → QGAN과 비교
@@ -128,7 +130,7 @@ practice/                      학생용 - 수업에서 여는 것은 이 폴더
   assets/                      16×16 전처리 데이터 + 사전학습 체크포인트 3종 (약 1MB)
   docs/image/                  Kaggle API 토큰 발급 화면 캡처
 
-archive/                       보관용 - 강의 준비·재생산·근거 자료
+archive/                       보관용 
   prep/                        전처리 데이터 재생성·코드 리허설 노트북
   train/                       체크포인트 학습 CLI + 모델·전처리 모듈
   assets_8px/                  8×8 시절 자산 (CNN 증강 비교 포함, 현재 미사용)
@@ -172,14 +174,14 @@ C:/qmlvenv/Scripts/python.exe -X utf8 train_mediqgan_checkpoint.py --npy ../../p
 
 ### 데이터·논문 출처
 
-- **HAM10000** 원본 이미지(약 6GB)는 이 저장소에 포함하지 않으며, 2일차 노트북에서 `kagglehub`로 직접 내려받습니다. 데이터셋 자체가 **CC BY-NC 4.0**이므로 그로부터 만든 전처리 데이터·체크포인트도 교육·연구 목적으로만 사용하십시오.
+- **HAM10000** 원본 이미지(약 6GB)는 저장소에 포함하지 않으며, 2일차 노트북에서 `kagglehub`로 직접 내려받습니다.
 - **MediQ-GAN** 논문(arXiv:2506.21015)은 CC BY 4.0이라 PDF를 [`archive/paper/`](../archive/paper/)에 포함했습니다.
-- **HAM10000 QGAN** 논문은 출판본이 Springer Nature 독점 라이선스라 포함할 수 없어, **CC BY 4.0 저자 프리프린트**(Research Square rs-5191116v1)를 대신 넣었습니다. 인용은 출판본 기준으로 하십시오.
+- **HAM10000 QGAN** 논문은 출판본이 Springer Nature 독점 라이선스라 포함할 수 없어, **CC BY 4.0 저자 프리프린트**(Research Square rs-5191116v1)를 대신 넣었습니다.
 - 슬라이드의 MediQ-GAN 그림은 원 논문(CC BY 4.0)에서 출처를 밝혀 인용했고, 그 외 도식은 논문 구조를 바탕으로 새로 그렸습니다.
 
 ## 참고문헌
 
 1. Andra, M. B., Yuliani, A. R., Kadar, J. A., Ramdan, A. & Pardede, H. F. **Data augmentation in cancer image classification problem with quantum GAN.** *Quantum Machine Intelligence* **7**, 90 (2025). https://doi.org/10.1007/s42484-025-00315-y
-   (CC BY 4.0 프리프린트: Research Square, https://doi.org/10.21203/rs.3.rs-5191116/v1 )
+   (CC BY 4.0: Research Square, https://doi.org/10.21203/rs.3.rs-5191116/v1 )
 2. Jiao, Q., Tang, Y., Zhuang, J., Cong, J. & Shi, Y. **MediQ-GAN: Quantum-Inspired GAN for High Resolution Medical Image Generation.** arXiv:[2506.21015](https://arxiv.org/abs/2506.21015) (2025). 공식 구현: https://github.com/QingyueJ-nd/MediQ-GAN
 3. Tschandl, P., Rosendahl, C. & Kittler, H. **The HAM10000 dataset, a large collection of multi-source dermatoscopic images of common pigmented skin lesions.** *Scientific Data* **5**, 180161 (2018). https://doi.org/10.7910/DVN/DBW86T
