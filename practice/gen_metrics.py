@@ -5,7 +5,7 @@
 판정할 수단으로 도입한 것(설계 근거는 프로젝트 README "커리큘럼 재설계" 섹션 참고).
 
 지표 4종
-  ① 픽셀 강도 통계·히스토그램      pixel_stats() / plot_pixel_histogram()
+  ① 픽셀 강도 통계·histogram      pixel_stats() / plot_pixel_histogram()
   ② 클래스 평균 이미지와의 상관계수  mean_image_correlation()
   ③ 최근접 실제 이미지 L2 거리      nearest_neighbor_distance() / plot_nearest_neighbors()
   ④ 샘플 간 다양성 + 손실곡선        sample_diversity() / plot_loss_curves()
@@ -35,7 +35,7 @@ def to_unit_scale(x, mode):
         return np.clip(arr, 0.0, 1.0)
     if mode == "tanh":
         return np.clip((arr + 1.0) / 2.0, 0.0, 1.0)
-    # prob — 이미지별 min-max. 상수 이미지(모드붕괴)는 0으로 두어 NaN을 피함
+    # prob — 이미지별 min-max. 상수 이미지(mode collapse)는 0으로 두어 NaN을 피함
     flat = arr.reshape(len(arr), -1)
     lo = flat.min(axis=1, keepdims=True)
     hi = flat.max(axis=1, keepdims=True)
@@ -66,7 +66,7 @@ def pixel_stats(images):
 
 
 def plot_pixel_histogram(real, fake, ax=None, bins=30, label_real="실제", label_fake="생성"):
-    """실제 vs 생성 픽셀 강도 히스토그램(겹쳐 그림)."""
+    """실제 vs 생성 픽셀 강도 histogram(겹쳐 그림)."""
     import matplotlib.pyplot as plt
     if ax is None:
         _, ax = plt.subplots(figsize=(5, 3))
@@ -136,7 +136,7 @@ def plot_nearest_neighbors(fake, real, img_size, n_show=4, cmap="gray"):
 def sample_diversity(fake):
     """생성 샘플끼리 얼마나 다른가 — 쌍별 L2 거리 평균/최솟값, 픽셀별 표준편차 평균.
 
-    해석: 값이 0에 가까우면 모드붕괴(어떤 노이즈를 넣어도 같은 그림만 나옴).
+    해석: 값이 0에 가까우면 mode collapse(어떤 노이즈를 넣어도 같은 그림만 나옴).
     """
     f = _flat(fake)
     if len(f) < 2:
@@ -157,7 +157,7 @@ def plot_loss_curves(loss_g, loss_d, ax=None):
         _, ax = plt.subplots(figsize=(5, 3))
     ax.plot(loss_g, label="생성자 loss_g")
     ax.plot(loss_d, label="판별자 loss_d")
-    ax.set_xlabel("스텝"); ax.set_ylabel("loss"); ax.legend()
+    ax.set_xlabel("step"); ax.set_ylabel("loss"); ax.legend()
     return ax
 
 
@@ -207,7 +207,7 @@ if __name__ == "__main__":
 
     good = np.clip(blob[None] + rng.normal(0, 0.12, (8, IMG, IMG)), 0, 1)   # 비슷하게 생성
     noise = rng.random((8, IMG, IMG))                                        # 엉뚱한 생성
-    collapsed = np.repeat(good[:1], 8, axis=0)                               # 모드붕괴
+    collapsed = np.repeat(good[:1], 8, axis=0)                               # mode collapse
     memorized = real[:8].copy()                                              # 학습데이터 암기
 
     for mode in SCALE_MODES:
@@ -229,11 +229,11 @@ if __name__ == "__main__":
 
     div_good = sample_diversity(good)["pairwise_mean"]
     div_col = sample_diversity(collapsed)["pairwise_mean"]
-    print(f"④ 샘플간 거리: 정상 {div_good:.3f} vs 모드붕괴 {div_col:.3f}")
-    assert div_col < 1e-9 < div_good, "모드붕괴를 검출하지 못함"
+    print(f"④ 샘플간 거리: 정상 {div_good:.3f} vs mode collapse {div_col:.3f}")
+    assert div_col < 1e-9 < div_good, "mode collapse를 검출하지 못함"
 
     table = comparison_table({"정상생성(prob척도)": (good / good.reshape(8, -1).sum(1)[:, None, None], "prob"),
                               "무작위(tanh척도)": (noise * 2 - 1, "tanh")}, real)
     print("\n=== comparison_table 출력 예시 ===")
     print(table)
-    print("\nOK — 지표 4종이 좋은 생성/무작위/암기/모드붕괴를 전부 구분함")
+    print("\nOK — 지표 4종이 좋은 생성/무작위/암기/mode collapse를 전부 구분함")

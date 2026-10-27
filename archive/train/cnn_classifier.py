@@ -14,9 +14,9 @@ class PaperCNNClassifier(nn.Module):
 
     def __init__(self, in_channels=1, img_size=64):
         super().__init__()
-        # 논문(Table 2)은 conv 4층을 쓰지만, 이 강의는 큐빗 제약상 8x8·16x16처럼 아주 작은 인코딩
+        # 논문(Table 2)은 conv 4층을 쓰지만, 이 강의는 큐빗 제약상 8x8·16x16처럼 아주 작은 encoding
         # 해상도도 다뤄야 한다 — 4번 풀링(÷16)하면 8x8 이하 입력은 0 이하로 줄어들어 죽는다.
-        # 그래서 "입력 크기가 허용하는 만큼만" conv+maxpool 레이어를 쌓도록 적응형으로 만든다
+        # 그래서 "입력 크기가 허용하는 만큼만" conv+maxpool layer를 쌓도록 적응형으로 만든다
         # (img_size>=64면 원 논문과 동일하게 4층 그대로 나온다).
         chs_full = [in_channels, 16, 32, 64, 128]
         n_layers = 0

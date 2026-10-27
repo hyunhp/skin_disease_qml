@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-[준비 스크립트 ②] QGAN 체크포인트 학습 — HAM10000 DF(소수클래스) 세그멘테이션 이미지.
+[준비 스크립트 ②] QGAN checkpoint 학습 — HAM10000 DF(소수클래스) segmentation 이미지.
 
 2026-10-01 커리큘럼 재설계 반영 — 확정 스펙이 기본값이다:
-  **16x16 · 서브제너레이터 2개 · depth 10 (데이터 7 + 보조 1 = 8큐빗, patch 128)**
+  **16x16 · sub-generator 2개 · depth 10 (데이터 7 + ancilla 1 = 8큐빗, patch 128)**
   → 큐빗 수·patch 크기가 논문 스펙과 정확히 일치하고, 실측 1.45s/step으로 가장 빠르다.
-     (서브제너레이터가 적을수록 빠른 이유: 회로 호출 횟수가 상태벡터 크기보다 지배적. 근거는 README 실측표)
-재설계 후 2일차(11/20)는 학생이 이 학습을 **라이브로** 돌린다(600스텝 약 20분). 이 스크립트는
-3일차 비교 기준본이 될 강사 체크포인트를 미리 만들어두는 용도다.
+     (sub-generator가 적을수록 빠른 이유: 회로 호출 횟수가 상태벡터 크기보다 지배적. 근거는 README 실측표)
+재설계 후 2일차(11/20)는 학생이 이 학습을 **라이브로** 돌린다(600 step 약 20분). 이 스크립트는
+3일차 비교 기준본이 될 강사 checkpoint를 미리 만들어두는 용도다.
 
 입력은 두 가지 중 하나:
   (A) --npy  전처리 완료 npy(0~1) — **Kaggle 불필요, 로컬에서 바로 실행 가능(권장)**
-  (B) --metadata + --img_dir  HAM10000 원본에서 세그멘테이션까지 직접 수행(Kaggle 필요)
+  (B) --metadata + --img_dir  HAM10000 원본에서 segmentation까지 직접 수행(Kaggle 필요)
 
 실행 예:
     # (A) 권장 — 저장소의 16x16 전처리 npy로 로컬 학습
@@ -23,7 +23,7 @@
         --metadata HAM10000_metadata.csv --img_dir ./ham10000 --out_dir ./checkpoints
 
 ⚠ 원 논문은 2000 epoch으로 1~1.5시간이 걸렸다(Table 10). 여기서 1 epoch은 데이터 1회 순회가 아니라
-  **랜덤 배치 1스텝**이다 — 즉 --epochs 600 = 600스텝(실측 약 20분).
+  **랜덤 batch 1 step**이다 — 즉 --epochs 600 = 600 step(실측 약 20분).
 """
 import argparse
 import sys
@@ -65,17 +65,17 @@ def main():
                      help="증강할 소수클래스 (논문 기본값: df)")
     ap.add_argument("--img_size", type=int, default=16, help="한 변 픽셀수 — 2026-10-01 확정 스펙은 16. "
                      "전체 픽셀수(img_size^2)가 n_generators로 나누어떨어지고 그 몫이 2의 거듭제곱이어야 함")
-    ap.add_argument("--n_generators", type=int, default=2, help="서브제너레이터 개수 — 확정 스펙은 2 "
-                     "(데이터 7 + 보조 1 = 8큐빗, patch 128 = 논문 스펙과 정확히 일치). "
-                     "각 서브제너레이터가 이미지의 1/n_generators만큼의 patch를 담당(이어붙여 전체 이미지 생성)")
+    ap.add_argument("--n_generators", type=int, default=2, help="sub-generator 개수 — 확정 스펙은 2 "
+                     "(데이터 7 + ancilla 1 = 8큐빗, patch 128 = 논문 스펙과 정확히 일치). "
+                     "각 sub-generator가 이미지의 1/n_generators만큼의 patch를 담당(이어붙여 전체 이미지 생성)")
     ap.add_argument("--q_depth", type=int, default=10, help="PQC depth — 확정 스펙은 논문과 같은 10")
-    ap.add_argument("--epochs", type=int, default=600, help="= 랜덤 배치 스텝 수(데이터 순회가 아님). 실측 600스텝 약 20분")
+    ap.add_argument("--epochs", type=int, default=600, help="= 랜덤 batch step 수(데이터 순회가 아님). 실측 600 step 약 20분")
     ap.add_argument("--batch_size", type=int, default=8)
     ap.add_argument("--lr_g", type=float, default=0.05)
     ap.add_argument("--lr_d", type=float, default=0.001)
     args = ap.parse_args()
 
-    # 서브제너레이터 n_generators개가 patch를 이어붙여 전체 이미지(img_size^2 픽셀)를 만드는 구조이므로,
+    # sub-generator n_generators개가 patch를 이어붙여 전체 이미지(img_size^2 픽셀)를 만드는 구조이므로,
     # 생성자 총 출력차원(n_generators * 2^n_data_qubits)이 실제 이미지 픽셀수와 같아야 한다.
     # (이 조건이 깨지면 판별자에 넣는 real 이미지와 fake 이미지의 차원이 달라져 학습 시 즉시 shape 에러가 남 —
     #  실제로 예전 버전은 n_generators를 고려하지 않고 n_data_qubits=log2(img_size^2)로만 계산해 이 버그가 있었음.)
@@ -106,7 +106,7 @@ def main():
     else:
         if not (args.metadata and args.img_dir):
             raise SystemExit("--npy 또는 (--metadata + --img_dir) 중 하나는 반드시 필요함")
-        print("[1/3] 원본 로드 + 세그멘테이션 전처리...")
+        print("[1/3] 원본 로드 + segmentation 전처리...")
         imgs = build_dataset(args.metadata, args.img_dir, args.target_class, args.img_size)
         print(f"  로드된 {args.target_class} 클래스 이미지: {len(imgs)}장")
     if len(imgs) == 0:
@@ -114,7 +114,7 @@ def main():
         return
 
     real_flat = torch.tensor(imgs.reshape(len(imgs), -1))
-    # real을 확률 척도(픽셀 합=1)로 맞춤. 생성자는 patch별 '보조큐빗=0' 확률이라 총합·patch별 분포를 함께 학습함.
+    # real을 확률 척도(픽셀 합=1)로 맞춤. 생성자는 patch별 'ancilla qubit=0' 확률이라 총합·patch별 분포를 함께 학습함.
     real_flat = real_flat / real_flat.sum(dim=1, keepdim=True).clamp(min=1e-6)
 
     print("[2/3] QGAN 학습...")
@@ -138,7 +138,7 @@ def main():
     total_min = (time.time() - t0) / 60
     print(f"학습 완료 — 총 소요시간 {total_min:.1f}분")
 
-    print("[3/3] 체크포인트 저장...")
+    print("[3/3] checkpoint 저장...")
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     ckpt_path = out_dir / f"qgan_{args.target_class}_{args.img_size}px.pt"

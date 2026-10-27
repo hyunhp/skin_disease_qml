@@ -5,7 +5,7 @@
 
 | 파일 | 내용 |
 |---|---|
-| `qgan_df_8px.pt` | 8×8 QGAN 체크포인트(서브제너레이터 4개 · depth 4 · 300스텝). 현행 지표로 재평가하면 클래스평균 상관 0.242 - 16×16 재실험의 기준선이 된 값 |
+| `qgan_df_8px.pt` | 8×8 QGAN checkpoint(sub-generator 4개 · depth 4 · 300 step). 현행 지표로 재평가하면 클래스평균 상관 0.242 - 16×16 재실험의 기준선이 된 값 |
 | `cnn_before.pt` · `cnn_after.pt` | 증강 전/후 CNN 분류기(2026-09-22 학습). held-out(DF 23 / NV 69) AUC 0.970 → 0.974, 정확도 0.946 → 0.913 |
 | `comparison_result.json` | 위 CNN 비교의 상세 수치 |
 

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-HAM10000 로드 + EDA + 전처리(세그멘테이션) 파이프라인
+HAM10000 로드 + EDA + 전처리(segmentation) pipeline
 동아대 대학원 QML 강의 2일차 실습용 — HAM10000 QGAN 논문(arXiv 기반 재현, Andra et al. 2024/2025)
-Section 3.1의 K-means + Fuzzy C-means 하이브리드 세그멘테이션을 그대로 구현.
+Section 3.1의 K-means + Fuzzy C-means hybrid segmentation을 그대로 구현.
 
 실제 강의에서는 학생들이 Colab에서 Kaggle API로 HAM10000을 직접 받는다:
     !pip install kaggle
@@ -53,11 +53,11 @@ def load_image(img_dir, image_id, exts=(".jpg", ".jpeg", ".png")):
 
 def segment_fcm_kmeans(img_bgr, n_clusters=4, resize_to=None):
     """
-    HAM10000 QGAN 논문 Section 3.1 — K-means로 1차 클러스터링 후 Fuzzy C-means로 정제하는
-    하이브리드 세그멘테이션. 논문 결과(Table 10)상 이 전처리를 거친 이미지에서만 QGAN 증강이
+    HAM10000 QGAN 논문 Section 3.1 — K-means로 1차 clustering 후 Fuzzy C-means로 정제하는
+    hybrid segmentation. 논문 결과(Table 10)상 이 전처리를 거친 이미지에서만 QGAN 증강이
     실제로 성능을 개선시켰으므로(raw 이미지는 오히려 악화), 이 강의의 핵심 전처리 단계다.
 
-    Returns: 세그멘테이션된 grayscale 이미지 (0~255 uint8)
+    Returns: segmentation된 grayscale 이미지 (0~255 uint8)
     """
     import skfuzzy as fuzz
 
@@ -68,20 +68,20 @@ def segment_fcm_kmeans(img_bgr, n_clusters=4, resize_to=None):
     h, w = gray.shape
     pixels = gray.reshape(-1, 1).astype(np.float32)
 
-    # 1단계: K-means로 대략적인 클러스터 중심 초기화 (논문: "pre-clustering to reduce FCM 처리시간")
+    # 1단계: K-means로 대략적인 cluster 중심 초기화 (논문: "pre-clustering to reduce FCM 처리시간")
     from sklearn.cluster import KMeans
     km = KMeans(n_clusters=n_clusters, n_init=4, random_state=0).fit(pixels)
     # K-means 중심까지의 거리로 FCM 초기 소속도 행렬 구성 (m=2 → 소속도 ∝ 1/거리²)
     dist = np.abs(pixels - km.cluster_centers_.reshape(1, -1)) + 1e-6
     u_init = 1.0 / dist ** 2
-    u_init = (u_init / u_init.sum(axis=1, keepdims=True)).T  # (클러스터 수, 픽셀 수)
+    u_init = (u_init / u_init.sum(axis=1, keepdims=True)).T  # (cluster 수, 픽셀 수)
 
     # 2단계: Fuzzy C-means로 정제 (K-means 결과에서 출발 → 무작위 시작보다 빨리 수렴, 매번 같은 결과)
     cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(
         pixels.T, c=n_clusters, m=2.0, error=1e-4, maxiter=100, init=u_init
     )
     membership = np.argmax(u, axis=0)
-    # 병변(가장 어두운 클러스터)만 남기고 나머지는 배경 처리 — 논문 Fig.9의 세그멘테이션 결과와 동일한 컨셉
+    # 병변(가장 어두운 cluster)만 남기고 나머지는 배경 처리 — 논문 Fig.9의 segmentation 결과와 동일한 컨셉
     lesion_cluster = np.argmin(cntr.flatten())
     mask = (membership == lesion_cluster).reshape(h, w).astype(np.uint8) * 255
 
@@ -90,12 +90,12 @@ def segment_fcm_kmeans(img_bgr, n_clusters=4, resize_to=None):
 
 
 def resize_for_encoding(img_gray, size):
-    """양자 인코딩용 초저해상도 축소. 예: (8,8)이면 64픽셀=6큐빗 진폭인코딩, (4,4)면 16픽셀=4큐빗."""
+    """양자 encoding용 초저해상도 축소. 예: (8,8)이면 64픽셀=6큐빗 진폭encoding, (4,4)면 16픽셀=4큐빗."""
     return cv2.resize(img_gray, size, interpolation=cv2.INTER_AREA)
 
 
 def normalize_for_amplitude_encoding(img_small):
-    """진폭 인코딩을 위해 L2 정규화된 실수 벡터로 변환 (합의 제곱=1)."""
+    """진폭 encoding을 위해 L2 정규화된 실수 벡터로 변환 (합의 제곱=1)."""
     vec = img_small.flatten().astype(np.float64)
     norm = np.linalg.norm(vec)
     if norm == 0:
@@ -105,7 +105,7 @@ def normalize_for_amplitude_encoding(img_small):
 
 
 # ---------------------------------------------------------------------------
-# 로컬 코드 검증 전용 — 실제 강의에는 쓰지 않음 (HAM10000 접근 없이 파이프라인만 테스트)
+# 로컬 코드 검증 전용 — 실제 강의에는 쓰지 않음 (HAM10000 접근 없이 pipeline만 테스트)
 # ---------------------------------------------------------------------------
 def _make_synthetic_lesion_bgr(size=(128, 128), seed=0):
     """테스트 전용: 병변 비슷한 원형 얼룩이 있는 합성 이미지 생성. 실제 피부 데이터 아님."""
@@ -119,12 +119,12 @@ def _make_synthetic_lesion_bgr(size=(128, 128), seed=0):
 
 
 if __name__ == "__main__":
-    print("[검증] HAM10000 접근 없이 전처리 파이프라인 자체 동작만 확인합니다 (합성 이미지 사용).")
+    print("[검증] HAM10000 접근 없이 전처리 pipeline 자체 동작만 확인합니다 (합성 이미지 사용).")
     img = _make_synthetic_lesion_bgr()
     seg = segment_fcm_kmeans(img, n_clusters=4)
-    print("세그멘테이션 결과 shape:", seg.shape, "dtype:", seg.dtype, "min/max:", seg.min(), seg.max())
+    print("segmentation 결과 shape:", seg.shape, "dtype:", seg.dtype, "min/max:", seg.min(), seg.max())
     small = resize_for_encoding(seg, (8, 8))
     vec = normalize_for_amplitude_encoding(small)
-    print("인코딩 벡터 길이:", len(vec), "L2 norm:", np.linalg.norm(vec))
+    print("encoding 벡터 길이:", len(vec), "L2 norm:", np.linalg.norm(vec))
     assert abs(np.linalg.norm(vec) - 1.0) < 1e-6, "정규화 실패"
-    print("OK — 전처리 파이프라인 정상 동작 확인")
+    print("OK — 전처리 pipeline 정상 동작 확인")

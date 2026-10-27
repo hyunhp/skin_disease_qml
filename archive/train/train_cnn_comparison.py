@@ -52,7 +52,7 @@ def main():
     ap.add_argument("--epochs", type=int, default=20)
     args = ap.parse_args()
 
-    print("[1/4] QGAN 체크포인트 로드...")
+    print("[1/4] QGAN checkpoint 로드...")
     ckpt = torch.load(args.qgan_ckpt, map_location="cpu")
     cfg = ckpt["config"]
     gen = PatchQuantumGenerator(n_generators=cfg["n_generators"], n_data_qubits=cfg["n_data_qubits"],

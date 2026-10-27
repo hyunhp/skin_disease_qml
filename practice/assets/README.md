@@ -6,12 +6,12 @@
 
 | 파일 | 내용 |
 |---|---|
-| `df_preprocessed.npy` | DF(피부섬유종) 115장, 16×16, 0~1. 세그멘테이션(K-means+FCM) 후 축소. 2일차 QGAN 학습·3일차 비교의 실제 데이터 |
+| `df_preprocessed.npy` | DF(피부섬유종) 115장, 16×16, 0~1. segmentation(K-means+FCM) 후 축소. 2일차 QGAN 학습·3일차 비교의 실제 데이터 |
 | `nv_preprocessed.npy` | NV(모반) 345장, 16×16, 0~1. 클래스 대비용 |
 | `manifest.json` | 위 두 npy의 생성 조건(해상도·장수·척도·출처) |
-| `qgan_df_16px.pt` | QGAN 체크포인트 - 서브제너레이터 4개 × (데이터 6 + 보조 1 = 7큐빗), depth 10, 600스텝. 클래스평균 상관 0.195 |
-| `mediqgan_e010.pt` | MediQ-GAN 10에폭 - 상관 0.018 |
-| `mediqgan_final.pt` | MediQ-GAN 25에폭 최종 - 16큐빗 × 5 서브제너레이터, depth 8 (원 논문 스펙). 상관 0.365 |
+| `qgan_df_16px.pt` | QGAN checkpoint - sub-generator 4개 × (데이터 6 + ancilla 1 = 7큐빗), depth 10, 600 step. 클래스평균 상관 0.195 |
+| `mediqgan_e010.pt` | MediQ-GAN 10 epoch - 상관 0.018 |
+| `mediqgan_final.pt` | MediQ-GAN 25 epoch 최종 - 16큐빗 × 5 sub-generator, depth 8 (원 논문 스펙). 상관 0.365 |
 
 생성 경로: `archive/prep/prep_step1_16px_npy.ipynb`(Colab, npy) → `archive/train/train_qgan_checkpoint.py` → `archive/train/train_mediqgan_checkpoint.py`(둘 다 로컬, Kaggle 불필요).
-수치의 측정 방식과 선택 근거는 프로젝트 README의 "서브제너레이터 수 재실험"·"MediQ-GAN 학습 레시피" 섹션 참고.
+수치의 측정 방식과 선택 근거는 프로젝트 README의 "sub-generator 수 재실험"·"MediQ-GAN 학습 레시피" 섹션 참고.
