@@ -18,7 +18,7 @@ The core of the material is a side-by-side comparison of two different hybrid st
 | **Runtime** | Google Colab default CPU runtime - no local install, no GPU, no quantum-hardware account |
 | **Evaluation** | Four lightweight generation-quality metrics (pixel statistics, class-mean correlation, nearest-real distance, sample diversity) |
 | **License** | MIT for code and docs; CC BY-NC 4.0 for data derivatives (see [Licensing](#licensing)) |
-| **Deliverables** | 31 theory slides, 2 practice notebooks, 3 pretrained checkpoints, a metrics module, and reproduction CLIs |
+| **Deliverables** | 31 theory slides, 26 Day 2 walkthrough slides, 2 practice notebooks, 3 pretrained checkpoints, a metrics module, and reproduction CLIs |
 
 ### Design principles
 
@@ -31,7 +31,7 @@ The core of the material is a side-by-side comparison of two different hybrid st
 | Day | Content | Link |
 |---|---|---|
 | Day 1 | Theory - dataset, both architectures, published quantitative results, how VQCs train (parameter-shift rule, cost scaling), research directions in QML | [slides pptx](../practice/day1_slides/day1_theory_slides.pptx) · [pdf](../practice/day1_slides/day1_theory_slides.pdf) |
-| Day 2 | EDA · segmentation · quantum encoding · **live QGAN training → generation → evaluation** | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) |
+| Day 2 | EDA · segmentation · quantum encoding · **live QGAN training → generation → evaluation** | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) · [walkthrough slides pptx](../practice/day2_slides/day2_practice_slides.pptx) · [pdf](../practice/day2_slides/day2_practice_slides.pdf) |
 | Day 3 | **MediQ-GAN fine-tuning** → comparison with QGAN under the same metrics → limits of quantum computing for generative models | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day3_practice.ipynb) |
 
 Run `File → Save a copy in Drive` first so your outputs persist. At runtime each notebook clones this repository to load the preprocessed data and checkpoints in [`practice/assets/`](../practice/assets/) along with [`practice/gen_metrics.py`](../practice/gen_metrics.py). Only the raw HAM10000 archive (~6 GB) is fetched separately, via `kagglehub`.
@@ -122,6 +122,7 @@ The code is a **scaled-down teaching implementation**, not a reproduction.
 ```
 practice/                      For students - the only folder opened in class
   day1_slides/                 Day 1 theory slides (pptx + pdf, 31 slides)
+  day2_slides/                 Day 2 walkthrough slides (pptx + pdf, 26 slides)
   day2_practice.ipynb          Day 2 - EDA, preprocessing, encoding, QGAN training
   day3_practice.ipynb          Day 3 - MediQ-GAN fine-tuning, comparison with QGAN
   gen_metrics.py               The four generation-quality metrics (shared module)

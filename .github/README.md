@@ -18,7 +18,7 @@
 | **실행 환경** | Google Colab 기본 CPU 런타임 - 설치·GPU·양자 하드웨어 계정 모두 불필요 |
 | **평가** | 경량 생성품질 지표 4종(픽셀통계 · 클래스평균 상관 · 최근접 실제거리 · 샘플 다양성) |
 | **라이선스** | 코드·문서 MIT · 데이터 파생물 CC BY-NC 4.0 (아래 [라이선스](#라이선스) 참고) |
-| **산출물** | 이론 슬라이드 31장 · 실습 노트북 2종 · 사전학습 checkpoint 3종 · 지표 모듈 · 재생산용 CLI |
+| **산출물** | 이론 슬라이드 31장 · 2일차 설명 슬라이드 26장 · 실습 노트북 2종 · 사전학습 checkpoint 3종 · 지표 모듈 · 재생산용 CLI |
 
 ### 설계 원칙
 
@@ -31,7 +31,7 @@
 | 일차 | 내용 | 자료 |
 |---|---|---|
 | 1일차 | 이론 - 데이터셋 · 두 논문 아키텍처 · 정량 결과 · VQC 학습 방식(parameter-shift, 계산비용) · QML 연구 방향 | [슬라이드 pptx](../practice/day1_slides/day1_theory_slides.pptx) · [pdf](../practice/day1_slides/day1_theory_slides.pdf) |
-| 2일차 | EDA · segmentation 전처리 · 양자 encoding · **QGAN 라이브 학습 → 생성 → 평가** | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) |
+| 2일차 | EDA · segmentation 전처리 · 양자 encoding · **QGAN 라이브 학습 → 생성 → 평가** | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) · [설명 슬라이드 pptx](../practice/day2_slides/day2_practice_slides.pptx) · [pdf](../practice/day2_slides/day2_practice_slides.pdf) |
 | 3일차 | **MediQ-GAN 미세조정** → QGAN과 동일 지표 비교 → 생성 모델에서의 양자컴퓨팅 한계·연구 방향 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day3_practice.ipynb) |
 
 노트북을 연 뒤 `파일(File) → Drive에 사본 저장`을 먼저 실행하면 실행 결과가 본인 Drive에 남습니다. 
@@ -124,6 +124,7 @@ AUC는 0.004 올랐고 정확도는 떨어졌습니다 - 표본 92장 규모에�
 ```
 practice/                      학생용 
   day1_slides/                 1일차 이론 강의 슬라이드 (pptx + pdf, 31장)
+  day2_slides/                 2일차 실습 설명 슬라이드 (pptx + pdf, 26장)
   day2_practice.ipynb          2일차 실습 - EDA·전처리·encoding → QGAN 학습·평가
   day3_practice.ipynb          3일차 실습 - MediQ-GAN 미세조정 → QGAN과 비교
   gen_metrics.py               생성품질 지표 4종 (2·3일차 공통 모듈)
