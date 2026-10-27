@@ -23,7 +23,7 @@ The core of the material is a side-by-side comparison of two different hybrid st
 ### Design principles
 
 1. **Never shrink the quantum circuit spec.** Cutting qubit count or depth to save time would mean no longer running the model the papers describe, so **image resolution and training budget** were reduced instead (MediQ-GAN's quantum stream is exactly the published spec).
-2. **Put everything on one scale before comparing.** QGAN outputs probabilities (pixels sum to 1), MediQ-GAN outputs Tanh values (-1 to 1), and the preprocessed data is 0-1. All three are mapped back to 0-1 by a shared helper before any metric is computed; skip that and the difference between the models disappears into a scale artifact.
+2. **Put everything on one scale before comparing.** QGAN outputs probabilities (each patch sums to 0-1), MediQ-GAN outputs Tanh values (-1 to 1), and the preprocessed data is 0-1. All three are mapped back to 0-1 by a shared helper before any metric is computed; skip that and the difference between the models disappears into a scale artifact. One limitation remains in QGAN training itself: real images are normalised per image (sum = 1) while generated images are normalised per patch (sum 0-4 per image), so the discriminator can tell them apart by total intensity alone. Section 5 of the day-2 notebook documents this.
 3. **Document failures and limits.** Every deviation from the papers, every configuration whose quality collapsed, and everything the metrics cannot tell us is stated in the material itself.
 
 ## Open the material

@@ -36,7 +36,7 @@
 | | 원 논문 | 우리 실습 |
 |---|---|---|
 | QGAN sub-generator | 16개 × (데이터 7 + ancilla 1큐빗) | 4개 × (데이터 6 + ancilla 1큐빗) - 실측으로 선택 |
-| QGAN 학습량 | 2,000 epoch (1~1.5시간) | 600 step (약 20분) |
+| QGAN 학습량 | 2,000 epoch (1 ~ 1.5시간) | 600 step (약 20분) |
 | 이미지 해상도 | QGAN 논문 기준 저해상도 / MediQ-GAN 64×64 RGB | 16×16 흑백 |
 | MediQ-GAN 양자 stream | 5개 × 16큐빗, depth 8 | **동일** |
 | MediQ-GAN 고전 부분 | conv 기반 encoder/decoder | MLP |
