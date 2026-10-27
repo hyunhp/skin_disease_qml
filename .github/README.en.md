@@ -43,7 +43,7 @@ Run `File → Save a copy in Drive` first so your outputs persist. At runtime ea
 | Hybrid level | **Model level** - the whole generator is a quantum circuit | **Layer level** - classical and quantum streams run in parallel inside the generator |
 | Generation | Sub-generators each produce a patch; patches are concatenated | Input features are split in half, processed separately, then fused by a skip connection |
 | Measurement / output | Measure all qubits, keep only the ancilla = 0 outcomes (post-selection) → probability scale | Per-qubit PauliX expectation → 1×1 conv projection → MLP decoder → Tanh |
-| How it is trained in class | **From scratch during the session** (600 steps, ~22 min measured on a local CPU) | **Fine-tuned from a pretrained checkpoint** (full training exceeds 3 hours because 16-qubit simulation is expensive) |
+| How it is trained in class | **From scratch during the session** (400 steps, ~35 min measured on Colab; the instructor checkpoint is 600 steps, ~22 min on a local CPU) | **Fine-tuned from a pretrained checkpoint** (full training exceeds 3 hours because 16-qubit simulation is expensive) |
 
 ## Evaluation design
 
@@ -78,6 +78,8 @@ The QGAN sub-generator count was swept over 2, 4, 8 and 16 and retrained under *
 |---|---|---|---|---|---|
 | 2 | 8 | 0.62 | -0.054 (8 samples) | 1.81 | 17.4 min |
 | **4 (adopted)** | 7 | 1.09 | **0.195 ± 0.012** | 1.85 | 22.2 min |
+
+The diversity for the same 4-sub-generator setting differs from the results table (1.92) because every generation call draws fresh noise (separate evaluation runs).
 | 8 | 6 | 1.88 | 0.105 ± 0.011 | 2.20 | 34.2 min |
 | 16 (as in the paper) | 5 | 3.12 | 0.080 ± 0.004 | 2.40 | 54.9 min |
 
@@ -87,7 +89,7 @@ The QGAN sub-generator count was swept over 2, 4, 8 and 16 and retrained under *
 
 ### Training stability - the discriminator winning within 3 epochs
 
-Pretraining MediQ-GAN with the QGAN learning rate (`lr_g` 0.02) **collapsed within 3 epochs: `loss_d` 0.0027 and sample diversity 0.000** (complete mode collapse). Because MediQ-GAN's final output comes from a classical MLP decoder, a saturated Tanh produces a constant image unrelated to the latent vector.
+Pretraining MediQ-GAN with a large, QGAN-style learning rate (`lr_g` 0.02) **collapsed within 3 epochs: `loss_d` 0.0027 and sample diversity 0.000** (complete mode collapse). Because MediQ-GAN's final output comes from a classical MLP decoder, a saturated Tanh produces a constant image unrelated to the latent vector.
 
 Switching to conventional GAN settings (`lr` 2e-4, `betas` (0.5, 0.999), `z ~ N(0,1)`) completed 25 epochs without collapse. That recipe is stored inside the checkpoints so the notebook fine-tunes under identical conditions. This is the published motivation for MediQ-GAN's **WGAN-GP critic** - the instability of standard GAN training - reproduced first-hand, so it is kept in the material as a discussion point.
 
@@ -154,7 +156,7 @@ C:/qmlvenv/Scripts/pip install -r requirements.txt
 
 ```bash
 cd archive/train
-C:/qmlvenv/Scripts/python.exe -X utf8 train_qgan_checkpoint.py --npy ../../practice/assets/df_preprocessed.npy --out_dir ../checkpoints --epochs 600
+C:/qmlvenv/Scripts/python.exe -X utf8 train_qgan_checkpoint.py --npy ../../practice/assets/df_preprocessed.npy --out_dir ../checkpoints --n_generators 4 --epochs 600
 ```
 
 ③ MediQ-GAN pretraining (~8 min per epoch, intermediate checkpoint every 5 epochs)

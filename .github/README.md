@@ -44,7 +44,7 @@
 | hybrid 수준 | **모델 단위** - 생성자 전체가 양자회로 | **layer 단위** - 생성자 내부에서 고전·양자 stream이 병렬로 동작 |
 | 생성 방식 | sub-generator가 patch를 나눠 만들고 이어붙임 | 입력 특징을 절반씩 나눠 처리한 뒤 skip-connection으로 융합 |
 | 측정·출력 | 전체 측정 후 ancilla qubit = 0인 항목만 선택(post-selection) → 확률 척도 | 큐빗별 PauliX 기댓값 → 1×1 conv 투영 → MLP decoder → Tanh |
-| 실습 학습 방식 | 수업 중 **처음부터 학습**(600 step 기준 로컬 CPU 실측 약 22분) | 사전학습 checkpoint에서 **미세조정**(16큐빗 시뮬레이션이 비싸 전체 학습은 3시간 이상) |
+| 실습 학습 방식 | 수업 중 **처음부터 학습**(400 step, Colab 실측 약 35분 · 강사 checkpoint는 600 step, 로컬 CPU 약 22분) | 사전학습 checkpoint에서 **미세조정**(16큐빗 시뮬레이션이 비싸 전체 학습은 3시간 이상) |
 
 ## 평가 설계
 
@@ -80,6 +80,8 @@ QGAN의 sub-generator 수를 2·4·8·16으로 바꿔 **600 step · depth 10 동
 |---|---|---|---|---|---|
 | 2 | 8 | 0.62 | -0.054 (8장 측정) | 1.81 | 17.4분 |
 | **4 (채택)** | 7 | 1.09 | **0.195 ± 0.012** | 1.85 | 22.2분 |
+
+같은 4개 설정의 다양성이 결과 표(1.92)와 다른 것은 생성 호출마다 새 난수를 쓰기 때문입니다(평가 실행이 다름).
 | 8 | 6 | 1.88 | 0.105 ± 0.011 | 2.20 | 34.2분 |
 | 16 (논문과 동일) | 5 | 3.12 | 0.080 ± 0.004 | 2.40 | 54.9분 |
 
@@ -89,7 +91,7 @@ QGAN의 sub-generator 수를 2·4·8·16으로 바꿔 **600 step · depth 10 동
 
 ### 학습 안정성 - 판별자가 3 epoch 만에 이기는 문제
 
-MediQ-GAN 사전학습을 QGAN과 같은 학습률(`lr_g` 0.02)로 시작했을 때 **3 epoch 만에 `loss_d`가 0.0027로 붕괴하고 샘플 다양성이 0.000**(완전 mode collapse)이 됐습니다. MediQ-GAN은 고전 MLP decoder가 최종 출력을 만들기 때문에, Tanh가 포화되면 잠재벡터와 무관한 상수 이미지가 나옵니다.
+MediQ-GAN 사전학습을 QGAN처럼 큰 학습률(`lr_g` 0.02)로 시작했을 때 **3 epoch 만에 `loss_d`가 0.0027로 붕괴하고 샘플 다양성이 0.000**(완전 mode collapse)이 됐습니다. MediQ-GAN은 고전 MLP decoder가 최종 출력을 만들기 때문에, Tanh가 포화되면 잠재벡터와 무관한 상수 이미지가 나옵니다.
 
 GAN 관례값(`lr` 2e-4, `betas` (0.5, 0.999), `z ~ N(0,1)`)으로 바꿔 25 epoch을 붕괴 없이 완주했고, 이 레시피를 checkpoint 설정에 함께 저장해 노트북이 같은 조건으로 미세조정하도록 했습니다. 원 논문이 **WGAN-GP critic**을 쓰는 이유(표준 GAN 학습의 불안정성)를 실습에서 그대로 겪은 사례라, 자료에 토론 소재로 남겼습니다.
 
@@ -156,7 +158,7 @@ C:/qmlvenv/Scripts/pip install -r requirements.txt
 
 ```bash
 cd archive/train
-C:/qmlvenv/Scripts/python.exe -X utf8 train_qgan_checkpoint.py --npy ../../practice/assets/df_preprocessed.npy --out_dir ../checkpoints --epochs 600
+C:/qmlvenv/Scripts/python.exe -X utf8 train_qgan_checkpoint.py --npy ../../practice/assets/df_preprocessed.npy --out_dir ../checkpoints --n_generators 4 --epochs 600
 ```
 
 ③ MediQ-GAN 사전학습 (epoch당 약 8분, 5 epoch마다 중간 저장)

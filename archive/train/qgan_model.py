@@ -6,7 +6,7 @@ Colab 무료 시뮬레이터로 라이브 실습하기엔 크므로, 강의용�
 아키텍처 자체(sub-generator ensemble + patch 방식 + 고전 판별자)는 논문과 동일하게 유지.
 
 측정 방식: 원 논문/Huang et al.(2020)의 patch method처럼 ancilla qubit이 |0>인 경우만 채택한다
-(post-selection, post-selection). shot 단위 post-selection 대신 exact 시뮬레이터의 qml.probs()로 전체 큐빗 확률을 구한 뒤
+(post-selection). shot 단위 post-selection 대신 exact 시뮬레이터의 qml.probs()로 전체 큐빗 확률을 구한 뒤
 'ancilla qubit=0' 항목만 patch로 쓰는 방식이며, PennyLane 공식 QGAN 튜토리얼과 같은 방향이다(튜토리얼과 달리
 patch별 재정규화는 하지 않아 patch 밝기 총합 0~1도 학습 대상이 됨).
 2026-09-22 변경: 이전에는 데이터 큐빗만 측정(ancilla qubit partial trace)해 patch 합이 항상 1로 고정됐는데,
@@ -22,7 +22,8 @@ class PatchQuantumGenerator(nn.Module):
     """sub-generator ensemble 기반 양자 생성자.
 
     원 논문 스펙(기본값 인자로 그대로 재현 가능): n_generators=16, n_data_qubits=7, n_ancillas=1, q_depth=10
-    강의 실습 기본값(빠른 반복을 위해 축소): n_generators=4, n_data_qubits=4, n_ancillas=1, q_depth=3
+    인자 기본값(n_generators=4, n_data_qubits=4, q_depth=3)은 8×8 단계의 축소 스펙임.
+    현재 16×16 실습 스펙은 n_generators=4, n_data_qubits=6, n_ancillas=1, q_depth=10 (train_qgan_checkpoint.py가 지정)
     """
 
     def __init__(self, n_generators=4, n_data_qubits=4, n_ancillas=1, q_depth=3, dev_name="default.qubit"):

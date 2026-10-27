@@ -9,9 +9,9 @@ layer 단위 hybrid 아키텍처를 학생들이 직접 눈으로 보고 코드�
 동일한 스펙(5개 sub-generator × 16큐빗, 8층 깊이 ansatz)** 을 그대로 씀 — 실측 결과(이 파일 하단
 참고) 1회 forward가 약 2~3초로 Colab 라이브 시연에 문제없다고 확인했기 때문에 축소할 이유가 없었다.
 남은 단순화는 classical encoder/decoder가 conv가 아니라 단순 MLP라는 점, 그리고 입력이 실제 64×64
-RGB가 아니라 2일차 pipeline이 만든 8×8(64차원) 저해상도 흑백 벡터라는 점뿐이다 — 원본 HAM10000
+RGB가 아니라 2일차 pipeline이 만든 16×16(256차원) 저해상도 흑백 벡터라는 점뿐이다(작성 당시는 8×8) — 원본 HAM10000
 이미지(600×450)가 커도 문제되지 않는 이유는, 애초에 양자 encoding 전에 `resize_for_encoding()`으로
-8×8까지 축소하기 때문(data_pipeline.py 참고). 실제 정량 결과는 논문 Table 2(FID)를
+16×16까지 축소하기 때문(data_pipeline.py 참고). 실제 정량 결과는 논문 Table 2(FID)를
 그대로 인용해서 보여준다(별도 준비자료).
 
 양자회로 설정(`lightning.qubit` + `diff_method="adjoint"`, shots 미지정)은 공식 레포
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     print("[검증] MediQ-GAN dual-stream 생성자 forward+backward 확인 (원 논문 스펙: 16큐빗×5 sub-generator)")
     torch.manual_seed(0)
 
-    # 2일차 pipeline 실제 산출물 크기와 동일: 8x8(64픽셀) 저해상도 벡터, batch 1(3일차 노트북과 동일)
+    # 구조 검증용으로 작은 8x8(64픽셀) 입력을 씀 - 실습 스펙은 16x16(256). batch 1
     IMG_SIZE = 8
     gen = ToyDualStreamGenerator(in_dim=IMG_SIZE * IMG_SIZE, n_qubits=16, q_depth=8,
                                   n_generators=5, out_dim=IMG_SIZE * IMG_SIZE)

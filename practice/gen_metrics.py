@@ -2,7 +2,7 @@
 """
 경량 생성품질 지표 4종 + 공통 역정규화 함수 — 2·3일차 공통 모듈.
 2026-10-01 커리큘럼 재설계로 CNN 증강 비교를 실습에서 들어내면서, "생성이 잘 됐는지"를
-판정할 수단으로 도입한 것(설계 근거는 프로젝트 README "커리큘럼 재설계" 섹션 참고).
+판정할 수단으로 도입한 것(설계 근거는 프로젝트 README "평가 설계" 섹션 참고).
 
 지표 4종
   ① 픽셀 강도 통계·histogram      pixel_stats() / plot_pixel_histogram()
@@ -11,7 +11,7 @@
   ④ 샘플 간 다양성 + 손실곡선        sample_diversity() / plot_loss_curves()
 
 ⚠ 척도 규약(README와 동일, 어기면 QGAN·MediQ-GAN 비교가 무의미해짐)
-  - 전처리 npy: 0~1  / QGAN 출력: 픽셀 합=1(확률 척도)  / MediQ-GAN 출력: Tanh(-1~1)
+  - 전처리 npy: 0~1  / QGAN 출력: patch별 합 0~1, 장당 0~4(확률 척도)  / MediQ-GAN 출력: Tanh(-1~1)
   - **모양 지표(②③④)는 to_unit_scale()로 0~1로 되돌린 뒤 계산**
   - **픽셀 통계(①)는 되돌리기 전 원 척도에서도 함께 봄** — 척도 차이 자체가 두 모델의
     구조적 차이(QGAN은 밝기 총합까지 학습 대상)를 보여주는 정보이기 때문
@@ -25,7 +25,7 @@ def to_unit_scale(x, mode):
     """생성/실제 이미지를 0~1 척도로 되돌림. 모양 비교 지표는 전부 이 함수를 거쳐야 함.
 
     mode="unit": 이미 0~1 (전처리 npy) → 그대로
-    mode="prob": QGAN 출력(픽셀 합=1) → 이미지별 min-max 정규화
+    mode="prob": QGAN 출력(patch별 확률, 장당 합 0~4) → 이미지별 min-max 정규화
     mode="tanh": MediQ-GAN 출력(-1~1) → (x+1)/2
     """
     if mode not in SCALE_MODES:

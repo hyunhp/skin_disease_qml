@@ -3,10 +3,10 @@
 [준비 스크립트 ②] QGAN checkpoint 학습 — HAM10000 DF(소수클래스) segmentation 이미지.
 
 2026-10-01 커리큘럼 재설계 반영 — 확정 스펙이 기본값이다:
-  **16x16 · sub-generator 2개 · depth 10 (데이터 7 + ancilla 1 = 8큐빗, patch 128)**
-  → 큐빗 수·patch 크기가 논문 스펙과 정확히 일치하고, 실측 1.45s/step으로 가장 빠르다.
-     (sub-generator가 적을수록 빠른 이유: 회로 호출 횟수가 상태벡터 크기보다 지배적. 근거는 README 실측표)
-재설계 후 2일차(11/20)는 학생이 이 학습을 **라이브로** 돌린다(600 step 약 20분). 이 스크립트는
+  **16x16 · sub-generator 4개 · depth 10 (데이터 6 + ancilla 1 = 7큐빗, patch 64)**
+  → 처음에는 논문과 큐빗 수가 같은 2개(데이터 7 + ancilla 1)를 기본값으로 뒀으나, 2·4·8·16개를 같은 조건
+     (600 step, depth 10)으로 실측한 결과 4개의 품질이 가장 좋아 4개로 바꿈(근거는 README sub-generator 수 실험 표).
+재설계 후 2일차(11/20)는 학생이 이 학습을 **라이브로** 돌린다(400 step, Colab 약 35분). 이 스크립트는
 3일차 비교 기준본이 될 강사 checkpoint를 미리 만들어두는 용도다.
 
 입력은 두 가지 중 하나:
@@ -16,7 +16,7 @@
 실행 예:
     # (A) 권장 — 저장소의 16x16 전처리 npy로 로컬 학습
     C:/qmlvenv/Scripts/python.exe -X utf8 train_qgan_checkpoint.py \
-        --npy ../../practice/assets/df_preprocessed.npy --out_dir ./checkpoints --epochs 600
+        --npy ../../practice/assets/df_preprocessed.npy --out_dir ./checkpoints --n_generators 4 --epochs 600
 
     # (B) 원본에서 전처리까지
     C:/qmlvenv/Scripts/python.exe -X utf8 train_qgan_checkpoint.py \
@@ -65,11 +65,11 @@ def main():
                      help="증강할 소수클래스 (논문 기본값: df)")
     ap.add_argument("--img_size", type=int, default=16, help="한 변 픽셀수 — 2026-10-01 확정 스펙은 16. "
                      "전체 픽셀수(img_size^2)가 n_generators로 나누어떨어지고 그 몫이 2의 거듭제곱이어야 함")
-    ap.add_argument("--n_generators", type=int, default=2, help="sub-generator 개수 — 확정 스펙은 2 "
-                     "(데이터 7 + ancilla 1 = 8큐빗, patch 128 = 논문 스펙과 정확히 일치). "
+    ap.add_argument("--n_generators", type=int, default=4, help="sub-generator 개수 — 확정 스펙은 4 "
+                     "(데이터 6 + ancilla 1 = 7큐빗, patch 64. 2·4·8·16개 실측 중 품질 최고). "
                      "각 sub-generator가 이미지의 1/n_generators만큼의 patch를 담당(이어붙여 전체 이미지 생성)")
     ap.add_argument("--q_depth", type=int, default=10, help="PQC depth — 확정 스펙은 논문과 같은 10")
-    ap.add_argument("--epochs", type=int, default=600, help="= 랜덤 batch step 수(데이터 순회가 아님). 실측 600 step 약 20분")
+    ap.add_argument("--epochs", type=int, default=600, help="= 랜덤 batch step 수(데이터 순회가 아님). 로컬 CPU 실측 600 step 약 22분")
     ap.add_argument("--batch_size", type=int, default=8)
     ap.add_argument("--lr_g", type=float, default=0.05)
     ap.add_argument("--lr_d", type=float, default=0.001)

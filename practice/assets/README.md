@@ -14,4 +14,4 @@
 | `mediqgan_final.pt` | MediQ-GAN 25 epoch 최종 - 16큐빗 × 5 sub-generator, depth 8 (원 논문 스펙). 상관 0.365 |
 
 생성 경로: `archive/prep/prep_step1_16px_npy.ipynb`(Colab, npy) → `archive/train/train_qgan_checkpoint.py` → `archive/train/train_mediqgan_checkpoint.py`(둘 다 로컬, Kaggle 불필요).
-수치의 측정 방식과 선택 근거는 프로젝트 README의 "sub-generator 수 재실험"·"MediQ-GAN 학습 레시피" 섹션 참고.
+수치의 측정 방식과 선택 근거는 프로젝트 README의 "sub-generator 수 실험"·"학습 안정성" 섹션 참고.

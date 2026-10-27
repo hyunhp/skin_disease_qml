@@ -20,7 +20,7 @@
 ```bash
 cd archive/train
 C:/qmlvenv/Scripts/python.exe -X utf8 train_qgan_checkpoint.py \
-    --npy ../../practice/assets/df_preprocessed.npy --out_dir ../checkpoints --epochs 600
+    --npy ../../practice/assets/df_preprocessed.npy --out_dir ../checkpoints --n_generators 4 --epochs 600
 ```
 
 `train_mediqgan_checkpoint.py`는 품질 모니터링에 `practice/gen_metrics.py`를 쓰므로 스크립트 안에서 `practice/`를 `sys.path`에 추가한다.
