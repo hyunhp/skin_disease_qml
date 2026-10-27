@@ -78,14 +78,13 @@ The QGAN sub-generator count was swept over 2, 4, 8 and 16 and retrained under *
 |---|---|---|---|---|---|
 | 2 | 8 | 0.62 | -0.054 (8 samples) | 1.81 | 17.4 min |
 | **4 (adopted)** | 7 | 1.09 | **0.195 ± 0.012** | 1.85 | 22.2 min |
-
-The diversity for the same 4-sub-generator setting differs from the results table (1.92) because every generation call draws fresh noise (separate evaluation runs).
 | 8 | 6 | 1.88 | 0.105 ± 0.011 | 2.20 | 34.2 min |
 | 16 (as in the paper) | 5 | 3.12 | 0.080 ± 0.004 | 2.40 | 54.9 min |
 
 - In the largest configuration `loss_d` fell to 0.003: **the discriminator won outright and the generator lost its training signal.** A concrete demonstration that adding capacity can tip the GAN balance.
 - Fewer sub-generators being **faster** is not a bug - the number of circuit evaluations (`sub-generators × batch`) dominates cost more than state-vector size (2ⁿ).
 - Two sub-generators were chosen first, because that configuration matches the paper's qubit count and patch size exactly - and it scored worst. **Measurement was given priority over spec parity** and the adopted setting is four.
+- The diversity for the same 4-sub-generator setting differs from the results table (1.92) because every generation call draws fresh noise (separate evaluation runs).
 
 ### Training stability - the discriminator winning within 3 epochs
 
