@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-[10월 준비 스크립트] CNN 분류기 2종(증강 전/후) 학습 — train_qgan_checkpoint.py 다음에 실행.
-컨설팅-목표.xlsx 10월4주차 계획: "증강 전/후 CNN 분류기 2종 사전 학습 완료" 항목에 대응.
+[강의 준비 스크립트] CNN 분류기 2종(증강 전/후) 학습 — train_qgan_checkpoint.py 다음에 실행.
 
 실행:
     python train_cnn_comparison.py --metadata HAM10000_metadata.csv --img_dir ./ham10000 \

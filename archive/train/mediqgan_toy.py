@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 MediQ-GAN(arXiv:2506.21015) dual-stream 생성자 — 개념 데모용 축소판.
-동아대 대학원 QML 강의 3일차 — "생성자 내부에서 고전+양자 layer를 skip-connection으로 융합"하는
+QML 강의 3일차 — "생성자 내부에서 고전+양자 layer를 skip-connection으로 융합"하는
 layer 단위 hybrid 아키텍처를 학생들이 직접 눈으로 보고 코드로 이해하도록 하는 목적.
 
 ⚠ 이건 MediQ-GAN 원 논문의 완전한 재현이 아니다(원 논문: 64×64 RGB, ISIC 2019/ODIR-5k/RetinaMNIST
