@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 HAM10000 로드 + EDA + 전처리(segmentation) pipeline
-QML 강의 2일차 실습용 — HAM10000 QGAN 논문(arXiv 기반 재현, Andra et al. 2024/2025)
+QML 강의 2일차 실습용 - HAM10000 QGAN 논문(arXiv 기반 재현, Andra et al. 2024/2025)
 Section 3.1의 K-means + Fuzzy C-means hybrid segmentation을 그대로 구현.
 
 실제 강의에서는 학생들이 Colab에서 Kaggle API로 HAM10000을 직접 받는다:
@@ -20,22 +20,22 @@ import cv2
 import pandas as pd
 from pathlib import Path
 
-# 논문(HAM10000 QGAN, Section 5.1)에서 실제 사용한 이진분류 쌍 — 이 강의도 그대로 재현
-# DF(피부섬유종, 소수클래스) vs NV(모반, 최다수클래스) — 논문에서 가장 성능이 좋았던 조합(Table 6)
+# 논문(HAM10000 QGAN, Section 5.1)에서 실제 사용한 이진분류 쌍 - 이 강의도 그대로 재현
+# DF(피부섬유종, 소수클래스) vs NV(모반, 최다수클래스) - 논문에서 가장 성능이 좋았던 조합(Table 6)
 TARGET_CLASSES = ("df", "nv")
 CLASS_NAMES_KR = {"akiec": "광선각화증", "bcc": "기저세포암", "bkl": "양성각화증",
                    "df": "피부섬유종", "mel": "흑색종", "nv": "모반(정상)", "vasc": "혈관병변"}
 
 
 def load_metadata(csv_path):
-    """HAM10000_metadata.csv 로드 — dx(진단 클래스), image_id 컬럼 사용."""
+    """HAM10000_metadata.csv 로드 - dx(진단 클래스), image_id 컬럼 사용."""
     df = pd.read_csv(csv_path)
     assert "dx" in df.columns and "image_id" in df.columns, "HAM10000_metadata.csv 형식이 아닙니다"
     return df
 
 
 def class_distribution(df):
-    """EDA용 — 클래스별 샘플 수. 강의 1일차/2일차에서 그대로 시각화에 사용."""
+    """EDA용 - 클래스별 샘플 수. 강의 1일차/2일차에서 그대로 시각화에 사용."""
     counts = df["dx"].value_counts()
     return counts
 
@@ -53,7 +53,7 @@ def load_image(img_dir, image_id, exts=(".jpg", ".jpeg", ".png")):
 
 def segment_fcm_kmeans(img_bgr, n_clusters=4, resize_to=None):
     """
-    HAM10000 QGAN 논문 Section 3.1 — K-means로 1차 clustering 후 Fuzzy C-means로 정제하는
+    HAM10000 QGAN 논문 Section 3.1 - K-means로 1차 clustering 후 Fuzzy C-means로 정제하는
     hybrid segmentation. 논문 결과(Table 10)상 이 전처리를 거친 이미지에서만 QGAN 증강이
     실제로 성능을 개선시켰으므로(raw 이미지는 오히려 악화), 이 강의의 핵심 전처리 단계다.
 
@@ -81,7 +81,7 @@ def segment_fcm_kmeans(img_bgr, n_clusters=4, resize_to=None):
         pixels.T, c=n_clusters, m=2.0, error=1e-4, maxiter=100, init=u_init
     )
     membership = np.argmax(u, axis=0)
-    # 병변(가장 어두운 cluster)만 남기고 나머지는 배경 처리 — 논문 Fig.9의 segmentation 결과와 동일한 컨셉
+    # 병변(가장 어두운 cluster)만 남기고 나머지는 배경 처리 - 논문 Fig.9의 segmentation 결과와 동일한 컨셉
     lesion_cluster = np.argmin(cntr.flatten())
     mask = (membership == lesion_cluster).reshape(h, w).astype(np.uint8) * 255
 
@@ -105,7 +105,7 @@ def normalize_for_amplitude_encoding(img_small):
 
 
 # ---------------------------------------------------------------------------
-# 로컬 코드 검증 전용 — 실제 강의에는 쓰지 않음 (HAM10000 접근 없이 pipeline만 테스트)
+# 로컬 코드 검증 전용 - 실제 강의에는 쓰지 않음 (HAM10000 접근 없이 pipeline만 테스트)
 # ---------------------------------------------------------------------------
 def _make_synthetic_lesion_bgr(size=(128, 128), seed=0):
     """테스트 전용: 병변 비슷한 원형 얼룩이 있는 합성 이미지 생성. 실제 피부 데이터 아님."""
@@ -127,4 +127,4 @@ if __name__ == "__main__":
     vec = normalize_for_amplitude_encoding(small)
     print("encoding 벡터 길이:", len(vec), "L2 norm:", np.linalg.norm(vec))
     assert abs(np.linalg.norm(vec) - 1.0) < 1e-6, "정규화 실패"
-    print("OK — 전처리 pipeline 정상 동작 확인")
+    print("OK - 전처리 pipeline 정상 동작 확인")

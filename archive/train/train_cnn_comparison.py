@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-[강의 준비 스크립트] CNN 분류기 2종(증강 전/후) 학습 — train_qgan_checkpoint.py 다음에 실행.
+[강의 준비 스크립트] CNN 분류기 2종(증강 전/후) 학습 - train_qgan_checkpoint.py 다음에 실행.
 
 실행:
     python train_cnn_comparison.py --metadata HAM10000_metadata.csv --img_dir ./ham10000 \
@@ -32,7 +32,7 @@ def make_loader(pos_imgs, neg_imgs, batch_size=8):
 
 
 def split_train_val(imgs, val_frac=0.2, seed=0):
-    """held-out validation 분할 — index를 섞어서 val_frac만큼 검증용으로 뗀다."""
+    """held-out validation 분할 - index를 섞어서 val_frac만큼 검증용으로 뗀다."""
     n = len(imgs)
     rng = np.random.RandomState(seed)
     idx = rng.permutation(n)
@@ -68,7 +68,7 @@ def main():
                                    max_n=len(minority_imgs) * 3)  # 논문처럼 극단적 불균형까진 안 가고 적당히 제한
     print(f"  소수({minority_class}): {len(minority_imgs)}장, 다수({args.majority_class}): {len(majority_imgs)}장")
 
-    # held-out 검증셋 분할 — 증강 전/후 두 모델이 "같은" 검증셋으로 평가되어야 공정한 비교가 됨.
+    # held-out 검증셋 분할 - 증강 전/후 두 모델이 "같은" 검증셋으로 평가되어야 공정한 비교가 됨.
     # 검증셋에는 합성 이미지를 절대 섞지 않는다(학습 데이터에만 증강 적용).
     minority_train, minority_val = split_train_val(minority_imgs)
     majority_train, majority_val = split_train_val(majority_imgs)
@@ -86,7 +86,7 @@ def main():
     minority_train_augmented = np.concatenate([minority_train, synth], axis=0)
     print(f"  생성된 합성 이미지: {n_synth}장 → 증강 후 소수클래스 train 총 {len(minority_train_augmented)}장")
 
-    print("[4/4] CNN 학습 — 증강 전 / 증강 후 각각 (같은 held-out 검증셋으로 평가)...")
+    print("[4/4] CNN 학습 - 증강 전 / 증강 후 각각 (같은 held-out 검증셋으로 평가)...")
     loader_before_train = make_loader(minority_train, majority_train)
     loader_after_train = make_loader(minority_train_augmented, majority_train)
     loader_val = make_loader(minority_val, majority_val)
