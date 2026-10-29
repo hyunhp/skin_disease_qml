@@ -95,7 +95,7 @@ practice/            학생용
 archive/             준비·재생산용
   prep/              전처리 데이터 재생성 노트북
   train/             checkpoint 학습 CLI + 모델 모듈
-  slides/            2·3일차 생성 스크립트
+  slides/            2·3일차 발표자료 생성 스크립트
   assets_8px/        8×8 시절 자산
   paper/             논문 PDF + 서지사항
 ```
