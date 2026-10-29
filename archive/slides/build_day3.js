@@ -132,6 +132,10 @@ function barList(s, items, x, y, w, gap = 0.95, color = C.accent1) {
     text(s, it[1], x + 0.25, yy + 0.38, w - 0.25, gap - 0.5, { fontSize: 12.5, color: C.accent6 });
   });
 }
+function summary(s, rows) {
+  table(s, [["주제", "정리"], ...rows.map((r) => [{ text: r[0], options: { bold: true } }, r[1]])],
+    0.6, 2.25, 12.1, [2.4, 9.7], { fontSize: 13, rowH: 0.55 });
+}
 function sectionRows(s, rows, y0 = 3.25, gap = 0.95) {
   rows.forEach((r, i) => {
     text(s, r[0], 0.9, y0 + i * gap, 2.6, 0.4, { fontSize: 14, bold: true, color: C.accent3 });
@@ -151,15 +155,15 @@ function chartStyle(extra) {
 newSection("표지");
 {
   const s = slide("TITLE_DARK", "QML Lecture · 3일차", "실습 설명 자료", "MediQ-GAN 미세조정 → QGAN과 같은 지표로 비교",
-    "3일차 노트북(practice/day3_practice.ipynb)을 진행하면서 실습 블록 사이에 띄우는 설명 자료.\n- 2일차 자료와 같은 구성: 코드 중심, 각 파트 첫 장에 노트북 섹션 표시.\n- 3일차는 일정이 짧으므로 PART 1(구조)과 PART 3(비교)을 우선하고, PART 4는 시간에 맞춰 조절함.");
+    "3일차 노트북(practice/day3_practice.ipynb)의 내용을 설명하는 자료.\n- 2일차 자료와 같은 구성: 코드 중심, 각 PART 첫 장에 해당 노트북 섹션을 표시함.");
   s.addShape(pres.shapes.OVAL, { x: 10.55, y: 0.85, w: 1.55, h: 1.55, fill: { color: C.text2 }, line: { color: C.accent1, width: 1.25 } });
   s.addShape(pres.shapes.OVAL, { x: 11.0, y: 1.3, w: 0.65, h: 0.65, fill: { color: C.accent1 }, line: { type: "none" } });
 }
 
 newSection("진행");
 {
-  const s = slide("CONTENT", "오리엔테이션", "3일차 진행 순서", "노트북 섹션 순서대로 진행하고, 섹션 앞에서 해당 PART를 설명함",
-    "- 3일차는 학습 없이 checkpoint를 불러오는 셀이 대부분이라 수 초 안에 끝남.\n- 시간이 걸리는 셀: §3 구조 확인(16큐빗 회로 5개 forward, 십여 초), §4 미세조정 20 step(로컬 실측 약 7분, Colab은 더 걸림).\n- §4 셀을 먼저 실행해 두고 PART 2를 설명하면 대기 시간을 설명 시간으로 씀. 진행 로그의 '남은 예상' 시간을 보고 step 수를 줄여도 됨.");
+  const s = slide("CONTENT", "오리엔테이션", "3일차 진행 순서", "노트북 섹션과 이 자료의 PART 대응",
+    "- 3일차는 학습 없이 checkpoint를 불러오는 셀이 대부분이라 수 초 안에 끝남.\n- 시간이 걸리는 셀: §3 구조 확인(16큐빗 회로 5개 forward, 십여 초), §4 미세조정 20 step(로컬 실측 약 7분, Colab은 더 걸림).\n- 진행 로그의 '남은 예상' 시간을 보고 step 수를 줄여도 됨.");
   const hl = (t) => ({ text: t, options: { bold: true, color: C.accent1 } });
   table(s, [
     ["노트북", "내용", "실행 시간", "설명 자료"],
@@ -170,14 +174,12 @@ newSection("진행");
     ["§5", "QGAN과 MediQ-GAN을 같은 지표 4종으로 비교", "수 초", "PART 3"],
     ["§6", "이미지 생성에서 양자컴퓨팅의 한계와 방향", "-", "PART 4"],
   ], 0.6, 2.25, 12.1, [1.6, 6.3, 2.4, 1.8], { fontSize: 13, rowH: 0.55 });
-  text(s, "§4 셀은 먼저 실행해 두고, 학습이 진행되는 동안 PART 2를 설명함.", 0.6, 6.25, 12.1, 0.35, { fontSize: 12, color: C.accent6 });
 }
 
 // =====================================================================
 newSection("PART 0 · 2일차 복습과 기준선");
 {
-  const s = slide("SECTION_DARK", "PART 0 · 노트북 §1 – §2", "2일차 복습과 QGAN 기준선", "2일차에 만든 QGAN을 checkpoint로 불러와 오늘 비교의 기준선으로 씀",
-    "§1 셀(설치·clone)을 실행하는 동안 진행함.");
+  const s = slide("SECTION_DARK", "PART 0 · 노트북 §1 – §2", "2일차 복습과 QGAN 기준선", "2일차에 만든 QGAN을 checkpoint로 불러와 오늘 비교의 기준선으로 씀");
   sectionRows(s, [["노트북 범위", "§1 실습 자산 로드, §2 QGAN 생성·평가"],
     ["다루는 코드", "torch.load · PatchQuantumGenerator(**config) · gm.evaluate"]]);
 }
@@ -242,8 +244,7 @@ newSection("PART 0 · 2일차 복습과 기준선");
 // =====================================================================
 newSection("PART 1 · MediQ-GAN 구조");
 {
-  const s = slide("SECTION_DARK", "PART 1 · 노트북 §3 직전", "MediQ-GAN 구조", "생성자 안에서 고전 stream과 양자 stream이 병렬로 돌고 하나로 합쳐짐",
-    "§3 셀(ToyDualStreamGenerator 정의 + forward 1회)을 실행하기 전에 진행함.");
+  const s = slide("SECTION_DARK", "PART 1 · 노트북 §3", "MediQ-GAN 구조", "생성자 안에서 고전 stream과 양자 stream이 병렬로 돌고 하나로 합쳐짐");
   sectionRows(s, [["노트북 범위", "§3 ToyDualStreamGenerator 정의와 forward 1회"],
     ["다루는 코드", "q_circuit · quantum_stream · forward"],
     ["비교 대상", "2일차 QGAN(생성자 전체가 양자회로)"]]);
@@ -404,8 +405,8 @@ newSection("PART 1 · MediQ-GAN 구조");
 // =====================================================================
 newSection("PART 2 · 라이브 미세조정");
 {
-  const s = slide("SECTION_DARK", "PART 2 · 노트북 §4 셀 실행 후", "라이브 미세조정", "덜 학습된 10 epoch checkpoint에서 출발해 20 step을 더 학습함",
-    "§4 미세조정 셀을 실행한 직후 시작함. 1 step 약 20초라 20 step이면 로컬 기준 약 7분.");
+  const s = slide("SECTION_DARK", "PART 2 · 노트북 §4", "라이브 미세조정", "덜 학습된 10 epoch checkpoint에서 출발해 20 step을 더 학습함",
+    "1 step 약 20초라 20 step이면 로컬 기준 약 7분.");
   sectionRows(s, [["노트북 범위", "§4 미세조정과 전후 비교"],
     ["다루는 코드", "mediqgan_e010.pt · sample_z · real_tanh · Adam(betas=(0.5, 0.999))"],
     ["소요 시간", "20 step 약 7분 (로컬 CPU), Colab은 더 걸림"]]);
@@ -482,8 +483,7 @@ newSection("PART 2 · 라이브 미세조정");
 // =====================================================================
 newSection("PART 3 · 비교");
 {
-  const s = slide("SECTION_DARK", "PART 3 · 노트북 §5 직전", "QGAN vs MediQ-GAN", "두 모델의 출력을 0 ~ 1로 되돌린 뒤 같은 지표 4종으로 비교함",
-    "§5 비교 셀을 실행하기 전에 진행함.");
+  const s = slide("SECTION_DARK", "PART 3 · 노트북 §5", "QGAN vs MediQ-GAN", "두 모델의 출력을 0 ~ 1로 되돌린 뒤 같은 지표 4종으로 비교함");
   sectionRows(s, [["노트북 범위", "§5 지표 비교표, 상관계수·픽셀 분포 그림"],
     ["다루는 코드", "gm.comparison_table · to_unit_scale(x, 'prob' / 'tanh')"]]);
 }
@@ -551,31 +551,21 @@ newSection("PART 4 · 토론");
   ], 0.6, 4.95, 12.1, 1.3, { fontSize: 13, paraSpaceAfter: 10 });
   source(s, "출처: Jiao et al., MediQ-GAN, arXiv:2506.21015v2, Table 1 · 2");
 }
-{
-  const s = slide("CONTENT", "PART 4 · 정리", "확인 질문", "답은 발표자 노트에 있음",
-    "답\n1. QGAN은 생성자 전체가 양자회로(model-level), MediQ-GAN은 생성자 안의 양자 stream 한 갈래만 양자회로(layer-level). 파라미터 비율로 QGAN 100%, MediQ-GAN 약 2%.\n2. load_state_dict는 같은 모양의 모델에만 가중치를 넣을 수 있으므로, 저장 당시 구조(sub-generator 수, 큐빗 수, depth)를 알아야 같은 모델을 먼저 만들 수 있음.\n3. 출력이 확률이 아니라 PauliX 기댓값(큐빗당 1개)이라 합이 1로 묶이는 정규화 제약이 없음. 최종 이미지는 고전 decoder가 만듦.\n4. 클래스 평균 상관은 평균 형태만 보므로, 같은 평균 이미지를 반복해도 높게 나옴. 다양성(0.30)이 실제의 1/8이라 mode collapse 경향.\n5. 판별자가 너무 빨리 이겨 생성자가 학습 신호를 잃음(loss_d → 0). WGAN-GP critic은 gradient penalty로 판별자를 제약함.");
-  const qs = [
-    "QGAN과 MediQ-GAN의 hybrid 수준 차이를 '어디까지가 양자인가'로 설명하면",
-    "checkpoint에 가중치뿐 아니라 config를 함께 저장하는 이유는",
-    "MediQ-GAN 양자 회로에 ancilla qubit과 post-selection이 필요 없는 이유는",
-    "MediQ-GAN의 상관계수가 더 높은데도 더 좋은 생성모델이라고 단정할 수 없는 이유는",
-    "학습률을 크게 두거나 BCE 판별자를 쓰면 어떤 문제가 생기고, 원 논문은 어떻게 대응했는가",
-  ];
-  text(s, qs.map((q, i) => ({ text: `${i + 1}.  ${q}`, options: { breakLine: i < qs.length - 1 } })),
-    0.6, 2.3, 12.1, 4.2, { fontSize: 17, lineSpacingMultiple: 2.0 });
-}
 
 // =====================================================================
 newSection("정리");
 {
-  const s = slide("SECTION_DARK", "정리", "3일 과정 정리", "같은 데이터·같은 지표로 두 hybrid 전략을 나란히 비교함",
-    "- 1일차 이론, 2일차 QGAN 구현·학습, 3일차 MediQ-GAN 미세조정·비교의 흐름을 정리함.\n- 결론은 '어느 모델이 이겼다'가 아니라, 지표를 함께 봐야 하고 양자 부분의 비용과 고전 쪽 안정화가 결과를 좌우한다는 것.");
-  sectionRows(s, [
-    ["1일차", "데이터셋 · 두 논문 아키텍처 · VQC 학습 방식과 계산 비용"],
-    ["2일차", "segmentation 전처리 · sub-generator 회로 · QGAN 학습 · 지표 4종"],
-    ["3일차", "MediQ-GAN 구조 · 미세조정 · QGAN과 같은 지표로 비교"],
-    ["결론", "형태(상관)와 다양성을 함께 봄 · 양자 비용과 학습 안정화가 결과를 좌우함"],
-  ], 3.0, 0.85);
+  const s = slide("CONTENT", "정리", "3일차 정리", "MediQ-GAN 구조와 미세조정, QGAN과의 비교",
+    "오늘 다룬 내용을 PART 순서대로 정리함.");
+  summary(s, [
+    ["hybrid 수준", "QGAN은 생성자 전체가 양자회로(model-level), MediQ-GAN은 생성자 안의 양자 stream만 양자회로(layer-level)"],
+    ["dual-stream", "잠재벡터 256차원을 절반씩 고전 MLP와 양자 stream으로 나눠 처리한 뒤 concat → decoder → Tanh"],
+    ["양자 stream", "16큐빗 × depth 8 회로 5개가 16 site 중 5개만 처리. PauliX 기댓값 출력이라 ancilla qubit이 필요 없음"],
+    ["파라미터와 비용", "30,000개 중 양자 회전각은 640개(2.1%)지만 학습 시간 대부분이 16큐빗 시뮬레이션 (25 epoch 196분)"],
+    ["checkpoint와 미세조정", "config로 같은 구조를 만든 뒤 가중치를 불러옴. 판별자도 같은 시점 상태로 불러와 20 step 추가 학습"],
+    ["학습 안정성", "BCE 판별자가 쉽게 이김 (lr_g 0.02에서 3 epoch 만에 mode collapse). 원 논문은 WGAN-GP critic을 씀"],
+    ["비교 결과", "상관은 MediQ-GAN 0.365 > QGAN 0.195, 다양성은 QGAN 1.92 > MediQ-GAN 0.30. 지표 하나로 순위를 정하지 않음"],
+  ]);
 }
 
 (async () => {

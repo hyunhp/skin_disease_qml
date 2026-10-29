@@ -5,8 +5,8 @@
 | 파일 | 내용 |
 |---|---|
 | `day1_slides/day1_theory_slides.pptx` · `.pdf` | 이론 강의 슬라이드(31장). |
-| `day2_slides/day2_practice_slides.pptx` · `.pdf` | 2일차 실습 설명 슬라이드(26장). 노트북 섹션 사이에 띄우는 코드 중심 설명 + 1일차 복습. 발표자 노트 포함 |
-| `day3_slides/day3_practice_slides.pptx` · `.pdf` | 3일차 실습 설명 슬라이드(24장). MediQ-GAN 구조·미세조정·QGAN 비교 + 2일차 복습. 발표자 노트 포함 |
+| `day2_slides/day2_practice_slides.pptx` · `.pdf` | 2일차 실습 설명 슬라이드(25장). 노트북 내용을 PART 순서로 설명하는 코드 중심 자료 + 1일차 복습. 발표자 노트 포함 |
+| `day3_slides/day3_practice_slides.pptx` · `.pdf` | 3일차 실습 설명 슬라이드(23장). MediQ-GAN 구조·미세조정·QGAN 비교 + 2일차 복습. 발표자 노트 포함 |
 | `day2_practice.ipynb` | Colab 환경·EDA·segmentation·회로 encoding → QGAN 라이브 학습·생성·평가 |
 | `day3_practice.ipynb` | MediQ-GAN 미세조정 → QGAN과 동일 지표 비교 → 참고사항·토론 |
 | `gen_metrics.py` | 생성품질 지표 4종. 두 노트북이 같은 잣대로 비교할 때 import함 |
