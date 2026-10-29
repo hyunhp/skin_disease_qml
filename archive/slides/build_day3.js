@@ -163,14 +163,14 @@ newSection("표지");
 newSection("진행");
 {
   const s = slide("CONTENT", "오리엔테이션", "3일차 진행 순서", "노트북 섹션별 내용과 실행 시간",
-    "- 3일차는 학습 없이 checkpoint를 불러오는 셀이 대부분이라 수 초 안에 끝남.\n- 시간이 걸리는 셀: §3 구조 확인(16큐빗 회로 5개 forward, 십여 초), §4 미세조정 20 step(로컬 실측 약 7분, Colab은 더 걸림).\n- 진행 로그의 '남은 예상' 시간을 보고 step 수를 줄여도 됨.");
+    "- 3일차는 학습 없이 checkpoint를 불러오는 셀이 대부분이라 수 초 안에 끝남.\n- 시간이 걸리는 셀: §3 구조 확인(16큐빗 회로 5개 forward, 십여 초), §4 미세조정 20 step(로컬 실측 약 7분, Colab 무료 CPU 실측 13.8분).\n- 진행 로그의 '남은 예상' 시간을 보고 step 수를 줄여도 됨.");
   const hl = (t) => ({ text: t, options: { bold: true, color: C.accent1 } });
   table(s, [
     ["노트북", "내용", "실행 시간"],
     ["§0 – §1", "Colab 설정, 저장소 clone, 실습 자산 로드", "1분 이내"],
     ["§2", "QGAN checkpoint(600 step) 생성·평가 - 비교 기준선", "수 초"],
     ["§3", "MediQ-GAN 구조: dual-stream, 16큐빗 회로 × 5", "십여 초"],
-    [hl("§4"), hl("10 epoch checkpoint에서 20 step 미세조정"), hl("약 7분 (로컬 CPU)")],
+    [hl("§4"), hl("10 epoch checkpoint에서 20 step 미세조정"), hl("로컬 약 7분 · Colab 약 14분")],
     ["§5", "QGAN과 MediQ-GAN을 같은 지표 4종으로 비교", "수 초"],
     ["§6", "이미지 생성에서 양자컴퓨팅의 한계와 방향", "-"],
   ], 0.6, 2.25, 12.1, [1.6, 7.5, 3.0], { fontSize: 13, rowH: 0.55 });

@@ -178,7 +178,7 @@ Copy the resulting checkpoints into `practice/assets/` and the notebooks pick th
 - The **HAM10000** images (~6 GB) are not redistributed here; the day-2 notebook downloads them with `kagglehub`. The dataset itself is **CC BY-NC 4.0**, so anything built from it - including the preprocessed data and checkpoints - is for education and research only.
 - The **MediQ-GAN** paper (arXiv:2506.21015) is CC BY 4.0, so its PDF is included in [`archive/paper/`](../archive/paper/).
 - The **HAM10000 QGAN** paper cannot be included because the published version is under an exclusive Springer Nature license; the **CC BY 4.0 author preprint** (Research Square rs-5191116v1) is provided instead. Cite the published version.
-- The MediQ-GAN figure in the slides is quoted from the paper (CC BY 4.0) with attribution; all other diagrams were redrawn from the papers' descriptions.
+- The MediQ-GAN figure in the slides and the paper samples in the Day 3 notebook (MediQ-GAN Fig. 2, HAM10000 QGAN preprint Fig. 21) are quoted from the papers (CC BY 4.0) with attribution; all other diagrams were redrawn from the papers' descriptions.
 
 ## References
 

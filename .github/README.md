@@ -180,7 +180,7 @@ C:/qmlvenv/Scripts/python.exe -X utf8 train_mediqgan_checkpoint.py --npy ../../p
 - **HAM10000** 원본 이미지(약 6GB)는 저장소에 포함하지 않으며, 2일차 노트북에서 `kagglehub`로 직접 내려받습니다.
 - **MediQ-GAN** 논문(arXiv:2506.21015)은 CC BY 4.0이라 PDF를 [`archive/paper/`](../archive/paper/)에 포함했습니다.
 - **HAM10000 QGAN** 논문은 출판본이 Springer Nature 독점 라이선스라 포함할 수 없어, **CC BY 4.0 저자 프리프린트**(Research Square rs-5191116v1)를 대신 넣었습니다.
-- 슬라이드의 MediQ-GAN 그림은 원 논문(CC BY 4.0)에서 출처를 밝혀 인용했고, 그 외 도식은 논문 구조를 바탕으로 새로 그렸습니다.
+- 슬라이드의 MediQ-GAN 그림과 3일차 노트북의 논문 생성 이미지(MediQ-GAN Fig. 2, HAM10000 QGAN 프리프린트 Fig. 21)는 원 논문(CC BY 4.0)에서 출처를 밝혀 인용했고, 그 외 도식은 논문 구조를 바탕으로 새로 그렸습니다.
 
 ## 참고문헌
 
