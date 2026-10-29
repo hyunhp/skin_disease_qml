@@ -6,7 +6,7 @@
 | 파일 | 내용 |
 |---|---|
 | `build_day2.js` | 2일차 슬라이드 25장 (pptxgenjs). 슬라이드 내용·발표자 노트가 모두 이 파일 안에 있음 |
-| `build_day3.js` | 3일차 슬라이드 23장 |
+| `build_day3.js` | 3일차 슬라이드 11장 |
 | `export_pdf.py` | pptx → pdf. LibreOffice로 내보내되 모든 문단의 한글·영문 자동 간격을 끔 |
 | `package.json` · `package-lock.json` | pptxgenjs 4.0.1 고정 |
 

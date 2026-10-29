@@ -18,7 +18,7 @@ The core of the material is a side-by-side comparison of two different hybrid st
 | **Runtime** | Google Colab default CPU runtime - no local install, no GPU, no quantum-hardware account |
 | **Evaluation** | Four lightweight generation-quality metrics (pixel statistics, class-mean correlation, nearest-real distance, sample diversity) |
 | **License** | MIT for code and docs; CC BY-NC 4.0 for data derivatives (see [Licensing](#licensing)) |
-| **Deliverables** | 31 theory slides, Day 2 and Day 3 walkthrough slides (25 and 23), 2 practice notebooks, 3 pretrained checkpoints, a metrics module, and reproduction CLIs |
+| **Deliverables** | 31 theory slides, Day 2 and Day 3 walkthrough slides (25 and 11), 2 practice notebooks, 3 pretrained checkpoints, a metrics module, and reproduction CLIs |
 
 ### Design principles
 
@@ -124,7 +124,7 @@ The code is a **scaled-down teaching implementation**, not a reproduction.
 practice/                      For students - the only folder opened in class
   day1_slides/                 Day 1 theory slides (pptx + pdf, 31 slides)
   day2_slides/                 Day 2 walkthrough slides (pptx + pdf, 25 slides)
-  day3_slides/                 Day 3 walkthrough slides (pptx + pdf, 23 slides)
+  day3_slides/                 Day 3 walkthrough slides (pptx + pdf, 11 slides)
   day2_practice.ipynb          Day 2 - EDA, preprocessing, encoding, QGAN training
   day3_practice.ipynb          Day 3 - MediQ-GAN fine-tuning, comparison with QGAN
   gen_metrics.py               The four generation-quality metrics (shared module)
