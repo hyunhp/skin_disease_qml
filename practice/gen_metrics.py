@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-경량 생성품질 지표 4종 + 공통 역정규화 함수 — 2·3일차 공통 모듈.
+경량 생성품질 지표 4종 + 공통 역정규화 함수 - 2·3일차 공통 모듈.
 2026-10-01 커리큘럼 재설계로 CNN 증강 비교를 실습에서 들어내면서, "생성이 잘 됐는지"를
 판정할 수단으로 도입한 것(설계 근거는 프로젝트 README "평가 설계" 섹션 참고).
 
@@ -10,10 +10,10 @@
   ③ 최근접 실제 이미지 L2 거리      nearest_neighbor_distance() / plot_nearest_neighbors()
   ④ 샘플 간 다양성 + 손실곡선        sample_diversity() / plot_loss_curves()
 
-⚠ 척도 규약(README와 동일, 어기면 QGAN·MediQ-GAN 비교가 무의미해짐)
+주의: 척도 규약(README와 동일, 어기면 QGAN·MediQ-GAN 비교가 무의미해짐)
   - 전처리 npy: 0~1  / QGAN 출력: patch별 합 0~1, 장당 0~4(확률 척도)  / MediQ-GAN 출력: Tanh(-1~1)
   - **모양 지표(②③④)는 to_unit_scale()로 0~1로 되돌린 뒤 계산**
-  - **픽셀 통계(①)는 되돌리기 전 원 척도에서도 함께 봄** — 척도 차이 자체가 두 모델의
+  - **픽셀 통계(①)는 되돌리기 전 원 척도에서도 함께 봄** - 척도 차이 자체가 두 모델의
     구조적 차이(QGAN은 밝기 총합까지 학습 대상)를 보여주는 정보이기 때문
 """
 import numpy as np
@@ -35,7 +35,7 @@ def to_unit_scale(x, mode):
         return np.clip(arr, 0.0, 1.0)
     if mode == "tanh":
         return np.clip((arr + 1.0) / 2.0, 0.0, 1.0)
-    # prob — 이미지별 min-max. 상수 이미지(mode collapse)는 0으로 두어 NaN을 피함
+    # prob - 이미지별 min-max. 상수 이미지(mode collapse)는 0으로 두어 NaN을 피함
     flat = arr.reshape(len(arr), -1)
     lo = flat.min(axis=1, keepdims=True)
     hi = flat.max(axis=1, keepdims=True)
@@ -108,7 +108,7 @@ def nearest_neighbor_distance(fake, real):
     해석: 거리가 0에 가까우면 학습 데이터를 거의 복사한 것(암기), 과도하게 크면 분포를 벗어난 것.
     """
     f, r = _flat(fake), _flat(real)
-    # (n_fake, n_real) 거리행렬 — 8x8/16x16 저해상도라 전체를 한 번에 계산해도 가벼움
+    # (n_fake, n_real) 거리행렬 - 8x8/16x16 저해상도라 전체를 한 번에 계산해도 가벼움
     d = np.linalg.norm(f[:, None, :] - r[None, :, :], axis=2)
     idx = d.argmin(axis=1)
     return d[np.arange(len(f)), idx], idx
@@ -134,7 +134,7 @@ def plot_nearest_neighbors(fake, real, img_size, n_show=4, cmap="gray"):
 # ──────────────── ④ 샘플 간 다양성 + 판별자 손실곡선 ────────────────
 
 def sample_diversity(fake):
-    """생성 샘플끼리 얼마나 다른가 — 쌍별 L2 거리 평균/최솟값, 픽셀별 표준편차 평균.
+    """생성 샘플끼리 얼마나 다른가 - 쌍별 L2 거리 평균/최솟값, 픽셀별 표준편차 평균.
 
     해석: 값이 0에 가까우면 mode collapse(어떤 노이즈를 넣어도 같은 그림만 나옴).
     """
@@ -197,7 +197,7 @@ def comparison_table(entries, real, real_scale_mode="unit"):
 
 
 if __name__ == "__main__":
-    print("[검증] 지표 4종 — 합성 데이터로 동작·민감도 확인")
+    print("[검증] 지표 4종 - 합성 데이터로 동작·민감도 확인")
     rng = np.random.default_rng(0)
     IMG = 16
     # 실제 데이터 모사: 가운데가 밝은 병변 + 노이즈
@@ -215,7 +215,7 @@ if __name__ == "__main__":
                  "tanh": good * 2 - 1}[mode]
         u = to_unit_scale(probe, mode)
         assert u.shape == good.shape and u.min() >= 0 and u.max() <= 1, mode
-    print("OK — to_unit_scale 3개 모드 모두 0~1 복원 확인")
+    print("OK - to_unit_scale 3개 모드 모두 0~1 복원 확인")
 
     r_good = mean_image_correlation(good, class_mean_image(real)).mean()
     r_noise = mean_image_correlation(noise, class_mean_image(real)).mean()
@@ -236,4 +236,4 @@ if __name__ == "__main__":
                               "무작위(tanh척도)": (noise * 2 - 1, "tanh")}, real)
     print("\n=== comparison_table 출력 예시 ===")
     print(table)
-    print("\nOK — 지표 4종이 좋은 생성/무작위/암기/mode collapse를 전부 구분함")
+    print("\nOK - 지표 4종이 좋은 생성/무작위/암기/mode collapse를 전부 구분함")

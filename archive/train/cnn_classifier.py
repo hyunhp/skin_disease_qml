@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-CNN 분류기 — HAM10000 QGAN 논문 Table 1/2 스펙 그대로 재현.
-QML 강의 3일차 — "증강 전 vs 증강 후" 비교 실습에 사용.
+CNN 분류기 - HAM10000 QGAN 논문 Table 1/2 스펙 그대로 재현.
+QML 강의 3일차 - "증강 전 vs 증강 후" 비교 실습에 사용.
 """
 import torch
 import torch.nn as nn
@@ -15,7 +15,7 @@ class PaperCNNClassifier(nn.Module):
     def __init__(self, in_channels=1, img_size=64):
         super().__init__()
         # 논문(Table 2)은 conv 4층을 쓰지만, 이 강의는 큐빗 제약상 8x8·16x16처럼 아주 작은 encoding
-        # 해상도도 다뤄야 한다 — 4번 풀링(÷16)하면 8x8 이하 입력은 0 이하로 줄어들어 죽는다.
+        # 해상도도 다뤄야 한다 - 4번 풀링(÷16)하면 8x8 이하 입력은 0 이하로 줄어들어 죽는다.
         # 그래서 "입력 크기가 허용하는 만큼만" conv+maxpool layer를 쌓도록 적응형으로 만든다
         # (img_size>=64면 원 논문과 동일하게 4층 그대로 나온다).
         chs_full = [in_channels, 16, 32, 64, 128]
@@ -106,7 +106,7 @@ def evaluate(model, loader, device="cpu"):
 
 
 if __name__ == "__main__":
-    print("[검증] CNN 분류기 forward+1epoch 학습 동작 확인 — 랜덤 텐서 사용")
+    print("[검증] CNN 분류기 forward+1epoch 학습 동작 확인 - 랜덤 텐서 사용")
     torch.manual_seed(0)
     img_size = 16  # 테스트는 작은 사이즈로 빠르게
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     out = model(x)
     assert out.shape == (4, 1), f"출력 shape 이상: {out.shape}"
     assert (out >= 0).all() and (out <= 1).all(), "sigmoid 출력 범위 이상"
-    print("OK — forward pass shape/range 정상:", tuple(out.shape))
+    print("OK - forward pass shape/range 정상:", tuple(out.shape))
 
     # 더미 데이터셋으로 1 epoch 학습 되는지 확인
     from torch.utils.data import TensorDataset, DataLoader
@@ -128,4 +128,4 @@ if __name__ == "__main__":
 
     hist = train_classifier(model, loader, loader, epochs=1)
     print("1epoch 학습 결과:", {k: round(v[-1], 4) for k, v in hist.items()})
-    print("OK — 학습 루프(train/val/AUC) 정상 동작 확인")
+    print("OK - 학습 루프(train/val/AUC) 정상 동작 확인")

@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 """
-[준비 스크립트 ③] MediQ-GAN(ToyDualStreamGenerator) 사전학습 — 3일차 라이브 미세조정용 checkpoint 생성.
+[준비 스크립트 ③] MediQ-GAN(ToyDualStreamGenerator) 사전학습 - 3일차 라이브 미세조정용 checkpoint 생성.
 
 2026-10-01 커리큘럼 재설계: 3일차는 "원 논문 스펙(16큐빗×5·depth 8)을 유지한 채 사전학습
 checkpoint를 불러와 수업 중 10~60 step만 미세조정"하는 방식이다. 16큐빗은 상태벡터
 시뮬레이션 자체가 비용(실측 샘플당 2.99s)이라 전체 학습을 라이브로 돌릴 수 없기 때문.
 → 이 스크립트가 그 사전학습을 담당한다.
 
-⚠ Kaggle이 필요 없다. 입력은 전처리 완료된 npy(0~1, (N, img_size, img_size))뿐이므로
+주의: Kaggle이 필요 없다. 입력은 전처리 완료된 npy(0~1, (N, img_size, img_size))뿐이므로
    로컬에서 밤새 돌리면 된다. 실측 기준 epoch당 약 7.8분 - 25 epoch ≈ 196분(약 3시간 15분).
 
-⚠ checkpoint를 2개 이상 남긴다 — 최종본과 **덜 학습된 중간본**. 이미 수렴한 모델에서
+주의: checkpoint를 2개 이상 남긴다 - 최종본과 **덜 학습된 중간본**. 이미 수렴한 모델에서
    10~25 step 미세조정하면 손실이 거의 움직이지 않아 3일차 "학습 체험"이 심심해지므로,
    중간본(--save_every로 저장됨)을 수업용 출발점으로 쓴다.
 
-⚠ epoch을 늘리면 좋아지는 게 아니다(2026-10-01 실측): uniform z 기준 40 epoch이 20 epoch보다 나빴다
+주의: epoch을 늘리면 좋아지는 게 아니다(2026-10-01 실측): uniform z 기준 40 epoch이 20 epoch보다 나빴다
    (상관 0.207 -> 0.114, Tanh 포화 88%% -> 97%%). 생성자가 포화 쪽으로 드리프트하므로, --save_every로
    중간 checkpoint를 남기고 **출력되는 [품질] 수치로 최적 epoch을 골라 쓸 것**(마지막 checkpoint가 최선이 아님).
 
-⚠ 학습률 주의(2026-10-01 사고): 처음엔 QGAN처럼 큰 lr_g=0.02를 썼는데 3 epoch 만에 loss_d가 0.0027로
+주의: 학습률 주의(2026-10-01 사고): 처음엔 QGAN처럼 큰 lr_g=0.02를 썼는데 3 epoch 만에 loss_d가 0.0027로
    붕괴하고 다양성 0.000(mode collapse)까지 겹쳤다. MediQ-GAN은 고전 MLP decoder가 출력을 만들어 Tanh가
    포화되면 z와 무관한 상수 이미지가 나온다. DCGAN 관례(lr 2e-4, betas (0.5,0.999))가 기본값이며,
    8큐빗 축소판 실측으로 loss_d 1.387(이론 균형 ln4=1.386)·상관 0.207을 확인했다. 기본값을 올리지 말 것.
@@ -27,7 +27,7 @@ checkpoint를 불러와 수업 중 10~60 step만 미세조정"하는 방식이�
       (공식 레포·DCGAN 관례). 평가·시각화 때 0~1로 되돌리는 것은 gen_metrics.to_unit_scale(x, "tanh").
 
 실행 예:
-    # 본 학습(로컬 밤샘) — 중간 checkpoint는 5 epoch마다
+    # 본 학습(로컬 밤샘) - 중간 checkpoint는 5 epoch마다
     C:/qmlvenv/Scripts/python.exe -X utf8 train_mediqgan_checkpoint.py \
         --npy ../../practice/assets/df_preprocessed.npy --out_dir ./checkpoints --epochs 30 --save_every 5
 
@@ -60,14 +60,14 @@ def load_real(npy_path, img_size, max_n=None):
     if arr.ndim == 3:
         if arr.shape[1] != img_size:
             raise ValueError(f"npy 해상도 {arr.shape[1]}x{arr.shape[2]}가 --img_size {img_size}와 다름 "
-                             f"— 16x16 재생성이 안 된 파일일 수 있음")
+                             f"- 16x16 재생성이 안 된 파일일 수 있음")
         arr = arr.reshape(len(arr), -1)
     if arr.shape[1] != img_size * img_size:
         raise ValueError(f"npy 차원 {arr.shape[1]} != img_size^2 {img_size * img_size}")
     if max_n:
         arr = arr[:max_n]
     if arr.min() < -0.01 or arr.max() > 1.01:
-        raise ValueError(f"npy 값 범위가 0~1이 아님(min {arr.min():.3f}, max {arr.max():.3f}) — 척도 규약 위반")
+        raise ValueError(f"npy 값 범위가 0~1이 아님(min {arr.min():.3f}, max {arr.max():.3f}) - 척도 규약 위반")
     return torch.tensor(arr * 2.0 - 1.0, dtype=torch.float32)
 
 
@@ -76,7 +76,7 @@ def sample_z(n, in_dim, dist="uniform", device="cpu"):
 
 
 def train_step(generator, discriminator, real_batch, opt_g, opt_d, in_dim, device="cpu", z_dist="uniform"):
-    """MediQ-GAN 한 step — 표준 BCE GAN(판별자는 논문 Table 4 계열 5층 FC 재사용)."""
+    """MediQ-GAN 한 step - 표준 BCE GAN(판별자는 논문 Table 4 계열 5층 FC 재사용)."""
     bce = nn.BCELoss()
     bsz = real_batch.shape[0]
     real_labels = torch.ones(bsz, 1, device=device)
@@ -123,15 +123,15 @@ def main():
     ap.add_argument("--npy", help="전처리 완료 npy 경로(0~1). --smoke일 때는 불필요")
     ap.add_argument("--out_dir", default="./checkpoints")
     ap.add_argument("--img_size", type=int, default=16, help="2일차 산출물과 반드시 동일(재설계 후 16)")
-    ap.add_argument("--n_qubits", type=int, default=16, help="원 논문 스펙 16 — 내리지 말 것(README 참고)")
+    ap.add_argument("--n_qubits", type=int, default=16, help="원 논문 스펙 16 - 내리지 말 것(README 참고)")
     ap.add_argument("--q_depth", type=int, default=8, help="원 논문 그림 기준 8(레포 CLI 기본값은 6)")
     ap.add_argument("--n_generators", type=int, default=5, help="원 논문 스펙 5")
     ap.add_argument("--epochs", type=int, default=30)
     ap.add_argument("--batch_size", type=int, default=4,
-                    help="⚠ batch를 키워도 속도는 안 빨라짐 — quantum_stream이 샘플을 파이썬 for로 돌아 "
+                    help="주의: batch를 키워도 속도는 안 빨라짐 - quantum_stream이 샘플을 파이썬 for로 돌아 "
                          "epoch 비용이 샘플 수에 비례함")
     ap.add_argument("--lr_g", type=float, default=2e-4,
-                    help="DCGAN 관례. ⚠ QGAN의 0.05/0.02를 그대로 쓰면 Tanh가 포화돼 mode collapse함(2026-10-01 실측)")
+                    help="DCGAN 관례. 주의: QGAN의 0.05/0.02를 그대로 쓰면 Tanh가 포화돼 mode collapse함(2026-10-01 실측)")
     ap.add_argument("--lr_d", type=float, default=2e-4)
     ap.add_argument("--beta1", type=float, default=0.5, help="Adam beta1 - GAN 관례는 0.5(기본 0.9는 불안정)")
     ap.add_argument("--z_dist", default="normal", choices=["uniform", "normal"],
@@ -140,7 +140,7 @@ def main():
     ap.add_argument("--save_every", type=int, default=5, help="중간 checkpoint 저장 간격(epoch)")
     ap.add_argument("--max_n", type=int, default=None)
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--resume", default=None, help="이어하기 — 저장된 checkpoint 경로")
+    ap.add_argument("--resume", default=None, help="이어하기 - 저장된 checkpoint 경로")
     ap.add_argument("--smoke", action="store_true",
                     help="합성 데이터 + 축소 스펙으로 코드만 점검(6큐빗·2 sub-generator·3 epoch)")
     args = ap.parse_args()
@@ -193,7 +193,7 @@ def main():
             opt_d.load_state_dict(ck["opt_d_state_dict"])
             print("옵티마이저 상태(Adam 모멘텀)도 복원함")
         else:
-            print("⚠ 이 checkpoint에는 옵티마이저 상태가 없음(구버전) - 이어하는 몇 epoch은 학습이 흔들릴 수 있음")
+            print("주의: 이 checkpoint에는 옵티마이저 상태가 없음(구버전) - 이어하는 몇 epoch은 학습이 흔들릴 수 있음")
         print(f"이어하기: {args.resume} (epoch {start_epoch}부터)")
 
     steps_per_epoch = max(1, len(real) // args.batch_size)
@@ -215,7 +215,7 @@ def main():
         history["epoch_sec"].append(dt)
         ep_d_mean = float(np.mean(ep_d))
         if ep_d_mean < 0.01:
-            print("  ⚠ 판별자 완승(loss_d < 0.01) - 생성자가 학습 신호를 잃는 상태임. "
+            print("  주의: 판별자 완승(loss_d < 0.01) - 생성자가 학습 신호를 잃는 상태임. "
                   "lr_g를 더 낮추거나 라벨 스무딩을 쓸 것. 이대로 계속 돌려도 쓸 수 있는 checkpoint가 안 나옴",
                   flush=True)
         done = epoch + 1 - start_epoch
@@ -253,7 +253,7 @@ def main():
 
     with torch.no_grad():
         sample = gen(sample_z(4, in_dim, args.z_dist)).numpy()
-    print(f"\n완료 — 총 {(time.time() - t_start) / 60:.1f}분")
+    print(f"\n완료 - 총 {(time.time() - t_start) / 60:.1f}분")
     print(f"최종 checkpoint: {final}")
     print(f"생성 샘플 값 범위: {sample.min():.3f} ~ {sample.max():.3f} (Tanh이므로 -1~1이 정상)")
     print("3일차에서는 gen_metrics.to_unit_scale(x, \"tanh\")로 0~1로 되돌려 QGAN과 비교할 것")

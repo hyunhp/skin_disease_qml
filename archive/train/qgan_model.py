@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Patch Quantum GAN — HAM10000 QGAN 논문(Andra et al.) Section 3.2 / Table 3,4 재현
+Patch Quantum GAN - HAM10000 QGAN 논문(Andra et al.) Section 3.2 / Table 3,4 재현
 QML 강의 2~3일차용. 원 논문 스펙(7+1큐빗, sub-generator 16개, PQC depth 10, 2000 epoch)은
 Colab 무료 시뮬레이터로 라이브 실습하기엔 크므로, 강의용으로 축소한 스펙을 기본값으로 둔다.
 아키텍처 자체(sub-generator ensemble + patch 방식 + 고전 판별자)는 논문과 동일하게 유지.
@@ -44,7 +44,7 @@ class PatchQuantumGenerator(nn.Module):
             # 1) 노이즈를 angle encoding으로 초기 회전각에 encoding (HAM10000/MosaiQ 논문과 동일한 Rx/Ry 방식)
             for i in range(n_qubits):
                 qml.RY(noise[i], wires=i)
-            # 2) 학습 가능한 변분 layer — 단일큐빗 회전 + 인접큐빗 CZ 얽힘 반복 (논문 Fig.10 방식)
+            # 2) 학습 가능한 변분 layer - 단일큐빗 회전 + 인접큐빗 CZ 얽힘 반복 (논문 Fig.10 방식)
             for layer in range(q_depth):
                 for i in range(n_qubits):
                     qml.RY(weights[layer, i], wires=i)
@@ -79,7 +79,7 @@ class PatchQuantumGenerator(nn.Module):
 
 
 class ClassicalDiscriminator(nn.Module):
-    """HAM10000 QGAN 논문 Table 4 그대로 — 5층 완전연결, ReLU, sigmoid 출력, BCE loss."""
+    """HAM10000 QGAN 논문 Table 4 그대로 - 5층 완전연결, ReLU, sigmoid 출력, BCE loss."""
 
     def __init__(self, input_dim):
         super().__init__()
@@ -96,7 +96,7 @@ class ClassicalDiscriminator(nn.Module):
 
 
 def train_step(generator, discriminator, real_batch, opt_g, opt_d, device="cpu"):
-    """QGAN 한 step 학습 — 논문 Eq.(5)의 min-max 목적함수를 표준 BCE GAN 학습으로 구현."""
+    """QGAN 한 step 학습 - 논문 Eq.(5)의 min-max 목적함수를 표준 BCE GAN 학습으로 구현."""
     bce = nn.BCELoss()
     batch_size = real_batch.shape[0]
     real_labels = torch.ones(batch_size, 1, device=device)
@@ -127,7 +127,7 @@ def train_step(generator, discriminator, real_batch, opt_g, opt_d, device="cpu")
 
 
 if __name__ == "__main__":
-    print("[검증] QGAN 생성자/판별자 forward+backward(gradient) 동작 확인 — 실제 데이터 없이 랜덤값 사용")
+    print("[검증] QGAN 생성자/판별자 forward+backward(gradient) 동작 확인 - 실제 데이터 없이 랜덤값 사용")
     torch.manual_seed(0)
 
     gen = PatchQuantumGenerator(n_generators=2, n_data_qubits=3, n_ancillas=1, q_depth=2)
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     for i in range(gen.n_generators):
         patch = fake_batch[0, i * gen.patch_dim:(i + 1) * gen.patch_dim]
         assert patch.min().item() >= 0 and patch.sum().item() <= 1.0 + 1e-4, f"sub-generator {i} 출력 이상: {patch.sum().item()}"
-    print("OK — 각 sub-generator 출력이 유효한 부분 확률(0 이상, 합 1 이하) 확인")
+    print("OK - 각 sub-generator 출력이 유효한 부분 확률(0 이상, 합 1 이하) 확인")
 
     real_batch = torch.rand(4, gen.output_dim)
     real_batch = real_batch / real_batch.sum(dim=1, keepdim=True)  # 확률분포처럼 정규화(테스트용)
@@ -159,5 +159,5 @@ if __name__ == "__main__":
     param_after = gen.q_params[0]
     changed = not torch.allclose(param_before, param_after)
     print("양자 회로 파라미터가 학습으로 실제 갱신됨:", changed)
-    assert changed, "gradient가 양자 회로까지 전파되지 않음 — 버그"
-    print("OK — 양자 생성자까지 역전파(gradient) 정상 흐름 확인")
+    assert changed, "gradient가 양자 회로까지 전파되지 않음 - 버그"
+    print("OK - 양자 생성자까지 역전파(gradient) 정상 흐름 확인")

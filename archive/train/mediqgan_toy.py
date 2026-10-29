@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
 """
-MediQ-GAN(arXiv:2506.21015) dual-stream 생성자 — 개념 데모용 축소판.
-QML 강의 3일차 — "생성자 내부에서 고전+양자 layer를 skip-connection으로 융합"하는
+MediQ-GAN(arXiv:2506.21015) dual-stream 생성자 - 개념 데모용 축소판.
+QML 강의 3일차 - "생성자 내부에서 고전+양자 layer를 skip-connection으로 융합"하는
 layer 단위 hybrid 아키텍처를 학생들이 직접 눈으로 보고 코드로 이해하도록 하는 목적.
 
-⚠ 이건 MediQ-GAN 원 논문의 완전한 재현이 아니다(원 논문: 64×64 RGB, ISIC 2019/ODIR-5k/RetinaMNIST
+주의: 이건 MediQ-GAN 원 논문의 완전한 재현이 아니다(원 논문: 64×64 RGB, ISIC 2019/ODIR-5k/RetinaMNIST
 실사용, 다층 conv 기반 classical encoder/decoder). 다만 2026-09-04부로 **양자 stream 자체는 원 논문과
-동일한 스펙(5개 sub-generator × 16큐빗, 8층 깊이 ansatz)** 을 그대로 씀 — 실측 결과(이 파일 하단
+동일한 스펙(5개 sub-generator × 16큐빗, 8층 깊이 ansatz)** 을 그대로 씀 - 실측 결과(이 파일 하단
 참고) 1회 forward가 약 2~3초로 Colab 라이브 시연에 문제없다고 확인했기 때문에 축소할 이유가 없었다.
 남은 단순화는 classical encoder/decoder가 conv가 아니라 단순 MLP라는 점, 그리고 입력이 실제 64×64
-RGB가 아니라 2일차 pipeline이 만든 16×16(256차원) 저해상도 흑백 벡터라는 점뿐이다(작성 당시는 8×8) — 원본 HAM10000
+RGB가 아니라 2일차 pipeline이 만든 16×16(256차원) 저해상도 흑백 벡터라는 점뿐이다(작성 당시는 8×8) - 원본 HAM10000
 이미지(600×450)가 커도 문제되지 않는 이유는, 애초에 양자 encoding 전에 `resize_for_encoding()`으로
 16×16까지 축소하기 때문(data_pipeline.py 참고). 실제 정량 결과는 논문 Table 2(FID)를
 그대로 인용해서 보여준다(별도 준비자료).
 
 양자회로 설정(`lightning.qubit` + `diff_method="adjoint"`, shots 미지정)은 공식 레포
-(github.com/QingyueJ-nd/MediQ-GAN, mediq-gan.py)와 동일하다 — "학습은 실기 없이 exact simulator로"
+(github.com/QingyueJ-nd/MediQ-GAN, mediq-gan.py)와 동일하다 - "학습은 실기 없이 exact simulator로"
 핵심 방식을 그대로 재현한다.
 2026-09-22: 회로 본체도 레포 quantum_circuit과 일치시킴(기존 RY encoding·CNOT·PauliZ → RY→RX encoding·CZ·PauliX),
 sub-generator마다 서로 다른 site 토큰을 받고 큐빗 평균 스칼라를 4×4 맵에 배치하는 레포 방식도 반영.
 (2026-09-01 draft에서는 lightning.qubit이 backprop 미분을 지원하지 않아 default.qubit+backprop으로
 우회했었으나, 2026-09-04 diff_method를 논문과 동일한 adjoint로 바꾸면서 디바이스도 원 논문과 같은
-lightning.qubit으로 되돌리고, 큐빗 수·sub-generator 수도 원 논문 스펙(16큐빗×5개)으로 올림 — 3일차
+lightning.qubit으로 되돌리고, 큐빗 수·sub-generator 수도 원 논문 스펙(16큐빗×5개)으로 올림 - 3일차
 실습은 어차피 사전학습 checkpoint를 불러와 쓰는 방식이라 학습 속도상 축소를 유지할 이유가 없었음.)
 """
 import math
@@ -53,13 +53,13 @@ class ToyDualStreamGenerator(nn.Module):
         self.n_generators = n_generators
         self.site_idx = torch.linspace(0, 15, steps=n_generators).round().long().tolist()
 
-        # 고전 stream — MediQ-GAN의 "classical encoder" 역할(단순화: conv 대신 MLP)
+        # 고전 stream - MediQ-GAN의 "classical encoder" 역할(단순화: conv 대신 MLP)
         self.classical_stream = nn.Sequential(
             nn.Linear(self.half, 32), nn.ReLU(),
             nn.Linear(32, self.half),
         )
 
-        # 양자 stream — site별 벡터를 큐빗 수에 맞추는 aligner(레포의 q_align)
+        # 양자 stream - site별 벡터를 큐빗 수에 맞추는 aligner(레포의 q_align)
         self.q_align = nn.Linear(self.site_dim, n_qubits)
 
         dev = qml.device(dev_name, wires=n_qubits)
@@ -84,7 +84,7 @@ class ToyDualStreamGenerator(nn.Module):
         # 레포의 proj_qexp: 5개 스칼라 맵(4×4) → q_ch채널, 1×1 conv라 칸별 독립 처리
         self.proj_qexp = nn.Conv2d(n_generators, q_ch, 1)
 
-        # 융합 후 decoder — skip-connection으로 합쳐진 특징을 최종 출력으로 (MediQ-GAN의 decoder conv에 해당)
+        # 융합 후 decoder - skip-connection으로 합쳐진 특징을 최종 출력으로 (MediQ-GAN의 decoder conv에 해당)
         fused_dim = self.half + q_ch * 16
         self.decoder = nn.Sequential(
             nn.Linear(fused_dim, 32), nn.ReLU(),
@@ -104,7 +104,7 @@ class ToyDualStreamGenerator(nn.Module):
         return self.proj_qexp(q_maps).flatten(1)            # (B, q_ch*16)
 
     def forward(self, z):
-        # z: (batch, in_dim) — 잠재벡터를 절반씩 stream에 분배 (MediQ-GAN Fig.2: "feature map split")
+        # z: (batch, in_dim) - 잠재벡터를 절반씩 stream에 분배 (MediQ-GAN Fig.2: "feature map split")
         z_classical, z_quantum = z[:, :self.half], z[:, self.half:]
         classical_feat = self.classical_stream(z_classical)  # (batch, half)
         quantum_feat = self.quantum_stream(z_quantum)        # (batch, q_ch*16)
@@ -139,6 +139,6 @@ if __name__ == "__main__":
     print(f"backward 소요: {(t3 - t2) * 1000:.0f}ms")
     print("고전 stream gradient 존재:", has_grad_classical)
     print("양자 stream gradient 존재(sub-generator 5개 전부):", has_grad_quantum)
-    assert has_grad_classical and has_grad_quantum, "두 stream 중 하나는 학습이 안 됨 — 버그"
-    print("OK — 고전+양자 stream(5개 sub-generator 전부) 역전파(gradient) 정상 흐름 확인")
+    assert has_grad_classical and has_grad_quantum, "두 stream 중 하나는 학습이 안 됨 - 버그"
+    print("OK - 고전+양자 stream(5개 sub-generator 전부) 역전파(gradient) 정상 흐름 확인")
     print("→ 위 forward+backward 소요시간이 Colab 라이브 시연(1회 forward, 학습 없음) 기준 수용 가능한지 확인할 것")
