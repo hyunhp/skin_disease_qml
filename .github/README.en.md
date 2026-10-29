@@ -24,9 +24,9 @@ Design principles
 
 | Day | Content | Links |
 |---|---|---|
-| Day 1 | Theory: dataset, both architectures and their results, VQC training cost | [slides pptx](../practice/day1_slides/day1_theory_slides.pptx) · [pdf](../practice/day1_slides/day1_theory_slides.pdf) |
-| Day 2 | EDA · segmentation · circuit → QGAN training → evaluation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) · [slides pptx](../practice/day2_slides/day2_practice_slides.pptx) · [pdf](../practice/day2_slides/day2_practice_slides.pdf) |
-| Day 3 | MediQ-GAN fine-tuning → comparison with QGAN on the same metrics | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day3_practice.ipynb) · [slides pptx](../practice/day3_slides/day3_practice_slides.pptx) · [pdf](../practice/day3_slides/day3_practice_slides.pdf) |
+| Day 1 | Theory: dataset, both architectures and their results, VQC training cost | [pptx](../practice/day1_slides/day1_theory_slides.pptx) · [pdf](../practice/day1_slides/day1_theory_slides.pdf) |
+| Day 2 | EDA · segmentation · circuit → QGAN training → evaluation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) · [pptx](../practice/day2_slides/day2_practice_slides.pptx) · [pdf](../practice/day2_slides/day2_practice_slides.pdf) |
+| Day 3 | MediQ-GAN fine-tuning → comparison with QGAN on the same metrics | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day3_practice.ipynb) · [pptx](../practice/day3_slides/day3_practice_slides.pptx) · [pdf](../practice/day3_slides/day3_practice_slides.pdf) |
 
 Run `File → Save a copy in Drive` first. The notebooks clone this repository at runtime for [`practice/assets/`](../practice/assets/) and [`gen_metrics.py`](../practice/gen_metrics.py); only the HAM10000 originals (~6 GB) come from `kagglehub`.
 
@@ -85,9 +85,9 @@ With 92 DF images this difference is not an improvement, so the practicals use t
 
 ```
 practice/            for students
-  day1_slides/       Day 1 theory slides (31)
-  day2_slides/       Day 2 walkthrough slides (25)
-  day3_slides/       Day 3 walkthrough slides (11)
+  day1_slides/       Day 1 theory (31)
+  day2_slides/       Day 2 walkthrough (25)
+  day3_slides/       Day 3 walkthrough (11)
   day2_practice.ipynb, day3_practice.ipynb
   gen_metrics.py     the four metrics (shared by Day 2 and 3)
   assets/            16×16 preprocessed data + 3 checkpoints
@@ -118,7 +118,7 @@ Kaggle is needed only to regenerate the preprocessed npy (`archive/prep/prep_ste
 
 - Code, docs and slides: [MIT](../LICENSE)
 - Data derivatives (`practice/assets/`, `archive/assets_8px/`): inherit HAM10000's CC BY-NC 4.0 (non-commercial)
-- Paper PDFs and quoted figures: CC BY 4.0 of each paper. Only the MediQ-GAN PDF and the HAM10000 QGAN author preprint are included (the published version is Springer-licensed); figures in the slides and the Day 3 notebook are quoted with attribution. See [`archive/paper/README.md`](../archive/paper/README.md)
+- Paper PDFs and quoted figures: CC BY 4.0 of each paper. Only the MediQ-GAN PDF and the HAM10000 QGAN author preprint are included (the published version is Springer-licensed); figures in the and the Day 3 notebook are quoted with attribution. See [`archive/paper/README.md`](../archive/paper/README.md)
 
 ## References
 
