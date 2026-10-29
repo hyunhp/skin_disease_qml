@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Patch Quantum GAN — HAM10000 QGAN 논문(Andra et al.) Section 3.2 / Table 3,4 재현
-동아대 대학원 QML 강의 2~3일차용. 원 논문 스펙(7+1큐빗, sub-generator 16개, PQC depth 10, 2000 epoch)은
+QML 강의 2~3일차용. 원 논문 스펙(7+1큐빗, sub-generator 16개, PQC depth 10, 2000 epoch)은
 Colab 무료 시뮬레이터로 라이브 실습하기엔 크므로, 강의용으로 축소한 스펙을 기본값으로 둔다.
 아키텍처 자체(sub-generator ensemble + patch 방식 + 고전 판별자)는 논문과 동일하게 유지.
 

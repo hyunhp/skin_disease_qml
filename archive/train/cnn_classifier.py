@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 CNN 분류기 — HAM10000 QGAN 논문 Table 1/2 스펙 그대로 재현.
-동아대 대학원 QML 강의 3일차 — "증강 전 vs 증강 후" 비교 실습에 사용.
+QML 강의 3일차 — "증강 전 vs 증강 후" 비교 실습에 사용.
 """
 import torch
 import torch.nn as nn

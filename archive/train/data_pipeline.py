@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 HAM10000 로드 + EDA + 전처리(segmentation) pipeline
-동아대 대학원 QML 강의 2일차 실습용 — HAM10000 QGAN 논문(arXiv 기반 재현, Andra et al. 2024/2025)
+QML 강의 2일차 실습용 — HAM10000 QGAN 논문(arXiv 기반 재현, Andra et al. 2024/2025)
 Section 3.1의 K-means + Fuzzy C-means hybrid segmentation을 그대로 구현.
 
 실제 강의에서는 학생들이 Colab에서 Kaggle API로 HAM10000을 직접 받는다:

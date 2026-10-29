@@ -14,3 +14,6 @@ ham10000/
 archive/paper/*.pdf
 !archive/paper/MediQ-GAN_arXiv-2506.21015v2.pdf
 !archive/paper/HAM10000-QGAN_preprint_ResearchSquare_rs-5191116v1.pdf
+
+# 슬라이드 생성 스크립트 의존성
+node_modules/
