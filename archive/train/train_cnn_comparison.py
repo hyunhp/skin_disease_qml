@@ -6,7 +6,7 @@
     python train_cnn_comparison.py --metadata HAM10000_metadata.csv --img_dir ./ham10000 \
         --qgan_ckpt ./checkpoints/qgan_df_8px.pt --out_dir ./checkpoints --epochs 20
 
-출력: cnn_before.pt, cnn_after.pt, comparison_result.json (3일차 노트북에서 그대로 로드해서 비교 실습에 사용)
+출력: cnn_before.pt, cnn_after.pt, comparison_result.json (옛 8×8 구성의 3일차 비교용)
 """
 import argparse
 import json
@@ -65,11 +65,10 @@ def main():
     print("[2/4] 원본 데이터 로드(소수/다수 클래스)...")
     minority_imgs = build_dataset(args.metadata, args.img_dir, minority_class, img_size)
     majority_imgs = build_dataset(args.metadata, args.img_dir, args.majority_class, img_size,
-                                   max_n=len(minority_imgs) * 3)  # 논문처럼 극단적 불균형까진 안 가고 적당히 제한
+                                   max_n=len(minority_imgs) * 3)  # 불균형을 3배로 제한
     print(f"  소수({minority_class}): {len(minority_imgs)}장, 다수({args.majority_class}): {len(majority_imgs)}장")
 
-    # held-out 검증셋 분할 - 증강 전/후 두 모델이 "같은" 검증셋으로 평가되어야 공정한 비교가 됨.
-    # 검증셋에는 합성 이미지를 절대 섞지 않는다(학습 데이터에만 증강 적용).
+    # 증강 전/후 모델을 같은 held-out 검증셋으로 평가. 합성 이미지는 학습셋에만 넣음
     minority_train, minority_val = split_train_val(minority_imgs)
     majority_train, majority_val = split_train_val(majority_imgs)
     print(f"  train/val 분할: 소수 train={len(minority_train)}/val={len(minority_val)}, "

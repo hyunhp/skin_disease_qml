@@ -163,14 +163,14 @@ newSection("표지");
 newSection("진행");
 {
   const s = slide("CONTENT", "오리엔테이션", "3일차 진행 순서", "노트북 섹션별 내용과 실행 시간",
-    "- 3일차는 학습 없이 checkpoint를 불러오는 셀이 대부분이라 수 초 안에 끝남.\n- 시간이 걸리는 셀: §3 구조 확인(16큐빗 회로 5개 forward, 십여 초), §4 미세조정 20 step(로컬 실측 약 7분, Colab은 더 걸림).\n- 진행 로그의 '남은 예상' 시간을 보고 step 수를 줄여도 됨.");
+    "- 3일차는 학습 없이 checkpoint를 불러오는 셀이 대부분이라 수 초 안에 끝남.\n- 시간이 걸리는 셀: §3 구조 확인(16큐빗 회로 5개 forward, 십여 초), §4 미세조정 20 step(로컬 실측 약 7분, Colab 무료 CPU 실측 13.8분).\n- 진행 로그의 '남은 예상' 시간을 보고 step 수를 줄여도 됨.");
   const hl = (t) => ({ text: t, options: { bold: true, color: C.accent1 } });
   table(s, [
     ["노트북", "내용", "실행 시간"],
     ["§0 – §1", "Colab 설정, 저장소 clone, 실습 자산 로드", "1분 이내"],
     ["§2", "QGAN checkpoint(600 step) 생성·평가 - 비교 기준선", "수 초"],
     ["§3", "MediQ-GAN 구조: dual-stream, 16큐빗 회로 × 5", "십여 초"],
-    [hl("§4"), hl("10 epoch checkpoint에서 20 step 미세조정"), hl("약 7분 (로컬 CPU)")],
+    [hl("§4"), hl("10 epoch checkpoint에서 20 step 미세조정"), hl("로컬 약 7분 · Colab 약 14분")],
     ["§5", "QGAN과 MediQ-GAN을 같은 지표 4종으로 비교", "수 초"],
     ["§6", "이미지 생성에서 양자컴퓨팅의 한계와 방향", "-"],
   ], 0.6, 2.25, 12.1, [1.6, 7.5, 3.0], { fontSize: 13, rowH: 0.55 });
@@ -203,7 +203,7 @@ newSection("MediQ-GAN 구조");
 }
 {
   const s = slide("CONTENT", "MediQ-GAN 구조 · 노트북 §3 코드", "dual-stream의 데이터 흐름", "잠재벡터 256차원을 절반씩 나누고, 두 stream의 출력을 이어붙여 decoder로 보냄",
-    "- forward 코드: z[:, :half]는 고전 stream, z[:, half:]는 양자 stream으로 감(논문 Fig.2 'feature map split').\n- 고전 stream은 128 → 32 → 128 MLP. 논문은 conv encoder지만 16×16 저해상도라 MLP로 단순화함.\n- 양자 stream은 128차원을 4×4 = 16 site(site당 8차원)로 보고, site [0, 4, 8, 11, 15]만 회로 5개가 하나씩 처리함. 나머지 11칸은 0.\n- 양자 stream 출력은 16채널 × 4×4 = 256차원. 고전 128과 concat하면 384차원.\n- decoder는 384 → 32 → 256 MLP + Tanh. 최종 이미지는 이 고전 decoder가 만듦 → Tanh가 포화되면 z와 무관한 상수 이미지가 나올 수 있음(README 학습 안정성).");
+    "- forward 코드: z[:, :half]는 고전 stream, z[:, half:]는 양자 stream으로 감(논문 Fig. 1 'Feature Split').\n- 고전 stream은 128 → 32 → 128 MLP. 논문은 conv encoder지만 16×16 저해상도라 MLP로 단순화함.\n- 양자 stream은 128차원을 4×4 = 16 site(site당 8차원)로 보고, site [0, 4, 8, 11, 15]만 회로 5개가 하나씩 처리함. 나머지 11칸은 0.\n- 양자 stream 출력은 16채널 × 4×4 = 256차원. 고전 128과 concat하면 384차원.\n- decoder는 384 → 32 → 256 MLP + Tanh. 최종 이미지는 이 고전 decoder가 만듦 → Tanh가 포화되면 z와 무관한 상수 이미지가 나올 수 있음(README 학습 안정성).");
   box(s, "잠재벡터 z\n256차원\nN(0, 1)", 0.6, 3.25, 1.5, 1.2, HEX.card2, C.text1, { fontSize: 12 });
   // classical row
   box(s, "z[:, :128]", 2.55, 2.25, 1.5, 0.7, HEX.white, C.text1, { fontSize: 12, line: HEX.line });

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CNN 분류기 - HAM10000 QGAN 논문 Table 1/2 스펙 그대로 재현.
-QML 강의 3일차 - "증강 전 vs 증강 후" 비교 실습에 사용.
+CNN 분류기 (HAM10000 QGAN 논문 Table 1·2 스펙). 옛 8×8 구성의 증강 전/후 비교에 씀.
 """
 import torch
 import torch.nn as nn
@@ -9,15 +8,12 @@ from sklearn.metrics import roc_auc_score, accuracy_score
 
 
 class PaperCNNClassifier(nn.Module):
-    """논문 Table 2: conv 4층(kernel 3, stride 1) + BatchNorm + maxpool 2x2,
-    Table 1: 완전연결 + dropout 2개 + sigmoid 출력, 460k 파라미터대."""
+    """논문 Table 2(conv 4층 + BatchNorm + maxpool) + Table 1(FC + dropout 2개 + sigmoid)."""
 
     def __init__(self, in_channels=1, img_size=64):
         super().__init__()
-        # 논문(Table 2)은 conv 4층을 쓰지만, 이 강의는 큐빗 제약상 8x8·16x16처럼 아주 작은 encoding
-        # 해상도도 다뤄야 한다 - 4번 풀링(÷16)하면 8x8 이하 입력은 0 이하로 줄어들어 죽는다.
-        # 그래서 "입력 크기가 허용하는 만큼만" conv+maxpool layer를 쌓도록 적응형으로 만든다
-        # (img_size>=64면 원 논문과 동일하게 4층 그대로 나온다).
+        # 8x8·16x16은 4번 풀링하면 크기가 0이 되므로 입력 크기가 허용하는 만큼만 layer를 쌓음
+        # (img_size >= 64면 논문과 같은 4층)
         chs_full = [in_channels, 16, 32, 64, 128]
         n_layers = 0
         size = img_size

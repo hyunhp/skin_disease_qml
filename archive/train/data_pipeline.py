@@ -1,18 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-HAM10000 로드 + EDA + 전처리(segmentation) pipeline
-QML 강의 2일차 실습용 - HAM10000 QGAN 논문(arXiv 기반 재현, Andra et al. 2024/2025)
-Section 3.1의 K-means + Fuzzy C-means hybrid segmentation을 그대로 구현.
-
-실제 강의에서는 학생들이 Colab에서 Kaggle API로 HAM10000을 직접 받는다:
-    !pip install kaggle
-    from google.colab import files
-    files.upload()  # kaggle.json 업로드
-    !mkdir -p ~/.kaggle && cp kaggle.json ~/.kaggle/ && chmod 600 ~/.kaggle/kaggle.json
-    !kaggle datasets download -d kmader/skin-cancer-mnist-ham10000
-    !unzip -q skin-cancer-mnist-ham10000.zip -d ham10000
-
-원본: HAM10000_metadata.csv (dx 컬럼에 7개 클래스: akiec, bcc, bkl, df, mel, nv, vasc)
+HAM10000 로드 + EDA + segmentation 전처리 (Andra et al. Section 3.1, K-means + Fuzzy C-means).
+2일차 노트북의 전처리 코드와 같은 로직임 - 한쪽을 고치면 다른 쪽도 맞출 것.
+원본: HAM10000_metadata.csv (dx: akiec, bcc, bkl, df, mel, nv, vasc)
 """
 import os
 import numpy as np
@@ -20,8 +10,8 @@ import cv2
 import pandas as pd
 from pathlib import Path
 
-# 논문(HAM10000 QGAN, Section 5.1)에서 실제 사용한 이진분류 쌍 - 이 강의도 그대로 재현
-# DF(피부섬유종, 소수클래스) vs NV(모반, 최다수클래스) - 논문에서 가장 성능이 좋았던 조합(Table 6)
+# 논문 Section 5.1의 이진분류 쌍
+# DF(최소 클래스) vs NV(최다 클래스) - 논문에서 가장 좋았던 조합(Table 6)
 TARGET_CLASSES = ("df", "nv")
 CLASS_NAMES_KR = {"akiec": "광선각화증", "bcc": "기저세포암", "bkl": "양성각화증",
                    "df": "피부섬유종", "mel": "흑색종", "nv": "모반(정상)", "vasc": "혈관병변"}
@@ -35,13 +25,13 @@ def load_metadata(csv_path):
 
 
 def class_distribution(df):
-    """EDA용 - 클래스별 샘플 수. 강의 1일차/2일차에서 그대로 시각화에 사용."""
+    """클래스별 샘플 수 (EDA)."""
     counts = df["dx"].value_counts()
     return counts
 
 
 def load_image(img_dir, image_id, exts=(".jpg", ".jpeg", ".png")):
-    """image_id로 실제 이미지 파일을 찾아 BGR로 로드. HAM10000은 이미지가 2개 폴더에 나뉘어 있을 수 있음."""
+    """image_id로 이미지를 찾아 BGR로 로드 (part_1·part_2 두 폴더)."""
     img_dir = Path(img_dir)
     for ext in exts:
         for sub in ["", "HAM10000_images_part_1", "HAM10000_images_part_2"]:
@@ -52,12 +42,9 @@ def load_image(img_dir, image_id, exts=(".jpg", ".jpeg", ".png")):
 
 
 def segment_fcm_kmeans(img_bgr, n_clusters=4, resize_to=None):
-    """
-    HAM10000 QGAN 논문 Section 3.1 - K-means로 1차 clustering 후 Fuzzy C-means로 정제하는
-    hybrid segmentation. 논문 결과(Table 10)상 이 전처리를 거친 이미지에서만 QGAN 증강이
-    실제로 성능을 개선시켰으므로(raw 이미지는 오히려 악화), 이 강의의 핵심 전처리 단계다.
+    """K-means 사전 clustering + Fuzzy C-means 정제 후 가장 어두운 cluster(병변)만 남김.
 
-    Returns: segmentation된 grayscale 이미지 (0~255 uint8)
+    논문 Table 10에서 이 전처리를 거친 이미지만 증강 효과가 있었음. 반환: grayscale uint8.
     """
     import skfuzzy as fuzz
 
@@ -68,20 +55,20 @@ def segment_fcm_kmeans(img_bgr, n_clusters=4, resize_to=None):
     h, w = gray.shape
     pixels = gray.reshape(-1, 1).astype(np.float32)
 
-    # 1단계: K-means로 대략적인 cluster 중심 초기화 (논문: "pre-clustering to reduce FCM 처리시간")
+    # 1단계: K-means 사전 clustering (FCM 시간 단축)
     from sklearn.cluster import KMeans
     km = KMeans(n_clusters=n_clusters, n_init=4, random_state=0).fit(pixels)
-    # K-means 중심까지의 거리로 FCM 초기 소속도 행렬 구성 (m=2 → 소속도 ∝ 1/거리²)
+    # FCM 초기 소속도 = K-means 중심까지 거리의 역제곱
     dist = np.abs(pixels - km.cluster_centers_.reshape(1, -1)) + 1e-6
     u_init = 1.0 / dist ** 2
     u_init = (u_init / u_init.sum(axis=1, keepdims=True)).T  # (cluster 수, 픽셀 수)
 
-    # 2단계: Fuzzy C-means로 정제 (K-means 결과에서 출발 → 무작위 시작보다 빨리 수렴, 매번 같은 결과)
+    # 2단계: Fuzzy C-means로 정제
     cntr, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(
         pixels.T, c=n_clusters, m=2.0, error=1e-4, maxiter=100, init=u_init
     )
     membership = np.argmax(u, axis=0)
-    # 병변(가장 어두운 cluster)만 남기고 나머지는 배경 처리 - 논문 Fig.9의 segmentation 결과와 동일한 컨셉
+    # 가장 어두운 cluster(병변)만 남기고 배경은 0 (논문 Fig.9)
     lesion_cluster = np.argmin(cntr.flatten())
     mask = (membership == lesion_cluster).reshape(h, w).astype(np.uint8) * 255
 
@@ -90,7 +77,7 @@ def segment_fcm_kmeans(img_bgr, n_clusters=4, resize_to=None):
 
 
 def resize_for_encoding(img_gray, size):
-    """양자 encoding용 초저해상도 축소. 예: (8,8)이면 64픽셀=6큐빗 진폭encoding, (4,4)면 16픽셀=4큐빗."""
+    """양자 encoding용 축소 (큰 폭 축소라 INTER_AREA)."""
     return cv2.resize(img_gray, size, interpolation=cv2.INTER_AREA)
 
 
