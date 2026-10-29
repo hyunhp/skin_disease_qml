@@ -1,16 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Patch Quantum GAN - HAM10000 QGAN 논문(Andra et al.) Section 3.2 / Table 3,4 재현
-QML 강의 2~3일차용. 원 논문 스펙(7+1큐빗, sub-generator 16개, PQC depth 10, 2000 epoch)은
-Colab 무료 시뮬레이터로 라이브 실습하기엔 크므로, 강의용으로 축소한 스펙을 기본값으로 둔다.
-아키텍처 자체(sub-generator ensemble + patch 방식 + 고전 판별자)는 논문과 동일하게 유지.
+Patch Quantum GAN (Andra et al. Section 3.2, Table 3·4).
 
-측정 방식: 원 논문/Huang et al.(2020)의 patch method처럼 ancilla qubit이 |0>인 경우만 채택한다
-(post-selection). shot 단위 post-selection 대신 exact 시뮬레이터의 qml.probs()로 전체 큐빗 확률을 구한 뒤
-'ancilla qubit=0' 항목만 patch로 쓰는 방식이며, PennyLane 공식 QGAN 튜토리얼과 같은 방향이다(튜토리얼과 달리
-patch별 재정규화는 하지 않아 patch 밝기 총합 0~1도 학습 대상이 됨).
-2026-09-22 변경: 이전에는 데이터 큐빗만 측정(ancilla qubit partial trace)해 patch 합이 항상 1로 고정됐는데,
-segmentation 이미지는 배경 patch 합이 0에 가까워 판별자가 이 차이만으로 항상 이겨 생성 품질이 무너졌다.
+sub-generator 여러 개가 patch를 만들어 이어붙이고, 판별자는 고전 5층 FC.
+측정: 전체 큐빗 확률 중 ancilla qubit=0 항목만 patch로 씀(post-selection). patch별 재정규화는 하지 않아
+patch 밝기 총합(0~1)도 학습됨. 데이터 큐빗만 측정하면 patch 합이 1로 고정돼 배경 patch를 표현하지 못함.
 """
 import math
 import torch
@@ -19,11 +13,10 @@ import pennylane as qml
 
 
 class PatchQuantumGenerator(nn.Module):
-    """sub-generator ensemble 기반 양자 생성자.
+    """sub-generator ensemble 양자 생성자.
 
-    원 논문 스펙(기본값 인자로 그대로 재현 가능): n_generators=16, n_data_qubits=7, n_ancillas=1, q_depth=10
-    인자 기본값(n_generators=4, n_data_qubits=4, q_depth=3)은 8×8 단계의 축소 스펙임.
-    현재 16×16 실습 스펙은 n_generators=4, n_data_qubits=6, n_ancillas=1, q_depth=10 (train_qgan_checkpoint.py가 지정)
+    논문 스펙: n_generators=16, n_data_qubits=7, n_ancillas=1, q_depth=10
+    실습 스펙: n_generators=4, n_data_qubits=6, n_ancillas=1, q_depth=10 (train_qgan_checkpoint.py가 지정)
     """
 
     def __init__(self, n_generators=4, n_data_qubits=4, n_ancillas=1, q_depth=3, dev_name="default.qubit"):
@@ -34,23 +27,23 @@ class PatchQuantumGenerator(nn.Module):
         self.n_qubits = n_data_qubits + n_ancillas
         self.q_depth = q_depth
         self.patch_dim = 2 ** n_data_qubits  # sub-generator 1개가 만드는 patch 길이
-        self.anc_stride = 2 ** n_ancillas  # ancilla qubit이 마지막 wire → 'ancilla qubit=0' 항목은 이 간격마다 위치함
+        self.anc_stride = 2 ** n_ancillas  # ancilla qubit=0 항목의 간격 ([::2])
 
         dev = qml.device(dev_name, wires=self.n_qubits)
         n_qubits = self.n_qubits
 
         @qml.qnode(dev, interface="torch", diff_method="backprop")
         def circuit(noise, weights):
-            # 1) 노이즈를 angle encoding으로 초기 회전각에 encoding (HAM10000/MosaiQ 논문과 동일한 Rx/Ry 방식)
+            # 1) 노이즈 angle encoding
             for i in range(n_qubits):
                 qml.RY(noise[i], wires=i)
-            # 2) 학습 가능한 변분 layer - 단일큐빗 회전 + 인접큐빗 CZ 얽힘 반복 (논문 Fig.10 방식)
+            # 2) 변분 layer: 회전 + 인접 CZ (논문 Fig.10)
             for layer in range(q_depth):
                 for i in range(n_qubits):
                     qml.RY(weights[layer, i], wires=i)
                 for i in range(n_qubits - 1):
                     qml.CZ(wires=[i, i + 1])
-            # ancilla qubit까지 전체 측정 → forward에서 'ancilla qubit=0' 항목만 patch로 사용 (논문의 post-selection에 해당)
+            # 전체 측정 → forward에서 ancilla qubit=0 항목만 사용 (post-selection)
             return qml.probs(wires=range(n_qubits))
 
         self.circuit = circuit
@@ -68,9 +61,9 @@ class PatchQuantumGenerator(nn.Module):
                 probs = self.circuit(noise, weights)[::self.anc_stride]  # ancilla qubit=0 항목만 → (2**n_data_qubits,)
                 batch_patches.append(probs)
             all_patches.append(torch.stack(batch_patches))  # (batch, patch_dim)
-        # sub-generator 출력을 이어붙여 최종 이미지 벡터 생성 (논문: "sub-patches combined into one image")
+        # patch를 이어붙여 이미지 벡터로
         images = torch.cat(all_patches, dim=1)  # (batch, n_generators * patch_dim)
-        # PennyLane qml.probs()는 float64를 반환하는데 판별자(PyTorch 기본 float32)와 dtype이 안 맞으므로 캐스팅
+        # qml.probs는 float64 → 판별자(float32)에 맞춰 캐스팅
         return images.float()
 
     @property
@@ -79,7 +72,7 @@ class PatchQuantumGenerator(nn.Module):
 
 
 class ClassicalDiscriminator(nn.Module):
-    """HAM10000 QGAN 논문 Table 4 그대로 - 5층 완전연결, ReLU, sigmoid 출력, BCE loss."""
+    """논문 Table 4 판별자: 5층 FC, ReLU, sigmoid."""
 
     def __init__(self, input_dim):
         super().__init__()
@@ -96,7 +89,7 @@ class ClassicalDiscriminator(nn.Module):
 
 
 def train_step(generator, discriminator, real_batch, opt_g, opt_d, device="cpu"):
-    """QGAN 한 step 학습 - 논문 Eq.(5)의 min-max 목적함수를 표준 BCE GAN 학습으로 구현."""
+    """QGAN 한 step (논문 Eq.(5)를 표준 BCE GAN으로 구현)."""
     bce = nn.BCELoss()
     batch_size = real_batch.shape[0]
     real_labels = torch.ones(batch_size, 1, device=device)
@@ -138,7 +131,7 @@ if __name__ == "__main__":
     fake_batch = gen(batch_size=4)
     print("생성 이미지 batch shape:", tuple(fake_batch.shape))
     assert fake_batch.shape == (4, gen.output_dim)
-    # 각 sub-generator의 patch는 'ancilla qubit=0' 확률이므로 값이 0 이상이고 합이 1 이하여야 함(검증)
+    # patch는 ancilla qubit=0 확률이라 0 이상, 합 1 이하여야 함
     for i in range(gen.n_generators):
         patch = fake_batch[0, i * gen.patch_dim:(i + 1) * gen.patch_dim]
         assert patch.min().item() >= 0 and patch.sum().item() <= 1.0 + 1e-4, f"sub-generator {i} 출력 이상: {patch.sum().item()}"

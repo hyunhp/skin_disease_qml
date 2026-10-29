@@ -1,29 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-[준비 스크립트 ②] QGAN checkpoint 학습 - HAM10000 DF(소수클래스) segmentation 이미지.
+[준비 스크립트 ②] QGAN checkpoint 학습 (HAM10000 DF segmentation 이미지).
 
-2026-10-01 커리큘럼 재설계 반영 - 확정 스펙이 기본값이다:
-  **16x16 · sub-generator 4개 · depth 10 (데이터 6 + ancilla 1 = 7큐빗, patch 64)**
-  → 처음에는 논문과 큐빗 수가 같은 2개(데이터 7 + ancilla 1)를 기본값으로 뒀으나, 2·4·8·16개를 같은 조건
-     (600 step, depth 10)으로 실측한 결과 4개의 품질이 가장 좋아 4개로 바꿈(근거는 README sub-generator 수 실험 표).
-재설계 후 2일차(11/20)는 학생이 이 학습을 **라이브로** 돌린다(400 step, Colab 약 35분). 이 스크립트는
-3일차 비교 기준본이 될 강사 checkpoint를 미리 만들어두는 용도다.
-
-입력은 두 가지 중 하나:
-  (A) --npy  전처리 완료 npy(0~1) - **Kaggle 불필요, 로컬에서 바로 실행 가능(권장)**
-  (B) --metadata + --img_dir  HAM10000 원본에서 segmentation까지 직접 수행(Kaggle 필요)
+- 기본값 = 실습 스펙: 16x16, sub-generator 4개, depth 10 (데이터 6 + ancilla 1 = 7큐빗).
+  2·4·8·16개를 600 step으로 비교해 4개가 가장 좋았음(README sub-generator 실험)
+- 3일차 비교 기준인 강사 checkpoint를 만듦. 2일차 학생은 같은 학습을 Colab에서 400 step 돌림
+- --epochs는 랜덤 batch step 수임(데이터 순회 아님). 600 step 로컬 CPU 약 22분
+- 입력: (A) --npy 전처리 npy(0~1, Kaggle 불필요, 권장) 또는 (B) --metadata + --img_dir 원본(Kaggle 필요)
 
 실행 예:
-    # (A) 권장 - 저장소의 16x16 전처리 npy로 로컬 학습
     C:/qmlvenv/Scripts/python.exe -X utf8 train_qgan_checkpoint.py \
         --npy ../../practice/assets/df_preprocessed.npy --out_dir ./checkpoints --n_generators 4 --epochs 600
-
-    # (B) 원본에서 전처리까지
     C:/qmlvenv/Scripts/python.exe -X utf8 train_qgan_checkpoint.py \
         --metadata HAM10000_metadata.csv --img_dir ./ham10000 --out_dir ./checkpoints
-
-주의: 원 논문은 2000 epoch으로 1~1.5시간이 걸렸다(Table 10). 여기서 1 epoch은 데이터 1회 순회가 아니라
-  **랜덤 batch 1 step**이다 - 즉 --epochs 600 = 600 step(실측 약 22분).
 """
 import argparse
 import sys
@@ -57,28 +46,22 @@ def build_dataset(metadata_csv, img_dir, target_class, img_size, max_n=None):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--npy", help="전처리 완료 npy(0~1) 경로. 지정하면 Kaggle·원본 이미지가 필요 없음(권장)")
-    ap.add_argument("--metadata", help="--npy를 쓰지 않을 때만 필요(HAM10000_metadata.csv)")
-    ap.add_argument("--img_dir", help="--npy를 쓰지 않을 때만 필요(HAM10000 이미지 폴더)")
+    ap.add_argument("--npy", help="전처리 npy(0~1) 경로 (권장, Kaggle 불필요)")
+    ap.add_argument("--metadata", help="--npy 대신 원본을 쓸 때 (HAM10000_metadata.csv)")
+    ap.add_argument("--img_dir", help="--npy 대신 원본을 쓸 때 (이미지 폴더)")
     ap.add_argument("--out_dir", default="./checkpoints")
     ap.add_argument("--target_class", default="df", choices=["akiec", "bcc", "bkl", "df", "mel", "vasc"],
                      help="증강할 소수클래스 (논문 기본값: df)")
-    ap.add_argument("--img_size", type=int, default=16, help="한 변 픽셀수 - 2026-10-01 확정 스펙은 16. "
-                     "전체 픽셀수(img_size^2)가 n_generators로 나누어떨어지고 그 몫이 2의 거듭제곱이어야 함")
-    ap.add_argument("--n_generators", type=int, default=4, help="sub-generator 개수 - 확정 스펙은 4 "
-                     "(데이터 6 + ancilla 1 = 7큐빗, patch 64. 2·4·8·16개 실측 중 품질 최고). "
-                     "각 sub-generator가 이미지의 1/n_generators만큼의 patch를 담당(이어붙여 전체 이미지 생성)")
-    ap.add_argument("--q_depth", type=int, default=10, help="PQC depth - 확정 스펙은 논문과 같은 10")
-    ap.add_argument("--epochs", type=int, default=600, help="= 랜덤 batch step 수(데이터 순회가 아님). 로컬 CPU 실측 600 step 약 22분")
+    ap.add_argument("--img_size", type=int, default=16, help="한 변 픽셀 수. img_size^2 / n_generators가 2의 거듭제곱이어야 함")
+    ap.add_argument("--n_generators", type=int, default=4, help="sub-generator 개수 (4 = 7큐빗, patch 64)")
+    ap.add_argument("--q_depth", type=int, default=10, help="PQC depth (논문과 같은 10)")
+    ap.add_argument("--epochs", type=int, default=600, help="랜덤 batch step 수 (600 step 로컬 CPU 약 22분)")
     ap.add_argument("--batch_size", type=int, default=8)
     ap.add_argument("--lr_g", type=float, default=0.05)
     ap.add_argument("--lr_d", type=float, default=0.001)
     args = ap.parse_args()
 
-    # sub-generator n_generators개가 patch를 이어붙여 전체 이미지(img_size^2 픽셀)를 만드는 구조이므로,
-    # 생성자 총 출력차원(n_generators * 2^n_data_qubits)이 실제 이미지 픽셀수와 같아야 한다.
-    # (이 조건이 깨지면 판별자에 넣는 real 이미지와 fake 이미지의 차원이 달라져 학습 시 즉시 shape 에러가 남 -
-    #  실제로 예전 버전은 n_generators를 고려하지 않고 n_data_qubits=log2(img_size^2)로만 계산해 이 버그가 있었음.)
+    # 생성자 출력(n_generators × 2^n_data_qubits)이 이미지 픽셀 수와 같아야 함
     total_pixels = args.img_size ** 2
     assert total_pixels % args.n_generators == 0, (
         f"img_size^2({total_pixels})가 n_generators({args.n_generators})로 나누어떨어져야 함")
@@ -114,7 +97,7 @@ def main():
         return
 
     real_flat = torch.tensor(imgs.reshape(len(imgs), -1))
-    # real을 확률 척도(픽셀 합=1)로 맞춤. 생성자는 patch별 'ancilla qubit=0' 확률이라 총합·patch별 분포를 함께 학습함.
+    # real을 확률 척도(장당 합 1)로 맞춤
     real_flat = real_flat / real_flat.sum(dim=1, keepdim=True).clamp(min=1e-6)
 
     print("[2/3] QGAN 학습...")

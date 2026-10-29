@@ -1,20 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-경량 생성품질 지표 4종 + 공통 역정규화 함수 - 2·3일차 공통 모듈.
-2026-10-01 커리큘럼 재설계로 CNN 증강 비교를 실습에서 들어내면서, "생성이 잘 됐는지"를
-판정할 수단으로 도입한 것(설계 근거는 프로젝트 README "평가 설계" 섹션 참고).
+생성품질 지표 4종 + 척도 변환 (2·3일차 공통 모듈).
 
-지표 4종
-  ① 픽셀 강도 통계·histogram      pixel_stats() / plot_pixel_histogram()
-  ② 클래스 평균 이미지와의 상관계수  mean_image_correlation()
-  ③ 최근접 실제 이미지 L2 거리      nearest_neighbor_distance() / plot_nearest_neighbors()
-  ④ 샘플 간 다양성 + 손실곡선        sample_diversity() / plot_loss_curves()
+  ① 픽셀 강도 분포    pixel_stats() / plot_pixel_histogram()
+  ② 클래스 평균 상관  mean_image_correlation()
+  ③ 최근접 실제 거리  nearest_neighbor_distance() / plot_nearest_neighbors()
+  ④ 샘플 간 다양성    sample_diversity() / plot_loss_curves()
 
-주의: 척도 규약(README와 동일, 어기면 QGAN·MediQ-GAN 비교가 무의미해짐)
-  - 전처리 npy: 0~1  / QGAN 출력: patch별 합 0~1, 장당 0~4(확률 척도)  / MediQ-GAN 출력: Tanh(-1~1)
-  - **모양 지표(②③④)는 to_unit_scale()로 0~1로 되돌린 뒤 계산**
-  - **픽셀 통계(①)는 되돌리기 전 원 척도에서도 함께 봄** - 척도 차이 자체가 두 모델의
-    구조적 차이(QGAN은 밝기 총합까지 학습 대상)를 보여주는 정보이기 때문
+척도: 전처리 0~1, QGAN 확률(장당 합 0~4), MediQ-GAN Tanh(-1~1).
+②③④는 to_unit_scale()로 0~1로 맞춘 뒤 계산함. ①은 원 척도로도 봄.
 """
 import numpy as np
 
@@ -22,12 +16,7 @@ SCALE_MODES = ("unit", "prob", "tanh")
 
 
 def to_unit_scale(x, mode):
-    """생성/실제 이미지를 0~1 척도로 되돌림. 모양 비교 지표는 전부 이 함수를 거쳐야 함.
-
-    mode="unit": 이미 0~1 (전처리 npy) → 그대로
-    mode="prob": QGAN 출력(patch별 확률, 장당 합 0~4) → 이미지별 min-max 정규화
-    mode="tanh": MediQ-GAN 출력(-1~1) → (x+1)/2
-    """
+    """0~1 척도로 변환. unit: 그대로, prob: 이미지별 min-max, tanh: (x+1)/2."""
     if mode not in SCALE_MODES:
         raise ValueError(f"mode는 {SCALE_MODES} 중 하나여야 함 (받은 값: {mode!r})")
     arr = np.asarray(x, dtype=np.float64)
@@ -35,7 +24,7 @@ def to_unit_scale(x, mode):
         return np.clip(arr, 0.0, 1.0)
     if mode == "tanh":
         return np.clip((arr + 1.0) / 2.0, 0.0, 1.0)
-    # prob - 이미지별 min-max. 상수 이미지(mode collapse)는 0으로 두어 NaN을 피함
+    # prob: 이미지별 min-max. 상수 이미지는 0 (NaN 방지)
     flat = arr.reshape(len(arr), -1)
     lo = flat.min(axis=1, keepdims=True)
     hi = flat.max(axis=1, keepdims=True)
@@ -84,10 +73,7 @@ def class_mean_image(real):
 
 
 def mean_image_correlation(fake, mean_img):
-    """생성 샘플별 Pearson 상관계수(평균 이미지 대비).
-
-    해석: 1에 가까우면 그 클래스의 전형적 밝기 배치를 재현한 것. 상수 이미지는 NaN이 되므로 0으로 둠.
-    """
+    """샘플별 Pearson 상관계수(평균 이미지 대비). 상수 이미지는 0."""
     f = _flat(fake)
     m = np.asarray(mean_img, dtype=np.float64).ravel()
     m_c = m - m.mean()
@@ -103,19 +89,16 @@ def mean_image_correlation(fake, mean_img):
 # ──────────────── ③ 최근접 실제 이미지 L2 거리(암기 검출) ────────────────
 
 def nearest_neighbor_distance(fake, real):
-    """생성 샘플별 (최근접 실제 이미지까지의 L2 거리, 그 이미지 인덱스).
-
-    해석: 거리가 0에 가까우면 학습 데이터를 거의 복사한 것(암기), 과도하게 크면 분포를 벗어난 것.
-    """
+    """샘플별 (최근접 실제 이미지까지 L2 거리, 인덱스). 0에 가까우면 암기."""
     f, r = _flat(fake), _flat(real)
-    # (n_fake, n_real) 거리행렬 - 8x8/16x16 저해상도라 전체를 한 번에 계산해도 가벼움
+    # (n_fake, n_real) 거리행렬 - 저해상도라 한 번에 계산
     d = np.linalg.norm(f[:, None, :] - r[None, :, :], axis=2)
     idx = d.argmin(axis=1)
     return d[np.arange(len(f)), idx], idx
 
 
 def plot_nearest_neighbors(fake, real, img_size, n_show=4, cmap="gray"):
-    """생성 샘플과 그 최근접 실제 이미지를 위/아래로 나란히 표시."""
+    """생성 샘플(위)과 최근접 실제 이미지(아래)."""
     import matplotlib.pyplot as plt
     dist, idx = nearest_neighbor_distance(fake, real)
     n_show = min(n_show, len(fake))
@@ -134,10 +117,7 @@ def plot_nearest_neighbors(fake, real, img_size, n_show=4, cmap="gray"):
 # ──────────────── ④ 샘플 간 다양성 + 판별자 손실곡선 ────────────────
 
 def sample_diversity(fake):
-    """생성 샘플끼리 얼마나 다른가 - 쌍별 L2 거리 평균/최솟값, 픽셀별 표준편차 평균.
-
-    해석: 값이 0에 가까우면 mode collapse(어떤 노이즈를 넣어도 같은 그림만 나옴).
-    """
+    """샘플 간 L2 거리 평균·최솟값, 픽셀별 표준편차. 0에 가까우면 mode collapse."""
     f = _flat(fake)
     if len(f) < 2:
         return {"pairwise_mean": 0.0, "pairwise_min": 0.0, "pixelwise_std": float(f.std())}
@@ -151,7 +131,7 @@ def sample_diversity(fake):
 
 
 def plot_loss_curves(loss_g, loss_d, ax=None):
-    """생성자·판별자 손실곡선. 판별자가 일방적으로 이기는(loss_d→0) 구간을 눈으로 확인하는 용도."""
+    """생성자·판별자 손실곡선."""
     import matplotlib.pyplot as plt
     if ax is None:
         _, ax = plt.subplots(figsize=(5, 3))
@@ -164,7 +144,7 @@ def plot_loss_curves(loss_g, loss_d, ax=None):
 # ──────────────────────── 종합: 모델 간 동일 잣대 비교 ────────────────────────
 
 def evaluate(fake, real, scale_mode, real_scale_mode="unit"):
-    """지표 4종을 한 번에 계산해 dict로 반환. 모양 지표는 0~1로 되돌린 뒤 계산함."""
+    """지표 4종을 dict로 반환. 모양 지표는 0~1로 맞춘 뒤 계산."""
     fake_u = to_unit_scale(fake, scale_mode)
     real_u = to_unit_scale(real, real_scale_mode)
     corr = mean_image_correlation(fake_u, class_mean_image(real_u))
@@ -184,10 +164,7 @@ def evaluate(fake, real, scale_mode, real_scale_mode="unit"):
 
 
 def comparison_table(entries, real, real_scale_mode="unit"):
-    """여러 모델을 같은 잣대로 비교. entries = {"QGAN": (fake, "prob"), "MediQ-GAN": (fake, "tanh")}
-
-    pandas가 있으면 DataFrame, 없으면 dict of dict를 반환함(노트북에서는 DataFrame으로 표시됨).
-    """
+    """여러 모델을 같은 지표로 비교. entries = {"QGAN": (fake, "prob"), ...}. pandas가 있으면 DataFrame."""
     rows = {name: evaluate(fake, real, mode, real_scale_mode) for name, (fake, mode) in entries.items()}
     try:
         import pandas as pd

@@ -1,41 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-[준비 스크립트 ③] MediQ-GAN(ToyDualStreamGenerator) 사전학습 - 3일차 라이브 미세조정용 checkpoint 생성.
+[준비 스크립트 ③] MediQ-GAN 사전학습 - 3일차 미세조정용 checkpoint 생성.
 
-2026-10-01 커리큘럼 재설계: 3일차는 "원 논문 스펙(16큐빗×5·depth 8)을 유지한 채 사전학습
-checkpoint를 불러와 수업 중 10~60 step만 미세조정"하는 방식이다. 16큐빗은 상태벡터
-시뮬레이션 자체가 비용(실측 샘플당 2.99s)이라 전체 학습을 라이브로 돌릴 수 없기 때문.
-→ 이 스크립트가 그 사전학습을 담당한다.
-
-주의: Kaggle이 필요 없다. 입력은 전처리 완료된 npy(0~1, (N, img_size, img_size))뿐이므로
-   로컬에서 밤새 돌리면 된다. 실측 기준 epoch당 약 7.8분 - 25 epoch ≈ 196분(약 3시간 15분).
-
-주의: checkpoint를 2개 이상 남긴다 - 최종본과 **덜 학습된 중간본**. 이미 수렴한 모델에서
-   10~25 step 미세조정하면 손실이 거의 움직이지 않아 3일차 "학습 체험"이 심심해지므로,
-   중간본(--save_every로 저장됨)을 수업용 출발점으로 쓴다.
-
-주의: epoch을 늘리면 좋아지는 게 아니다(2026-10-01 실측): uniform z 기준 40 epoch이 20 epoch보다 나빴다
-   (상관 0.207 -> 0.114, Tanh 포화 88%% -> 97%%). 생성자가 포화 쪽으로 드리프트하므로, --save_every로
-   중간 checkpoint를 남기고 **출력되는 [품질] 수치로 최적 epoch을 골라 쓸 것**(마지막 checkpoint가 최선이 아님).
-
-주의: 학습률 주의(2026-10-01 사고): 처음엔 QGAN처럼 큰 lr_g=0.02를 썼는데 3 epoch 만에 loss_d가 0.0027로
-   붕괴하고 다양성 0.000(mode collapse)까지 겹쳤다. MediQ-GAN은 고전 MLP decoder가 출력을 만들어 Tanh가
-   포화되면 z와 무관한 상수 이미지가 나온다. DCGAN 관례(lr 2e-4, betas (0.5,0.999))가 기본값이며,
-   8큐빗 축소판 실측으로 loss_d 1.387(이론 균형 ln4=1.386)·상관 0.207을 확인했다. 기본값을 올리지 말 것.
-
-척도: 입력 npy는 0~1인데 생성자 출력이 Tanh(-1~1)이므로 real을 2x-1로 매핑해 학습한다
-      (공식 레포·DCGAN 관례). 평가·시각화 때 0~1로 되돌리는 것은 gen_metrics.to_unit_scale(x, "tanh").
+- 16큐빗 시뮬레이션이 비싸(샘플당 약 3초) 수업에서는 이 checkpoint에서 출발해 미세조정만 함
+- 입력은 전처리 npy(0~1)뿐이라 Kaggle 불필요. 로컬 CPU epoch당 약 7.8분(25 epoch 196분)
+- 중간 checkpoint(--save_every)를 남김. 수렴한 모델로는 미세조정 손실이 거의 움직이지 않아 덜 학습된 본을 수업용으로 씀
+- 마지막 epoch이 최선은 아님(uniform z 실측: 40 epoch이 20 epoch보다 나빴음). 출력되는 [품질] 수치로 고를 것
+- 학습률: lr_g 0.02로는 3 epoch 만에 loss_d 0.0027로 붕괴함. DCGAN 관례(lr 2e-4, betas (0.5, 0.999))가 기본값
+- 척도: real을 2x-1로 맞춰 Tanh 출력과 학습함. 평가 때는 gen_metrics.to_unit_scale(x, "tanh")
 
 실행 예:
-    # 본 학습(로컬 밤샘) - 중간 checkpoint는 5 epoch마다
     C:/qmlvenv/Scripts/python.exe -X utf8 train_mediqgan_checkpoint.py \
         --npy ../../practice/assets/df_preprocessed.npy --out_dir ./checkpoints --epochs 30 --save_every 5
-
-    # 중단된 학습 이어하기
-    ... --resume ./checkpoints/mediqgan_last.pt
-
-    # 코드만 빠르게 점검(합성 데이터·축소 스펙, 1분 이내)
-    C:/qmlvenv/Scripts/python.exe -X utf8 train_mediqgan_checkpoint.py --smoke
+    ... --resume ./checkpoints/mediqgan_last.pt          # 이어하기
+    C:/qmlvenv/Scripts/python.exe -X utf8 train_mediqgan_checkpoint.py --smoke   # 합성 데이터로 코드 점검(1분 이내)
 """
 import argparse
 import json
@@ -47,7 +25,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-# 품질 모니터링에 쓰는 gen_metrics는 학생 실습 폴더(practice/)에 있음 - 2026-10-12 폴더 재편으로 분리됨
+# 품질 모니터링용 gen_metrics는 practice/에 있음
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "practice"))
 
 from mediqgan_toy import ToyDualStreamGenerator
@@ -76,7 +54,7 @@ def sample_z(n, in_dim, dist="uniform", device="cpu"):
 
 
 def train_step(generator, discriminator, real_batch, opt_g, opt_d, in_dim, device="cpu", z_dist="uniform"):
-    """MediQ-GAN 한 step - 표준 BCE GAN(판별자는 논문 Table 4 계열 5층 FC 재사용)."""
+    """MediQ-GAN 한 step (표준 BCE GAN, 판별자는 논문 Table 4)."""
     bce = nn.BCELoss()
     bsz = real_batch.shape[0]
     real_labels = torch.ones(bsz, 1, device=device)
@@ -103,8 +81,7 @@ def train_step(generator, discriminator, real_batch, opt_g, opt_d, in_dim, devic
 
 
 def save_checkpoint(path, generator, discriminator, cfg, history, epoch, opt_g=None, opt_d=None):
-    """옵티마이저 상태까지 저장한다 - Adam 모멘텀을 복원하지 않고 --resume하면
-    이어하는 몇 epoch 동안 학습이 흔들려 품질이 일시적으로 꺾인다."""
+    """옵티마이저 상태까지 저장 (없으면 --resume 직후 학습이 흔들림)."""
     payload = {
         "generator_state_dict": generator.state_dict(),
         "discriminator_state_dict": discriminator.state_dict(),
@@ -122,27 +99,25 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--npy", help="전처리 완료 npy 경로(0~1). --smoke일 때는 불필요")
     ap.add_argument("--out_dir", default="./checkpoints")
-    ap.add_argument("--img_size", type=int, default=16, help="2일차 산출물과 반드시 동일(재설계 후 16)")
-    ap.add_argument("--n_qubits", type=int, default=16, help="원 논문 스펙 16 - 내리지 말 것(README 참고)")
+    ap.add_argument("--img_size", type=int, default=16, help="2일차 자산과 같아야 함")
+    ap.add_argument("--n_qubits", type=int, default=16, help="원 논문 스펙 16 (내리지 말 것)")
     ap.add_argument("--q_depth", type=int, default=8, help="원 논문 그림 기준 8(레포 CLI 기본값은 6)")
     ap.add_argument("--n_generators", type=int, default=5, help="원 논문 스펙 5")
     ap.add_argument("--epochs", type=int, default=30)
     ap.add_argument("--batch_size", type=int, default=4,
-                    help="주의: batch를 키워도 속도는 안 빨라짐 - quantum_stream이 샘플을 파이썬 for로 돌아 "
-                         "epoch 비용이 샘플 수에 비례함")
+                    help="키워도 빨라지지 않음 (샘플마다 회로를 따로 실행)")
     ap.add_argument("--lr_g", type=float, default=2e-4,
-                    help="DCGAN 관례. 주의: QGAN의 0.05/0.02를 그대로 쓰면 Tanh가 포화돼 mode collapse함(2026-10-01 실측)")
+                    help="DCGAN 관례. QGAN처럼 크게 두면 mode collapse")
     ap.add_argument("--lr_d", type=float, default=2e-4)
-    ap.add_argument("--beta1", type=float, default=0.5, help="Adam beta1 - GAN 관례는 0.5(기본 0.9는 불안정)")
+    ap.add_argument("--beta1", type=float, default=0.5, help="GAN 관례 0.5 (0.9는 불안정)")
     ap.add_argument("--z_dist", default="normal", choices=["uniform", "normal"],
-                    help="잠재벡터 분포. normal이 기본 - 8큐빗 선별에서 uniform 대비 다양성 0.028->0.170, "
-                         "상관 0.207->0.245, Tanh 포화 88%%->58%%로 모두 좋았음(2026-10-01 실측)")
+                    help="잠재벡터 분포 (normal이 uniform보다 다양성·상관 모두 좋았음)")
     ap.add_argument("--save_every", type=int, default=5, help="중간 checkpoint 저장 간격(epoch)")
     ap.add_argument("--max_n", type=int, default=None)
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--resume", default=None, help="이어하기 - 저장된 checkpoint 경로")
+    ap.add_argument("--resume", default=None, help="이어할 checkpoint 경로")
     ap.add_argument("--smoke", action="store_true",
-                    help="합성 데이터 + 축소 스펙으로 코드만 점검(6큐빗·2 sub-generator·3 epoch)")
+                    help="합성 데이터·축소 스펙으로 코드만 점검")
     args = ap.parse_args()
 
     torch.manual_seed(args.seed)

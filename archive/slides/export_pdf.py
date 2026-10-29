@@ -1,6 +1,6 @@
 """pptx -> pdf (LibreOffice UNO). 모든 문단의 한글·영문 자동 간격을 끄고 내보냄.
 
-LibreOffice 기본 설정으로 내보내면 "2일차"가 "2 일차"처럼 숫자·영문과 한글 사이가 벌어짐.
+자동 간격을 켜 두면 "2일차"가 "2 일차"처럼 벌어짐.
 사용법: python3 export_pdf.py <입력.pptx> <출력.pdf>   (LibreOffice와 python3-uno 필요)
 """
 import sys, os, subprocess, time, tempfile, uno
