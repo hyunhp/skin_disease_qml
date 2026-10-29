@@ -132,6 +132,10 @@ function barList(s, items, x, y, w, gap = 0.95, color = C.accent1) {
     text(s, it[1], x + 0.25, yy + 0.38, w - 0.25, gap - 0.5, { fontSize: 12.5, color: C.accent6 });
   });
 }
+function summary(s, rows) {
+  table(s, [["주제", "정리"], ...rows.map((r) => [{ text: r[0], options: { bold: true } }, r[1]])],
+    0.6, 2.25, 12.1, [2.4, 9.7], { fontSize: 13, rowH: 0.55 });
+}
 function sectionRows(s, rows, y0 = 3.25, gap = 0.95) {
   rows.forEach((r, i) => {
     text(s, r[0], 0.9, y0 + i * gap, 2.6, 0.4, { fontSize: 14, bold: true, color: C.accent3 });
@@ -143,7 +147,7 @@ function sectionRows(s, rows, y0 = 3.25, gap = 0.95) {
 newSection("표지");
 {
   const s = slide("TITLE_DARK", "QML Lecture · 2일차", "실습 설명 자료", "segmentation 전처리 → 양자 회로 → QGAN 학습",
-    "2일차 노트북(practice/day2_practice.ipynb)을 진행하면서 실습 블록 사이에 띄우는 설명 자료.\n- 코드 중심으로 구성함. 각 파트 첫 장에 노트북의 어느 섹션 직전에 쓰는지 표시함.\n- PART 0은 1일차 내용 복습이므로 시작 직후 10분 정도로 진행함.");
+    "2일차 노트북(practice/day2_practice.ipynb)의 내용을 설명하는 자료.\n- 코드 중심으로 구성함. 각 PART 첫 장에 해당 노트북 섹션을 표시함.\n- PART 0은 1일차 내용 복습임.");
   s.addShape(pres.shapes.OVAL, { x: 10.55, y: 0.85, w: 1.55, h: 1.55, fill: { color: C.text2 }, line: { color: C.accent1, width: 1.25 } });
   s.addShape(pres.shapes.OVAL, { x: 11.0, y: 1.3, w: 0.65, h: 0.65, fill: { color: C.accent1 }, line: { type: "none" } });
 }
@@ -151,8 +155,8 @@ newSection("표지");
 // ---------- 진행 ----------
 newSection("진행");
 {
-  const s = slide("CONTENT", "오리엔테이션", "2일차 진행 순서", "노트북 섹션 순서대로 진행하고, 섹션 앞에서 해당 PART를 설명함",
-    "하루 일정 운영 기준.\n- 학습 셀(§5)은 Colab 무료 CPU에서 400 step 약 35분 걸림(실측). 셀을 먼저 실행해 두고 PART 3을 설명하면 대기 시간이 설명 시간이 됨.\n- §3 segmentation은 1장당 수 초라 5장만 직접 처리하고, 학습은 저장소의 전처리 자산(DF 115장)으로 함.");
+  const s = slide("CONTENT", "오리엔테이션", "2일차 진행 순서", "노트북 섹션과 이 자료의 PART 대응",
+    "- 학습 셀(§5)은 Colab 무료 CPU에서 400 step 약 35분 걸림(실측).\n- §3 segmentation은 1장당 수 초라 5장만 직접 처리하고, 학습은 저장소의 전처리 자산(DF 115장)으로 함.");
   const hl = (t) => ({ text: t, options: { bold: true, color: C.accent1 } });
   table(s, [
     ["노트북", "내용", "설명 자료"],
@@ -163,7 +167,6 @@ newSection("진행");
     ["§6", "생성 이미지 평가 (지표 4종)", "PART 4"],
     ["§7", "checkpoint를 Google Drive에 저장", "-"],
   ], 0.6, 2.25, 12.1, [1.6, 8.5, 2.0], { fontSize: 13, rowH: 0.55 });
-  text(s, "§5 셀은 먼저 실행해 두고, 학습이 진행되는 약 35분 동안 PART 3을 설명함. 진행 로그는 20 step마다 출력됨.", 0.6, 6.25, 12.1, 0.35, { fontSize: 12, color: C.accent6 });
 }
 
 // =====================================================================
@@ -227,8 +230,7 @@ newSection("PART 0 · 1일차 복습");
 // =====================================================================
 newSection("PART 1 · 데이터와 전처리");
 {
-  const s = slide("SECTION_DARK", "PART 1 · 노트북 §2 – §3 직전", "데이터와 segmentation 전처리", "HAM10000에서 DF·NV를 고르고, 병변만 남겨 16×16으로 줄이는 과정",
-    "노트북 §2(EDA)를 마친 뒤, §3 segmentation 셀을 실행하기 전에 진행함.");
+  const s = slide("SECTION_DARK", "PART 1 · 노트북 §2 – §3", "데이터와 segmentation 전처리", "HAM10000에서 DF·NV를 고르고, 병변만 남겨 16×16으로 줄이는 과정");
   sectionRows(s, [["노트북 범위", "§2 EDA, §3 segmentation 전처리"],
     ["다루는 코드", "segment_fcm_kmeans · resize_for_encoding · preprocess_class"],
     ["논문 근거", "Andra et al. Section 3.1 (K-means + Fuzzy C-means), Table 10"]]);
@@ -353,8 +355,8 @@ newSection("PART 1 · 데이터와 전처리");
 // =====================================================================
 newSection("PART 2 · 양자 회로");
 {
-  const s = slide("SECTION_DARK", "PART 2 · 노트북 §4 직전", "양자 회로 : sub-generator 하나", "노이즈 encoding → 변분층 반복 → 측정 → post-selection",
-    "§4 회로 셀을 실행하기 전에 진행함. §4는 학습 없이 회로 출력만 확인하는 섹션임.");
+  const s = slide("SECTION_DARK", "PART 2 · 노트북 §4 – §5", "양자 회로 : sub-generator 하나", "노이즈 encoding → 변분층 반복 → 측정 → post-selection",
+    "§4는 학습 없이 회로 출력만 확인하는 섹션임. §5 앞부분에서 생성자·판별자를 정의함.");
   sectionRows(s, [["노트북 범위", "§4 회로 1개 출력 확인, §5 생성자·판별자 정의"],
     ["다루는 코드", "sub_generator_circuit · probs_all[::2] · PatchQuantumGenerator"]]);
 }
@@ -484,8 +486,8 @@ newSection("PART 2 · 양자 회로");
 // =====================================================================
 newSection("PART 3 · QGAN 학습");
 {
-  const s = slide("SECTION_DARK", "PART 3 · 노트북 §5 학습 셀 실행 후", "QGAN 학습", "학습 셀을 먼저 실행해 두고 진행함",
-    "§5 학습 셀을 실행한 직후 시작함. 진행 로그는 20 step마다 나오므로 설명 중간에 로그를 함께 봄.");
+  const s = slide("SECTION_DARK", "PART 3 · 노트북 §5", "QGAN 학습", "학습 루프, 손실 읽는 법, 계산 비용과 한계",
+    "진행 로그는 20 step마다 출력됨. 로그 숫자를 읽는 기준은 이 PART의 '손실 기준값' 장.");
   sectionRows(s, [["노트북 범위", "§5 학습 셀 (400 step)"],
     ["다루는 코드", "학습 루프 (판별자 step · 생성자 step) · BCE 손실"],
     ["소요 시간", "Colab CPU 약 35분, 진행 로그는 20 step마다"]]);
@@ -577,8 +579,7 @@ newSection("PART 3 · QGAN 학습");
 // =====================================================================
 newSection("PART 4 · 생성과 평가");
 {
-  const s = slide("SECTION_DARK", "PART 4 · 노트북 §6 직전", "생성과 평가", "생성 이미지를 지표 4종으로 평가함. 3일차 MediQ-GAN에도 같은 지표를 씀",
-    "학습이 끝나고 손실곡선을 확인한 뒤, §6 셀을 실행하기 전에 진행함.");
+  const s = slide("SECTION_DARK", "PART 4 · 노트북 §6", "생성과 평가", "생성 이미지를 지표 4종으로 평가함. 3일차 MediQ-GAN에도 같은 지표를 씀");
   sectionRows(s, [["노트북 범위", "§6 생성 이미지 확인과 지표 4종"],
     ["다루는 코드", "gm.to_unit_scale · mean_image_correlation · nearest_neighbor_distance · sample_diversity"]]);
 }
@@ -621,33 +622,21 @@ newSection("PART 4 · 생성과 평가");
   text(s, "DF와 NV 상관이 거의 같음. 생성자가 DF 고유의 특징을 잡았는지, 16×16 그레이스케일에서 두 클래스의 평균 형태가 원래 비슷한지는 이 결과만으로 구분할 수 없음.", 5.6, 4.95, 7.1, 1.4, { fontSize: 13, color: C.accent6 });
   source(s, "Colab에서 노트북을 끝까지 실행한 결과 (400 step, 생성 64장)");
 }
-{
-  const s = slide("CONTENT", "PART 4 · 정리", "확인 질문", "답은 발표자 노트에 있음",
-    "답\n1. 16 × 8 × 2 = 256번 (현재 64번의 4배).\n2. 70개 × 2 = 140번 (샘플 하나 기준, parameter-shift).\n3. 데이터 큐빗만 측정하면 patch 64개 확률의 합이 항상 1로 고정되어, 배경 patch(합 ≈ 0)를 표현할 수 없음. ancilla = 0만 고르면 합이 0 ~ 1에서 학습됨.\n4. ②는 평균 형태만 보므로 모든 샘플이 같은 평균 이미지여도 높게 나옴. ④(샘플 간 거리)가 0에 가까운지 함께 봐야 함 - 3일차 MediQ-GAN이 이 경우(상관 0.365, 다양성 0.30).\n5. 판별자가 픽셀 합만으로 진짜(합 1)와 가짜(합 약 1.63)를 구분할 수 있어, 생성자 학습 신호 일부가 형태가 아니라 밝기 총합 맞추기에 쓰일 수 있음.");
-  const qs = [
-    "sub-generator를 16개(논문 설정)로 늘리고 batch를 8로 유지하면 step당 회로 실행 수는 몇 번인가",
-    "parameter-shift로 sub-generator 하나(70개 파라미터)의 기울기를 구할 때 회로 실행 수는 몇 번인가",
-    "ancilla qubit 없이 데이터 큐빗만 측정하면 어떤 이미지를 만들 수 없게 되는가",
-    "클래스 평균 상관계수가 높은데도 좋은 생성모델이 아닐 수 있는 경우는 언제인가",
-    "실제 이미지와 생성 이미지의 픽셀 합이 다르면 판별자 학습에 어떤 영향이 있는가",
-  ];
-  text(s, qs.map((q, i) => ({ text: `${i + 1}.  ${q}`, options: { breakLine: i < qs.length - 1 } })),
-    0.6, 2.3, 12.1, 4.2, { fontSize: 17, lineSpacingMultiple: 2.0 });
-}
 
 // =====================================================================
 newSection("정리");
 {
-  const s = slide("SECTION_DARK", "정리", "오늘 만든 것과 3일차", "2일차 결과는 3일차 비교의 기준선이 됨",
-    "- 노트북 §7에서 checkpoint를 Drive에 저장함(권한 창에서 '모두 선택 → 계속').\n- 3일차는 저장소의 강사 checkpoint(600 step)로 진행하지만, 본인 checkpoint를 불러와도 됨.");
-  const rows = [["오늘 만든 것", "segmentation 전처리 · sub-generator 회로 · QGAN 학습 · 지표 4종 표"],
-    ["저장", "qgan_my_16px.pt (생성자 가중치 + 설정 + 손실 기록) → Google Drive"],
-    ["3일차", "MediQ-GAN(layer 단위 hybrid) 미세조정 → 오늘과 같은 지표로 QGAN과 비교"],
-    ["남은 한계", "픽셀 합 불일치 · 16×16 해상도 · exact 시뮬레이션 (shot noise 없음)"]];
-  rows.forEach((r, i) => {
-    text(s, r[0], 0.9, 3.0 + i * 0.85, 2.6, 0.4, { fontSize: 14, bold: true, color: C.accent3 });
-    text(s, r[1], 3.6, 3.0 + i * 0.85, 8.8, 0.4, { fontSize: 15, color: C.background1 });
-  });
+  const s = slide("CONTENT", "정리", "2일차 정리", "segmentation 전처리부터 QGAN 학습·평가까지",
+    "오늘 다룬 내용을 PART 순서대로 정리함.");
+  summary(s, [
+    ["데이터와 전처리", "DF 115장을 증강 대상으로 둠. K-means + FCM segmentation으로 병변만 남기고 16×16, 0 ~ 1로 축소 (INTER_AREA)"],
+    ["sub-generator 회로", "7큐빗(데이터 6 + ancilla 1), RY encoding 후 [학습 RY + 인접 CZ] × 10. ancilla = 0인 확률 64개가 patch 하나"],
+    ["post-selection", "ancilla = 0 항목만 쓰면 patch 밝기 총합이 0 ~ 1에서 자유로워져 배경 patch도 표현 가능"],
+    ["생성자·판별자", "생성자 280개(양자 회전각) vs 판별자 19,201개. 학습률 0.05 / 0.001로 균형을 맞춤"],
+    ["학습과 손실", "step마다 판별자 → 생성자 순서로 갱신. 기준값 loss_d 1.386, loss_g 0.693, loss_d → 0이면 판별자 완승"],
+    ["계산 비용", "400 step에 회로 25,600회. backprop은 시뮬레이터 전용, 실제 장치는 parameter-shift(파라미터당 2회 × shot)"],
+    ["평가와 한계", "지표 4종을 함께 봄. 실제(합 1)와 생성(patch별 합) 이미지의 픽셀 합 불일치, 16×16, shot noise 없음"],
+  ]);
 }
 
 (async () => {
