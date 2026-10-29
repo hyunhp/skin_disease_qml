@@ -118,7 +118,7 @@ Kaggle is needed only to regenerate the preprocessed npy (`archive/prep/prep_ste
 
 - Code, docs and slides: [MIT](../LICENSE)
 - Data derivatives (`practice/assets/`, `archive/assets_8px/`): inherit HAM10000's CC BY-NC 4.0 (non-commercial)
-- Paper PDFs and quoted figures: CC BY 4.0 of each paper. Only the MediQ-GAN PDF and the HAM10000 QGAN author preprint are included (the published version is Springer-licensed); figures in the and the Day 3 notebook are quoted with attribution. See [`archive/paper/README.md`](../archive/paper/README.md)
+- Paper PDFs and quoted figures: CC BY 4.0 of each paper. Only the MediQ-GAN PDF and the HAM10000 QGAN author preprint are included (the published version is Springer-licensed); figures in the Day 1 deck and the Day 3 notebook are quoted with attribution. See [`archive/paper/README.md`](../archive/paper/README.md)
 
 ## References
 
