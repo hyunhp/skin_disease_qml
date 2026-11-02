@@ -155,25 +155,9 @@ function chartStyle(extra) {
 newSection("표지");
 {
   const s = slide("TITLE_DARK", "QML Lecture · 3일차", "실습 설명 자료", "MediQ-GAN 미세조정 → QGAN과 같은 지표로 비교",
-    "3일차 노트북(practice/day3_practice.ipynb)의 내용을 설명하는 자료.\n- 핵심만 11장: MediQ-GAN 구조, 계산 비용, QGAN과의 비교. 2일차 복습·checkpoint 코드·논문 결과는 노트북에 있음.");
+    "3일차 노트북(practice/day3_practice.ipynb)의 내용을 설명하는 자료.\n- 핵심만 10장: MediQ-GAN 구조, 계산 비용, QGAN과의 비교. 2일차 복습·checkpoint 코드·논문 결과는 노트북에 있음.");
   s.addShape(pres.shapes.OVAL, { x: 10.55, y: 0.85, w: 1.55, h: 1.55, fill: { color: C.text2 }, line: { color: C.accent1, width: 1.25 } });
   s.addShape(pres.shapes.OVAL, { x: 11.0, y: 1.3, w: 0.65, h: 0.65, fill: { color: C.accent1 }, line: { type: "none" } });
-}
-// =====================================================================
-newSection("진행");
-{
-  const s = slide("CONTENT", "오리엔테이션", "3일차 진행 순서", "노트북 섹션별 내용과 실행 시간",
-    "- 3일차는 학습 없이 checkpoint를 불러오는 셀이 대부분이라 수 초 안에 끝남.\n- 시간이 걸리는 셀: §3 구조 확인(16큐빗 회로 5개 forward, 십여 초), §4 미세조정 20 step(로컬 실측 약 7분, Colab 무료 CPU 실측 13.8분).\n- 진행 로그의 '남은 예상' 시간을 보고 step 수를 줄여도 됨.");
-  const hl = (t) => ({ text: t, options: { bold: true, color: C.accent1 } });
-  table(s, [
-    ["노트북", "내용", "실행 시간"],
-    ["§0 – §1", "Colab 설정, 저장소 clone, 실습 자산 로드", "1분 이내"],
-    ["§2", "QGAN checkpoint(600 step) 생성·평가 - 비교 기준선", "수 초"],
-    ["§3", "MediQ-GAN 구조: dual-stream, 16큐빗 회로 × 5", "십여 초"],
-    [hl("§4"), hl("10 epoch checkpoint에서 20 step 미세조정"), hl("로컬 약 7분 · Colab 약 14분")],
-    ["§5", "QGAN과 MediQ-GAN을 같은 지표 4종으로 비교", "수 초"],
-    ["§6", "이미지 생성에서 양자컴퓨팅의 한계와 방향", "-"],
-  ], 0.6, 2.25, 12.1, [1.6, 7.5, 3.0], { fontSize: 13, rowH: 0.55 });
 }
 // =====================================================================
 newSection("MediQ-GAN 구조");

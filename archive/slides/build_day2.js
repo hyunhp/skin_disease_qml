@@ -152,23 +152,6 @@ newSection("표지");
   s.addShape(pres.shapes.OVAL, { x: 11.0, y: 1.3, w: 0.65, h: 0.65, fill: { color: C.accent1 }, line: { type: "none" } });
 }
 
-// ---------- 진행 ----------
-newSection("진행");
-{
-  const s = slide("CONTENT", "오리엔테이션", "2일차 진행 순서", "노트북 섹션과 이 자료의 PART 대응",
-    "- 학습 셀(§5)은 Colab 무료 CPU에서 400 step 약 35분 걸림(실측).\n- §3 segmentation은 1장당 수 초라 5장만 직접 처리하고, 학습은 저장소의 전처리 자산(DF 115장)으로 함.");
-  const hl = (t) => ({ text: t, options: { bold: true, color: C.accent1 } });
-  table(s, [
-    ["노트북", "내용", "설명 자료"],
-    ["§0 – §2", "Colab 설정, HAM10000 다운로드와 EDA", "PART 0 · 1"],
-    ["§3", "segmentation 전처리 (K-means + FCM), 16×16 축소. 1장당 수 초라 5장만 직접 처리", "PART 1"],
-    ["§4", "sub-generator 회로 1개를 만들고 출력 확인", "PART 2"],
-    [hl("§5"), hl("QGAN 학습 400 step - Colab CPU 약 35분"), hl("PART 3")],
-    ["§6", "생성 이미지 평가 (지표 4종)", "PART 4"],
-    ["§7", "checkpoint를 Google Drive에 저장", "-"],
-  ], 0.6, 2.25, 12.1, [1.6, 8.5, 2.0], { fontSize: 13, rowH: 0.55 });
-}
-
 // =====================================================================
 newSection("PART 0 · 1일차 복습");
 {

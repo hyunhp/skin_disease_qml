@@ -86,8 +86,8 @@ DF 92장 규모에서는 이 차이를 개선으로 볼 수 없어, 실습 평�
 ```
 practice/            학생용
   day1_slides/       1일차 이론 (31장)
-  day2_slides/       2일차 설명 (25장)
-  day3_slides/       3일차 설명 (11장)
+  day2_slides/       2일차 설명 (24장)
+  day3_slides/       3일차 설명 (10장)
   day2_practice.ipynb, day3_practice.ipynb
   gen_metrics.py     지표 4종 (2·3일차 공통)
   assets/            16×16 전처리 데이터 + checkpoint 3종

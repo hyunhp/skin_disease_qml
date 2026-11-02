@@ -5,8 +5,8 @@
 
 | 파일 | 내용 |
 |---|---|
-| `build_day2.js` | 2일차 슬라이드 25장 (내용·발표자 노트 포함) |
-| `build_day3.js` | 3일차 슬라이드 11장 |
+| `build_day2.js` | 2일차 슬라이드 24장 (내용·발표자 노트 포함) |
+| `build_day3.js` | 3일차 슬라이드 10장 |
 | `export_pdf.py` | pptx → pdf (한글·영문 자동 간격 끔) |
 | `package.json` · `package-lock.json` | pptxgenjs 4.0.1 고정 |
 
