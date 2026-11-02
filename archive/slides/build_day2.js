@@ -152,23 +152,6 @@ newSection("표지");
   s.addShape(pres.shapes.OVAL, { x: 11.0, y: 1.3, w: 0.65, h: 0.65, fill: { color: C.accent1 }, line: { type: "none" } });
 }
 
-// ---------- 진행 ----------
-newSection("진행");
-{
-  const s = slide("CONTENT", "오리엔테이션", "2일차 진행 순서", "노트북 섹션과 이 자료의 PART 대응",
-    "- 학습 셀(§5)은 Colab 무료 CPU에서 400 step 약 35분 걸림(실측).\n- §3 segmentation은 1장당 수 초라 5장만 직접 처리하고, 학습은 저장소의 전처리 자산(DF 115장)으로 함.");
-  const hl = (t) => ({ text: t, options: { bold: true, color: C.accent1 } });
-  table(s, [
-    ["노트북", "내용", "설명 자료"],
-    ["§0 – §2", "Colab 설정, HAM10000 다운로드와 EDA", "PART 0 · 1"],
-    ["§3", "segmentation 전처리 (K-means + FCM), 16×16 축소. 1장당 수 초라 5장만 직접 처리", "PART 1"],
-    ["§4", "sub-generator 회로 1개를 만들고 출력 확인", "PART 2"],
-    [hl("§5"), hl("QGAN 학습 400 step - Colab CPU 약 35분"), hl("PART 3")],
-    ["§6", "생성 이미지 평가 (지표 4종)", "PART 4"],
-    ["§7", "checkpoint를 Google Drive에 저장", "-"],
-  ], 0.6, 2.25, 12.1, [1.6, 8.5, 2.0], { fontSize: 13, rowH: 0.55 });
-}
-
 // =====================================================================
 newSection("PART 0 · 1일차 복습");
 {
@@ -184,7 +167,7 @@ newSection("PART 0 · 1일차 복습");
 }
 {
   const s = slide("CONTENT", "PART 0 · 1일차 복습", "QGAN 구조 : 생성자만 양자회로", "patch 방식: sub-generator마다 이미지 조각(patch)을 하나씩 만들고 이어붙임",
-    "1일차 슬라이드 7~10 복습.\n- 생성자 = 변분 양자회로(PQC) 여러 개, 판별자 = 고전 신경망(논문 Table 4)인 비대칭 구조.\n- 학습 대상은 회전 게이트 각도 θ. 판별 결과의 손실을 θ까지 역전파해 갱신함.\n- 오늘 코드에서는 PatchQuantumGenerator 클래스가 왼쪽 상자 전체에 해당함.");
+    "1일차 슬라이드 7 ~ 10 복습.\n- 생성자 = 변분 양자회로(PQC) 여러 개, 판별자 = 고전 신경망(논문 Table 4)인 비대칭 구조.\n- 학습 대상은 회전 게이트 각도 θ. 판별 결과의 손실을 θ까지 역전파해 갱신함.\n- 오늘 코드에서는 PatchQuantumGenerator 클래스가 왼쪽 상자 전체에 해당함.");
   // noise
   box(s, "노이즈 z\n(무작위 각도)", 0.6, 3.35, 1.6, 1.0, HEX.card2, C.text1, { fontSize: 12 });
   // generator container

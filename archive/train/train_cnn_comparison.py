@@ -76,7 +76,7 @@ def main():
 
     print("[3/4] QGAN으로 오버샘플링 생성 (train셋에만 적용)...")
     n_synth = max(0, len(majority_train) - len(minority_train))
-    # 생성자 출력(확률 척도)을 실제 전처리 이미지의 픽셀 척도(0~1 밝기)로 환산
+    # 생성자 출력(확률 척도)을 실제 전처리 이미지의 픽셀 척도(0 ~ 1 밝기)로 환산
     with torch.no_grad():
         synth = gen(n_synth).numpy() if n_synth > 0 else np.zeros((0, img_size * img_size))
     pixel_scale = minority_train.reshape(len(minority_train), -1).sum(axis=1).mean() / max(synth.sum(axis=1).mean(), 1e-9) if n_synth > 0 else 1.0

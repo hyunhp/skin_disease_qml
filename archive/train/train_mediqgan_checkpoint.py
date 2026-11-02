@@ -3,7 +3,7 @@
 [준비 스크립트 ③] MediQ-GAN 사전학습 - 3일차 미세조정용 checkpoint 생성.
 
 - 16큐빗 시뮬레이션이 비싸(샘플당 약 3초) 수업에서는 이 checkpoint에서 출발해 미세조정만 함
-- 입력은 전처리 npy(0~1)뿐이라 Kaggle 불필요. 로컬 CPU epoch당 약 7.8분(25 epoch 196분)
+- 입력은 전처리 npy(0 ~ 1)뿐이라 Kaggle 불필요. 로컬 CPU epoch당 약 7.8분(25 epoch 196분)
 - 중간 checkpoint(--save_every)를 남김. 수렴한 모델로는 미세조정 손실이 거의 움직이지 않아 덜 학습된 본을 수업용으로 씀
 - 마지막 epoch이 최선은 아님(uniform z 실측: 40 epoch이 20 epoch보다 나빴음). 출력되는 [품질] 수치로 고를 것
 - 학습률: lr_g 0.02로는 3 epoch 만에 loss_d 0.0027로 붕괴함. DCGAN 관례(lr 2e-4, betas (0.5, 0.999))가 기본값
@@ -33,7 +33,7 @@ from qgan_model import ClassicalDiscriminator
 
 
 def load_real(npy_path, img_size, max_n=None):
-    """전처리 npy(0~1) → Tanh 척도(-1~1) 평탄화 텐서."""
+    """전처리 npy(0 ~ 1) → Tanh 척도(-1 ~ 1) 평탄화 텐서."""
     arr = np.load(npy_path)
     if arr.ndim == 3:
         if arr.shape[1] != img_size:
@@ -45,7 +45,7 @@ def load_real(npy_path, img_size, max_n=None):
     if max_n:
         arr = arr[:max_n]
     if arr.min() < -0.01 or arr.max() > 1.01:
-        raise ValueError(f"npy 값 범위가 0~1이 아님(min {arr.min():.3f}, max {arr.max():.3f}) - 척도 규약 위반")
+        raise ValueError(f"npy 값 범위가 0 ~ 1이 아님(min {arr.min():.3f}, max {arr.max():.3f}) - 척도 규약 위반")
     return torch.tensor(arr * 2.0 - 1.0, dtype=torch.float32)
 
 
@@ -97,7 +97,7 @@ def save_checkpoint(path, generator, discriminator, cfg, history, epoch, opt_g=N
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--npy", help="전처리 완료 npy 경로(0~1). --smoke일 때는 불필요")
+    ap.add_argument("--npy", help="전처리 완료 npy 경로(0 ~ 1). --smoke일 때는 불필요")
     ap.add_argument("--out_dir", default="./checkpoints")
     ap.add_argument("--img_size", type=int, default=16, help="2일차 자산과 같아야 함")
     ap.add_argument("--n_qubits", type=int, default=16, help="원 논문 스펙 16 (내리지 말 것)")
@@ -230,8 +230,8 @@ def main():
         sample = gen(sample_z(4, in_dim, args.z_dist)).numpy()
     print(f"\n완료 - 총 {(time.time() - t_start) / 60:.1f}분")
     print(f"최종 checkpoint: {final}")
-    print(f"생성 샘플 값 범위: {sample.min():.3f} ~ {sample.max():.3f} (Tanh이므로 -1~1이 정상)")
-    print("3일차에서는 gen_metrics.to_unit_scale(x, \"tanh\")로 0~1로 되돌려 QGAN과 비교할 것")
+    print(f"생성 샘플 값 범위: {sample.min():.3f} ~ {sample.max():.3f} (Tanh이므로 -1 ~ 1이 정상)")
+    print("3일차에서는 gen_metrics.to_unit_scale(x, \"tanh\")로 0 ~ 1로 되돌려 QGAN과 비교할 것")
 
 
 if __name__ == "__main__":
