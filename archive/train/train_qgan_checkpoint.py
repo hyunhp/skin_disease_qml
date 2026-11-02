@@ -6,7 +6,7 @@
   2·4·8·16개를 600 step으로 비교해 4개가 가장 좋았음(README sub-generator 실험)
 - 3일차 비교 기준인 강사 checkpoint를 만듦. 2일차 학생은 같은 학습을 Colab에서 400 step 돌림
 - --epochs는 랜덤 batch step 수임(데이터 순회 아님). 600 step 로컬 CPU 약 22분
-- 입력: (A) --npy 전처리 npy(0~1, Kaggle 불필요, 권장) 또는 (B) --metadata + --img_dir 원본(Kaggle 필요)
+- 입력: (A) --npy 전처리 npy(0 ~ 1, Kaggle 불필요, 권장) 또는 (B) --metadata + --img_dir 원본(Kaggle 필요)
 
 실행 예:
     C:/qmlvenv/Scripts/python.exe -X utf8 train_qgan_checkpoint.py \
@@ -46,7 +46,7 @@ def build_dataset(metadata_csv, img_dir, target_class, img_size, max_n=None):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--npy", help="전처리 npy(0~1) 경로 (권장, Kaggle 불필요)")
+    ap.add_argument("--npy", help="전처리 npy(0 ~ 1) 경로 (권장, Kaggle 불필요)")
     ap.add_argument("--metadata", help="--npy 대신 원본을 쓸 때 (HAM10000_metadata.csv)")
     ap.add_argument("--img_dir", help="--npy 대신 원본을 쓸 때 (이미지 폴더)")
     ap.add_argument("--out_dir", default="./checkpoints")
@@ -84,8 +84,8 @@ def main():
             raise SystemExit(f"npy 해상도 {imgs.shape[1]}x{imgs.shape[2]}가 --img_size {args.img_size}와 다름 "
                              f"- 16x16 재생성이 안 된 파일일 수 있음(재생산 체인 ① 참고)")
         if imgs.min() < -0.01 or imgs.max() > 1.01:
-            raise SystemExit(f"npy 값 범위가 0~1이 아님(min {imgs.min():.3f}, max {imgs.max():.3f}) - 척도 규약 위반")
-        print(f"  로드된 이미지: {len(imgs)}장 ({imgs.shape[1]}x{imgs.shape[2]}, 0~1)")
+            raise SystemExit(f"npy 값 범위가 0 ~ 1이 아님(min {imgs.min():.3f}, max {imgs.max():.3f}) - 척도 규약 위반")
+        print(f"  로드된 이미지: {len(imgs)}장 ({imgs.shape[1]}x{imgs.shape[2]}, 0 ~ 1)")
     else:
         if not (args.metadata and args.img_dir):
             raise SystemExit("--npy 또는 (--metadata + --img_dir) 중 하나는 반드시 필요함")
@@ -137,7 +137,7 @@ def main():
     }, ckpt_path)
     print(f"저장됨: {ckpt_path}")
     print("이 파일을 practice/assets/에 넣고 커밋·푸시하면 2·3일차 노트북이 git clone으로 바로 불러 씀.")
-    print("평가·시각화 시에는 gen_metrics.to_unit_scale(x, \"prob\")로 0~1로 되돌려 MediQ-GAN과 비교할 것.")
+    print("평가·시각화 시에는 gen_metrics.to_unit_scale(x, \"prob\")로 0 ~ 1로 되돌려 MediQ-GAN과 비교할 것.")
 
 
 if __name__ == "__main__":

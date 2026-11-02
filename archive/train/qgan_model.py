@@ -4,7 +4,7 @@ Patch Quantum GAN (Andra et al. Section 3.2, Table 3·4).
 
 sub-generator 여러 개가 patch를 만들어 이어붙이고, 판별자는 고전 5층 FC.
 측정: 전체 큐빗 확률 중 ancilla qubit=0 항목만 patch로 씀(post-selection). patch별 재정규화는 하지 않아
-patch 밝기 총합(0~1)도 학습됨. 데이터 큐빗만 측정하면 patch 합이 1로 고정돼 배경 patch를 표현하지 못함.
+patch 밝기 총합(0 ~ 1)도 학습됨. 데이터 큐빗만 측정하면 patch 합이 1로 고정돼 배경 patch를 표현하지 못함.
 """
 import math
 import torch

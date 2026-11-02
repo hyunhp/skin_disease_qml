@@ -7,8 +7,8 @@
   ③ 최근접 실제 거리  nearest_neighbor_distance() / plot_nearest_neighbors()
   ④ 샘플 간 다양성    sample_diversity() / plot_loss_curves()
 
-척도: 전처리 0~1, QGAN 확률(장당 합 0~4), MediQ-GAN Tanh(-1~1).
-②③④는 to_unit_scale()로 0~1로 맞춘 뒤 계산함. ①은 원 척도로도 봄.
+척도: 전처리 0 ~ 1, QGAN 확률(장당 합 0 ~ 4), MediQ-GAN Tanh(-1 ~ 1).
+②③④는 to_unit_scale()로 0 ~ 1로 맞춘 뒤 계산함. ①은 원 척도로도 봄.
 """
 import numpy as np
 
@@ -16,7 +16,7 @@ SCALE_MODES = ("unit", "prob", "tanh")
 
 
 def to_unit_scale(x, mode):
-    """0~1 척도로 변환. unit: 그대로, prob: 이미지별 min-max, tanh: (x+1)/2."""
+    """0 ~ 1 척도로 변환. unit: 그대로, prob: 이미지별 min-max, tanh: (x+1)/2."""
     if mode not in SCALE_MODES:
         raise ValueError(f"mode는 {SCALE_MODES} 중 하나여야 함 (받은 값: {mode!r})")
     arr = np.asarray(x, dtype=np.float64)
@@ -144,7 +144,7 @@ def plot_loss_curves(loss_g, loss_d, ax=None):
 # ──────────────────────── 종합: 모델 간 동일 잣대 비교 ────────────────────────
 
 def evaluate(fake, real, scale_mode, real_scale_mode="unit"):
-    """지표 4종을 dict로 반환. 모양 지표는 0~1로 맞춘 뒤 계산."""
+    """지표 4종을 dict로 반환. 모양 지표는 0 ~ 1로 맞춘 뒤 계산."""
     fake_u = to_unit_scale(fake, scale_mode)
     real_u = to_unit_scale(real, real_scale_mode)
     corr = mean_image_correlation(fake_u, class_mean_image(real_u))
@@ -153,7 +153,7 @@ def evaluate(fake, real, scale_mode, real_scale_mode="unit"):
     return {
         "픽셀평균(원척도)": pixel_stats(fake)["mean"],
         "픽셀합/장(원척도)": pixel_stats(fake)["sum_per_image"],
-        "픽셀평균(0~1환산)": pixel_stats(fake_u)["mean"],
+        "픽셀평균(0 ~ 1환산)": pixel_stats(fake_u)["mean"],
         "클래스평균 상관계수": float(np.mean(corr)),
         "상관계수 최댓값": float(np.max(corr)),
         "최근접 실제거리 평균": float(np.mean(nn_dist)),
@@ -192,7 +192,7 @@ if __name__ == "__main__":
                  "tanh": good * 2 - 1}[mode]
         u = to_unit_scale(probe, mode)
         assert u.shape == good.shape and u.min() >= 0 and u.max() <= 1, mode
-    print("OK - to_unit_scale 3개 모드 모두 0~1 복원 확인")
+    print("OK - to_unit_scale 3개 모드 모두 0 ~ 1 복원 확인")
 
     r_good = mean_image_correlation(good, class_mean_image(real)).mean()
     r_noise = mean_image_correlation(noise, class_mean_image(real)).mean()
