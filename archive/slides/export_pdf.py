@@ -1,7 +1,8 @@
 """pptx -> pdf (LibreOffice UNO). 모든 문단의 한글·영문 자동 간격을 끄고 내보냄.
 
 자동 간격을 켜 두면 "2일차"가 "2 일차"처럼 벌어짐.
-사용법: python3 export_pdf.py <입력.pptx> <출력.pdf>   (LibreOffice와 python3-uno 필요)
+사용법: python3 export_pdf.py <입력.pptx> <출력.pdf> [--notes]   (LibreOffice와 python3-uno 필요)
+--notes: 슬라이드 그림 + 발표자 노트(대본)를 한 페이지에 담은 노트 보기 PDF로 내보냄
 """
 import sys, os, subprocess, time, tempfile, uno
 from com.sun.star.beans import PropertyValue
@@ -48,10 +49,19 @@ pages = doc.getDrawPages()
 for i in range(pages.getCount()):
     pg = pages.getByIndex(i)
     for j in range(pg.getCount()): walk(pg.getByIndex(j))
+if "--notes" in sys.argv[3:]:  # 노트 페이지의 문단도 자동 간격 끔
+    for i in range(pages.getCount()):
+        try: walk_notes = pages.getByIndex(i).getNotesPage()
+        except Exception: continue
+        for j in range(walk_notes.getCount()): walk(walk_notes.getByIndex(j))
 for i in range(doc.getMasterPages().getCount()):
     pg = doc.getMasterPages().getByIndex(i)
     for j in range(pg.getCount()): walk(pg.getByIndex(j))
-doc.storeToURL(uno.systemPathToFileUrl(dst), (pv("FilterName", "impress_pdf_Export"),))
+args = [pv("FilterName", "impress_pdf_Export")]
+if "--notes" in sys.argv[3:]:
+    fd = (pv("ExportNotesPages", True), pv("ExportOnlyNotesPages", True))
+    args.append(pv("FilterData", uno.Any("[]com.sun.star.beans.PropertyValue", fd)))
+doc.storeToURL(uno.systemPathToFileUrl(dst), tuple(args))
 doc.close(True)
 try: desktop.terminate()
 except Exception: pass

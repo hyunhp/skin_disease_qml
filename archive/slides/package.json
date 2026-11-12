@@ -3,8 +3,8 @@
   "private": true,
   "description": "2·3일차 실습 설명 슬라이드 생성 스크립트",
   "scripts": {
-    "day2": "node build_day2.js ../../practice/day2_slides/day2_practice_slides.pptx",
-    "day3": "node build_day3.js ../../practice/day3_slides/day3_practice_slides.pptx"
+    "day2": "node build_day2.js ../../practice/day2_slides/day2_practice_slides.pptx && python3 postprocess_pptx.py ../../practice/day2_slides/day2_practice_slides.pptx",
+    "day3": "node build_day3.js ../../practice/day3_slides/day3_practice_slides.pptx && python3 postprocess_pptx.py ../../practice/day3_slides/day3_practice_slides.pptx"
   },
   "dependencies": {
     "pptxgenjs": "4.0.1"

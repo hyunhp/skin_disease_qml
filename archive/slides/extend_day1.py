@@ -19,6 +19,7 @@ from pptx.oxml.ns import qn
 from pptx.util import Emu, Inches, Pt
 
 from day1_notes import NOTES
+from postprocess_pptx import process as postprocess
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIG = os.path.join(HERE, "fig_day1")
@@ -645,6 +646,7 @@ def main():
         text = text.replace("{TOTAL}", str(total))
         head = f"[약 {mins}분]\n" if mins else ""
         d.slide_of(k).notes_slide.notes_text_frame.text = head + text
+    postprocess(d.prs)  # 대본을 넣은 뒤에 실행: 줄바꿈, 박스 안 가운데 정렬, 노트 페이지 서식
     d.prs.save(path)
     print(f"{len(ORDER)}장 저장: {path}")
     print(f"휴식 전 {pre}분, 전체 발표 {total}분(휴식 제외), 슬라이드 번호 {ORDER.index('BRK') + 1}번이 휴식")

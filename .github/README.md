@@ -24,9 +24,9 @@
 
 | 일차 | 내용 | 자료 |
 |---|---|---|
-| 1일차 | 이론: 데이터셋, GAN·양자회로 기초, 두 논문 아키텍처와 결과, VQC 학습 비용 (발표자 노트 포함) | [pptx](../practice/day1_slides/day1_theory_slides.pptx) · [pdf](../practice/day1_slides/day1_theory_slides.pdf) |
-| 2일차 | EDA · segmentation · 회로 구성 → QGAN 학습 → 평가 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) · [pptx](../practice/day2_slides/day2_practice_slides.pptx) · [pdf](../practice/day2_slides/day2_practice_slides.pdf) |
-| 3일차 | MediQ-GAN 미세조정 → QGAN과 같은 지표로 비교 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day3_practice.ipynb) · [pptx](../practice/day3_slides/day3_practice_slides.pptx) · [pdf](../practice/day3_slides/day3_practice_slides.pdf) |
+| 1일차 | 이론: 데이터셋, GAN·양자회로 기초, 두 논문 아키텍처와 결과, VQC 학습 비용 (발표자 노트 포함) | [pptx](../practice/day1_slides/day1_theory_slides.pptx) · [pdf](../practice/day1_slides/day1_theory_slides.pdf) · [대본 pdf](../practice/day1_slides/day1_theory_slides_notes.pdf) |
+| 2일차 | EDA · segmentation · 회로 구성 → QGAN 학습 → 평가 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) · [pptx](../practice/day2_slides/day2_practice_slides.pptx) · [pdf](../practice/day2_slides/day2_practice_slides.pdf) · [대본 pdf](../practice/day2_slides/day2_practice_slides_notes.pdf) |
+| 3일차 | MediQ-GAN 미세조정 → QGAN과 같은 지표로 비교 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day3_practice.ipynb) · [pptx](../practice/day3_slides/day3_practice_slides.pptx) · [pdf](../practice/day3_slides/day3_practice_slides.pdf) · [대본 pdf](../practice/day3_slides/day3_practice_slides_notes.pdf) |
 
 - 노트북을 열면 `파일 → Drive에 사본 저장`을 먼저 실행함.
 - 노트북은 실행 중 이 저장소를 clone해 [`practice/assets/`](../practice/assets/)와 [`gen_metrics.py`](../practice/gen_metrics.py)를 씀. HAM10000 원본(약 6GB)만 `kagglehub`로 받음.

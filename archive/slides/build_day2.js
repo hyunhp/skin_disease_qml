@@ -213,7 +213,7 @@ newSection("PART 0 · 1일차 복습");
 // =====================================================================
 newSection("PART 1 · 데이터와 전처리");
 {
-  const s = slide("SECTION_DARK", "PART 1 · 노트북 §2 – §3", "데이터와 segmentation 전처리", "HAM10000에서 DF·NV를 고르고, 병변만 남겨 16×16으로 줄이는 과정");
+  const s = slide("SECTION_DARK", "PART 1 · 노트북 §2 ~ §3", "데이터와 segmentation 전처리", "HAM10000에서 DF·NV를 고르고, 병변만 남겨 16×16으로 줄이는 과정");
   sectionRows(s, [["노트북 범위", "§2 EDA, §3 segmentation 전처리"],
     ["다루는 코드", "segment_fcm_kmeans · resize_for_encoding · preprocess_class"],
     ["논문 근거", "Andra et al. Section 3.1 (K-means + Fuzzy C-means), Table 10"]]);
@@ -338,7 +338,7 @@ newSection("PART 1 · 데이터와 전처리");
 // =====================================================================
 newSection("PART 2 · 양자 회로");
 {
-  const s = slide("SECTION_DARK", "PART 2 · 노트북 §4 – §5", "양자 회로 : sub-generator 하나", "노이즈 encoding → 변분층 반복 → 측정 → post-selection",
+  const s = slide("SECTION_DARK", "PART 2 · 노트북 §4 ~ §5", "양자 회로 : sub-generator 하나", "노이즈 encoding → 변분층 반복 → 측정 → post-selection",
     "§4는 학습 없이 회로 출력만 확인하는 섹션임. §5 앞부분에서 생성자·판별자를 정의함.");
   sectionRows(s, [["노트북 범위", "§4 회로 1개 출력 확인, §5 생성자·판별자 정의"],
     ["다루는 코드", "sub_generator_circuit · probs_all[::2] · PatchQuantumGenerator"]]);
