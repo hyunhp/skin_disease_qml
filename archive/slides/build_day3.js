@@ -123,7 +123,7 @@ function box(s, t, x, y, w, h, fill, color, o = {}) {
 function source(s, t) {
   text(s, t, 6.9, 6.95, 5.8, 0.3, { fontSize: 9, color: C.accent6, align: "right", valign: "middle" });
 }
-// 1일차 슬라이드 10의 왼쪽 막대 + 제목 + 설명 목록
+// 1일차 슬라이드 20의 왼쪽 막대 + 제목 + 설명 목록
 function barList(s, items, x, y, w, gap = 0.95, color = C.accent1) {
   items.forEach((it, i) => {
     const yy = y + i * gap;
@@ -163,7 +163,7 @@ newSection("표지");
 newSection("MediQ-GAN 구조");
 {
   const s = slide("CONTENT", "MediQ-GAN 구조 · 1일차 복습", "hybrid 수준 : model-level과 layer-level", "QGAN은 생성자 전체가 양자회로, MediQ-GAN은 생성자 안의 한 갈래만 양자회로",
-    "- 1일차 슬라이드 18 'Hybrid 분류체계' 복습.\n- model-level hybrid: 판별자만 고전, 생성자는 처음부터 끝까지 양자회로. 출력이 측정 확률이라 척도가 확률(patch별 합 0 ~ 1).\n- layer-level hybrid: 생성자 안에서 고전 layer와 양자 layer가 함께 동작. 최종 출력은 고전 decoder가 만들고 Tanh(-1 ~ 1).\n- MediQ-GAN 논문의 주장: 전역 구조는 고전, 세부는 양자가 맡는 쪽이 더 높은 해상도로 확장됨.");
+    "- 1일차 슬라이드 31 'Hybrid 분류체계' 복습.\n- model-level hybrid: 판별자만 고전, 생성자는 처음부터 끝까지 양자회로. 출력이 측정 확률이라 척도가 확률(patch별 합 0 ~ 1).\n- layer-level hybrid: 생성자 안에서 고전 layer와 양자 layer가 함께 동작. 최종 출력은 고전 decoder가 만들고 Tanh(-1 ~ 1).\n- MediQ-GAN 논문의 주장: 전역 구조는 고전, 세부는 양자가 맡는 쪽이 더 높은 해상도로 확장됨.");
   card(s, 0.6, 2.3, 5.9, 4.3, HEX.mint, { line: HEX.green });
   text(s, "QGAN - model-level hybrid", 0.85, 2.5, 5.4, 0.4, { fontSize: 17, bold: true, color: C.accent1 });
   text(s, "Andra et al., 2025 · 2일차 실습", 0.85, 2.9, 5.4, 0.35, { fontSize: 12, color: C.accent6 });

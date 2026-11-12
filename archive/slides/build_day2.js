@@ -123,7 +123,7 @@ function box(s, t, x, y, w, h, fill, color, o = {}) {
 function source(s, t) {
   text(s, t, 6.9, 6.95, 5.8, 0.3, { fontSize: 9, color: C.accent6, align: "right", valign: "middle" });
 }
-// 1일차 슬라이드 10의 왼쪽 막대 + 제목 + 설명 목록
+// 1일차 슬라이드 20의 왼쪽 막대 + 제목 + 설명 목록
 function barList(s, items, x, y, w, gap = 0.95, color = C.accent1) {
   items.forEach((it, i) => {
     const yy = y + i * gap;
@@ -167,7 +167,7 @@ newSection("PART 0 · 1일차 복습");
 }
 {
   const s = slide("CONTENT", "PART 0 · 1일차 복습", "QGAN 구조 : 생성자만 양자회로", "patch 방식: sub-generator마다 이미지 조각(patch)을 하나씩 만들고 이어붙임",
-    "1일차 슬라이드 7 ~ 10 복습.\n- 생성자 = 변분 양자회로(PQC) 여러 개, 판별자 = 고전 신경망(논문 Table 4)인 비대칭 구조.\n- 학습 대상은 회전 게이트 각도 θ. 판별 결과의 손실을 θ까지 역전파해 갱신함.\n- 오늘 코드에서는 PatchQuantumGenerator 클래스가 왼쪽 상자 전체에 해당함.");
+    "1일차 슬라이드 17 ~ 20 복습.\n- 생성자 = 변분 양자회로(PQC) 여러 개, 판별자 = 고전 신경망(논문 Table 4)인 비대칭 구조.\n- 학습 대상은 회전 게이트 각도 θ. 판별 결과의 손실을 θ까지 역전파해 갱신함.\n- 오늘 코드에서는 PatchQuantumGenerator 클래스가 왼쪽 상자 전체에 해당함.");
   // noise
   box(s, "노이즈 z\n(무작위 각도)", 0.6, 3.35, 1.6, 1.0, HEX.card2, C.text1, { fontSize: 12 });
   // generator container
