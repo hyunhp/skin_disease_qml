@@ -11,7 +11,7 @@
 | `train/train_mediqgan_checkpoint.py` | MediQ-GAN 사전학습 CLI (로컬, `--resume` 지원) |
 | `train/train_cnn_comparison.py` | 옛 구성. CNN 증강 전/후 비교 (1일차 인용 수치의 근거) |
 | `train/*.py` (나머지) | 위 CLI의 모델·전처리 모듈. 노트북 안의 사본과 같은 로직이라 한쪽을 고치면 다른 쪽도 맞춤 |
-| `slides/` | 2·3일차 슬라이드 생성 스크립트 ([README](slides/README.md)) |
+| `slides/` | 1일차 확장 · 2·3일차 슬라이드 생성 스크립트와 설명 그림 ([README](slides/README.md)) |
 | `assets_8px/` | 8×8 시절 자산 ([README](assets_8px/README.md)) |
 | `paper/` | 논문 PDF와 서지사항 ([README](paper/README.md)) |
 | `checkpoints/` | 로컬 학습 산출물 (`.gitignore`로 제외) |

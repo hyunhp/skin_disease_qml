@@ -24,7 +24,7 @@
 
 | 일차 | 내용 | 자료 |
 |---|---|---|
-| 1일차 | 이론: 데이터셋, 두 논문 아키텍처와 결과, VQC 학습 비용 | [pptx](../practice/day1_slides/day1_theory_slides.pptx) · [pdf](../practice/day1_slides/day1_theory_slides.pdf) |
+| 1일차 | 이론: 데이터셋, GAN·양자회로 기초, 두 논문 아키텍처와 결과, VQC 학습 비용 (발표자 노트 포함) | [pptx](../practice/day1_slides/day1_theory_slides.pptx) · [pdf](../practice/day1_slides/day1_theory_slides.pdf) |
 | 2일차 | EDA · segmentation · 회로 구성 → QGAN 학습 → 평가 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) · [pptx](../practice/day2_slides/day2_practice_slides.pptx) · [pdf](../practice/day2_slides/day2_practice_slides.pdf) |
 | 3일차 | MediQ-GAN 미세조정 → QGAN과 같은 지표로 비교 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day3_practice.ipynb) · [pptx](../practice/day3_slides/day3_practice_slides.pptx) · [pdf](../practice/day3_slides/day3_practice_slides.pdf) |
 
@@ -89,7 +89,7 @@
 
 ```
 practice/            학생용
-  day1_slides/       1일차 이론 (31장)
+  day1_slides/       1일차 이론 (52장, 발표자 노트 포함)
   day2_slides/       2일차 설명 (24장)
   day3_slides/       3일차 설명 (10장)
   day2_practice.ipynb, day3_practice.ipynb

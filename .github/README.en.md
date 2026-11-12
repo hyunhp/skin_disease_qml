@@ -24,7 +24,7 @@ Design principles
 
 | Day | Content | Links |
 |---|---|---|
-| Day 1 | Theory: dataset, both architectures and their results, VQC training cost | [pptx](../practice/day1_slides/day1_theory_slides.pptx) · [pdf](../practice/day1_slides/day1_theory_slides.pdf) |
+| Day 1 | Theory: dataset, GAN and quantum-circuit basics, both architectures and their results, VQC training cost (speaker notes included) | [pptx](../practice/day1_slides/day1_theory_slides.pptx) · [pdf](../practice/day1_slides/day1_theory_slides.pdf) |
 | Day 2 | EDA · segmentation · circuit → QGAN training → evaluation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) · [pptx](../practice/day2_slides/day2_practice_slides.pptx) · [pdf](../practice/day2_slides/day2_practice_slides.pdf) |
 | Day 3 | MediQ-GAN fine-tuning → comparison with QGAN on the same metrics | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day3_practice.ipynb) · [pptx](../practice/day3_slides/day3_practice_slides.pptx) · [pdf](../practice/day3_slides/day3_practice_slides.pdf) |
 
@@ -85,9 +85,9 @@ With 92 DF images this difference is not an improvement, so the practicals use t
 
 ```
 practice/            for students
-  day1_slides/       Day 1 theory (31)
-  day2_slides/       Day 2 walkthrough (25)
-  day3_slides/       Day 3 walkthrough (11)
+  day1_slides/       Day 1 theory (52, speaker notes included)
+  day2_slides/       Day 2 walkthrough (24)
+  day3_slides/       Day 3 walkthrough (10)
   day2_practice.ipynb, day3_practice.ipynb
   gen_metrics.py     the four metrics (shared by Day 2 and 3)
   assets/            16×16 preprocessed data + 3 checkpoints
