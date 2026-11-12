@@ -64,12 +64,18 @@ pres.defineSlideMaster({
 
 // ---------- helpers ----------
 let section = "";
+const path = require("path");
+const NOTES = require("./day2_notes.json"); // 발표 대본(슬라이드 번호 -> 대본). 없으면 인라인 notes를 씀
+let slideNo = 0;
 function slide(master, kicker, title, sub, notes) {
   const s = pres.addSlide({ masterName: master, sectionTitle: section });
+  slideNo += 1;
   if (kicker) s.addText(kicker, { placeholder: "kicker" });
   s.addText(title, { placeholder: "title" });
   if (sub) s.addText(sub, { placeholder: "sub" });
-  if (notes) s.addNotes(notes);
+  const script = NOTES[String(slideNo)];
+  if (script) s.addNotes(`[약 ${Math.max(1, Math.round(script.replace(/\n/g, "").length / 300))}분]\n` + script);
+  else if (notes) s.addNotes(notes);
   return s;
 }
 function newSection(t) { section = t; pres.addSection({ title: t }); }
@@ -146,8 +152,7 @@ function sectionRows(s, rows, y0 = 3.25, gap = 0.95) {
 // =====================================================================
 newSection("표지");
 {
-  const s = slide("TITLE_DARK", "QML Lecture · 2일차", "실습 설명 자료", "segmentation 전처리 → 양자 회로 → QGAN 학습",
-    "2일차 노트북(practice/day2_practice.ipynb)의 내용을 설명하는 자료.\n- 코드 중심으로 구성함. 각 PART 첫 장에 해당 노트북 섹션을 표시함.\n- PART 0은 1일차 내용 복습임.");
+  const s = slide("TITLE_DARK", "QML Lecture · 2일차", "실습 설명 자료", "segmentation 전처리 → 양자 회로 → QGAN 학습");
   s.addShape(pres.shapes.OVAL, { x: 10.55, y: 0.85, w: 1.55, h: 1.55, fill: { color: C.text2 }, line: { color: C.accent1, width: 1.25 } });
   s.addShape(pres.shapes.OVAL, { x: 11.0, y: 1.3, w: 0.65, h: 0.65, fill: { color: C.accent1 }, line: { type: "none" } });
 }
@@ -155,8 +160,7 @@ newSection("표지");
 // =====================================================================
 newSection("PART 0 · 1일차 복습");
 {
-  const s = slide("SECTION_DARK", "PART 0", "1일차 복습", "오늘 구현하는 QGAN의 구조와 논문 대비 축소 범위",
-    "1일차에서 다룬 QGAN 논문(Andra et al.)의 구조를 코드 관점에서 다시 정리함.\n- 오늘은 1일차 그림을 PennyLane·PyTorch 코드로 옮기는 날이라는 점을 먼저 짚음.");
+  const s = slide("SECTION_DARK", "PART 0", "1일차 복습", "오늘 구현하는 QGAN의 구조와 논문 대비 축소 범위");
   const rows = [["오늘 구현하는 것", "논문 ① QGAN의 patch 방식 생성자 - sub-generator 4개 + 고전 판별자"],
     ["입력 데이터", "HAM10000 DF 115장 → segmentation → 16×16 그레이스케일"],
     ["오늘의 결과물", "직접 학습한 생성자 checkpoint + 생성품질 지표 4종 표 (3일차 비교 기준)"]];
@@ -166,8 +170,7 @@ newSection("PART 0 · 1일차 복습");
   });
 }
 {
-  const s = slide("CONTENT", "PART 0 · 1일차 복습", "QGAN 구조 : 생성자만 양자회로", "patch 방식: sub-generator마다 이미지 조각(patch)을 하나씩 만들고 이어붙임",
-    "1일차 슬라이드 17 ~ 20 복습.\n- 생성자 = 변분 양자회로(PQC) 여러 개, 판별자 = 고전 신경망(논문 Table 4)인 비대칭 구조.\n- 학습 대상은 회전 게이트 각도 θ. 판별 결과의 손실을 θ까지 역전파해 갱신함.\n- 오늘 코드에서는 PatchQuantumGenerator 클래스가 왼쪽 상자 전체에 해당함.");
+  const s = slide("CONTENT", "PART 0 · 1일차 복습", "QGAN 구조 : 생성자만 양자회로", "patch 방식: sub-generator마다 이미지 조각(patch)을 하나씩 만들고 이어붙임");
   // noise
   box(s, "노이즈 z\n(무작위 각도)", 0.6, 3.35, 1.6, 1.0, HEX.card2, C.text1, { fontSize: 12 });
   // generator container
@@ -195,8 +198,7 @@ newSection("PART 0 · 1일차 복습");
   text(s, "손실 → 역전파 → 회전각 θ 갱신", 6.2, 6.47, 4.5, 0.32, { fontSize: 12, bold: true, color: C.accent4, align: "center" });
 }
 {
-  const s = slide("CONTENT", "PART 0 · 1일차 복습", "논문과 오늘 실습의 차이", "회로의 형태(RY encoding + RY·CZ 변분층 + post-selection)는 같고, 규모와 학습량을 줄임",
-    "README '원 논문과 다른 점' 표와 같은 내용.\n- sub-generator 수는 처음에 논문과 큐빗 수가 가까운 2개로 정했다가, 2·4·8·16개를 같은 조건(600 step, depth 10)으로 실측해 품질이 가장 좋은 4개로 바꿈(README 실험 표).\n- 16개(논문 설정)는 판별자가 이겨 loss_d가 0.003까지 떨어짐.\n- 실습은 exact 상태벡터 시뮬레이션이라 shot noise와 하드웨어 오류가 없음.");
+  const s = slide("CONTENT", "PART 0 · 1일차 복습", "논문과 오늘 실습의 차이", "회로의 형태(RY encoding + RY·CZ variational layer + post-selection)는 같고, 규모와 학습량을 줄임");
   table(s, [
     ["항목", "논문 (Andra et al.)", "2일차 실습", "이유"],
     ["sub-generator", "16개", "4개", "2·4·8·16개 실측 중 품질 최고"],
@@ -219,8 +221,7 @@ newSection("PART 1 · 데이터와 전처리");
     ["논문 근거", "Andra et al. Section 3.1 (K-means + Fuzzy C-means), Table 10"]]);
 }
 {
-  const s = slide("CONTENT", "PART 1 · 노트북 §2", "범위 축소 : DF vs NV", "7개 클래스 중 가장 적은 DF를 증강 대상으로, 가장 많은 NV를 비교 대상으로 둠",
-    "- DF 115장 대 NV 6,705장, 약 1:58 불균형.\n- 증강 대상은 DF. NV는 3일차까지 '클래스 평균 상관계수' 지표에서 비교용으로만 씀(345장 사용).\n- 코드의 value_counts()는 진단명(dx)별 이미지 수를 많은 순으로 반환함.");
+  const s = slide("CONTENT", "PART 1 · 노트북 §2", "범위 축소 : DF vs NV", "7개 클래스 중 가장 적은 DF를 증강 대상으로, 가장 많은 NV를 비교 대상으로 둠");
   table(s, [
     ["클래스", "이미지 수", "비율", "실습에서의 역할"],
     [{ text: "DF (피부섬유종)", options: { bold: true, color: C.accent1 } }, { text: "115", options: { bold: true, color: C.accent1 } }, "1.1%", "증강 대상 - 생성자 학습 데이터"],
@@ -241,8 +242,7 @@ newSection("PART 1 · 데이터와 전처리");
   source(s, "HAM10000 메타데이터 (Tschandl et al., Scientific Data 5, 180161, 2018)");
 }
 {
-  const s = slide("CONTENT", "PART 1 · 노트북 §3", "전처리 pipeline", "원본 → 병변만 남긴 64×64 → 16×16, 0 ~ 1. 저장소 자산(df_preprocessed.npy)도 같은 조건으로 만들어짐",
-    "- 64×64로 먼저 줄이는 이유: 600×450 원본(27만 픽셀)으로 FCM을 돌리면 1장에 수십 초가 걸림. 64×64(4,096픽셀)면 수 초.\n- 가장 어두운 cluster를 병변으로 봄: 피부경 이미지에서 병변이 주변 피부보다 어둡다는 가정. 털·그림자가 많은 이미지에서는 틀릴 수 있음(한계).\n- 마지막 /255로 0 ~ 1 척도가 됨. 이 척도가 '전처리 데이터 = unit 척도'의 기준임.");
+  const s = slide("CONTENT", "PART 1 · 노트북 §3", "전처리 pipeline", "원본 → 병변만 남긴 64×64 → 16×16, 0 ~ 1. 저장소 자산(df_preprocessed.npy)도 같은 조건으로 만들어짐");
   const flow = [["원본", "600×450 RGB"], ["그레이 + 축소", "64×64\nINTER_AREA"], ["K-means", "k = 4\n사전 cluster"], ["FCM", "m = 2\n소속도 정제"],
     ["mask", "가장 어두운\ncluster = 병변"], ["축소 + 정규화", "16×16\n/255 → 0 ~ 1"]];
   const w = 1.75, gap = 0.32, y = 2.5;
@@ -260,8 +260,7 @@ newSection("PART 1 · 데이터와 전처리");
   barList(s, [["64×64를 거치는 이유", "FCM 비용이 픽셀 수에 비례함. 원본 27만 픽셀 대신 4,096픽셀로 clustering해 1장당 수 초로 줄임"]], 6.8, 5.1, 5.9, 1.4);
 }
 {
-  const s = slide("CONTENT", "PART 1 · 노트북 §3 코드", "segment_fcm_kmeans 코드", "밝기 1채널만 써서 4개 cluster로 나누고, 가장 어두운 cluster를 남김",
-    "- ① 위치 정보 없이 밝기만으로 clustering함. pixels 모양은 (픽셀 수, 1).\n- ② sklearn KMeans 기본 초기화는 k-means++. n_init=4는 초기화를 4번 바꿔 inertia가 가장 낮은 결과를 씀.\n- ③ K-means 중심까지 거리의 역제곱으로 FCM 초기 소속도를 만듦(m=2일 때 FCM 소속도 공식과 같은 형태). 무작위 시작보다 빨리 수렴하고 결과가 매번 같음.\n- ④ FCM 결과 소속도가 가장 큰 cluster로 hard 라벨을 정한 뒤, 중심 밝기가 가장 낮은 cluster를 병변으로 봄.\n- ⑤ bitwise_and(gray, gray, mask)는 x & x = x라 연산 효과는 없고 mask 효과만 남음.");
+  const s = slide("CONTENT", "PART 1 · 노트북 §3 코드", "segment_fcm_kmeans 코드", "밝기 1채널만 써서 4개 cluster로 나누고, 가장 어두운 cluster를 남김");
   code(s, [
     "gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)",
     "gray = cv2.resize(gray, (64, 64), interpolation=cv2.INTER_AREA)",
@@ -289,8 +288,7 @@ newSection("PART 1 · 데이터와 전처리");
   ], 8.5, 2.2, 4.2, 0.9, C.accent4);
 }
 {
-  const s = slide("CONTENT", "PART 1 · 노트북 §3", "K-means와 Fuzzy C-means", "K-means는 픽셀마다 cluster 하나, FCM은 cluster별 소속도를 나눠 가짐",
-    "- 경계 픽셀(병변 가장자리)은 어느 한쪽으로 딱 나누기 어려움. FCM은 '병변 60%, 피부 40%'처럼 표현해 경계가 덜 거칠어짐.\n- 이 코드는 마지막에 argmax로 hard 라벨을 다시 만들기 때문에, FCM의 이점은 '경계 픽셀의 배정이 더 안정적'이라는 데 있음.\n- fpc는 분할 선명도(1에 가까울수록 명확). 이미지별 품질 점검에 쓸 수 있음.");
+  const s = slide("CONTENT", "PART 1 · 노트북 §3", "K-means와 Fuzzy C-means", "K-means는 픽셀마다 cluster 하나, FCM은 cluster별 소속도를 나눠 가짐");
   table(s, [
     ["", "K-means", "Fuzzy C-means (FCM)"],
     ["배정 방식", "hard - 픽셀마다 cluster 1개", "soft - 소속도 u (픽셀별 합 = 1)"],
@@ -310,8 +308,7 @@ newSection("PART 1 · 데이터와 전처리");
   text(s, "분할 선명도. 1에 가까울수록 명확하고, 1/c(여기서는 0.25)에 가까울수록 모호함", 8.55, 5.0, 3.9, 1.0, { fontSize: 13 });
 }
 {
-  const s = slide("CONTENT", "PART 1 · 노트북 §3", "16×16 해상도와 축소 방법", "픽셀 수가 큐빗 수를 정함. 256픽셀 = sub-generator 4개 × 2⁶",
-    "- 측정 결과(basis state) 2^n개가 픽셀 n개에 대응하므로 patch 픽셀 수의 log2가 데이터 큐빗 수가 됨.\n- 생성자 출력 256개는 patch 순서대로 이어붙이므로, 16×16으로 reshape하면 patch 하나가 가로 16 × 세로 4 띠가 됨.\n- INTER_AREA: 출력 픽셀이 덮는 원본 영역의 평균. 크게 줄일 때 정보가 고르게 반영됨. LINEAR는 주변 2×2만 참조해 축소 폭이 크면 작은 병변이 사라지거나 앨리어싱이 생김.");
+  const s = slide("CONTENT", "PART 1 · 노트북 §3", "16×16 해상도와 축소 방법", "픽셀 수가 큐빗 수를 정함. 256픽셀 = sub-generator 4개 × 2⁶");
   // 16x16 grid with 4 bands
   const gx = 0.9, gy = 2.3, cell = 0.235;
   const fills = [HEX.mint, HEX.lav, HEX.cream, HEX.card2];
@@ -338,14 +335,12 @@ newSection("PART 1 · 데이터와 전처리");
 // =====================================================================
 newSection("PART 2 · 양자 회로");
 {
-  const s = slide("SECTION_DARK", "PART 2 · 노트북 §4 ~ §5", "양자 회로 : sub-generator 하나", "노이즈 encoding → 변분층 반복 → 측정 → post-selection",
-    "§4는 학습 없이 회로 출력만 확인하는 섹션임. §5 앞부분에서 생성자·판별자를 정의함.");
+  const s = slide("SECTION_DARK", "PART 2 · 노트북 §4 ~ §5", "양자 회로 : sub-generator 하나", "노이즈 encoding → variational layer 반복 → 측정 → post-selection");
   sectionRows(s, [["노트북 범위", "§4 회로 1개 출력 확인, §5 생성자·판별자 정의"],
     ["다루는 코드", "sub_generator_circuit · probs_all[::2] · PatchQuantumGenerator"]]);
 }
 {
-  const s = slide("CONTENT", "PART 2 · 노트북 §4 코드", "sub-generator 회로", "RY로 노이즈를 넣고, [학습 RY + 인접 CZ]를 10번 반복한 뒤 7큐빗 전체를 측정",
-    "- 노이즈 encoding: 샘플마다 0 ~ π 난수 각도. 같은 가중치에서 다른 이미지가 나오는 원천.\n- RY는 상태 진폭을 실수로 유지한 채 회전시켜 측정 확률을 직접 바꿈. 확률 = 픽셀 밝기이므로 RY만으로 충분함.\n- CZ는 인접 큐빗을 얽어 픽셀 사이 상관을 만듦. CZ가 없으면 각 큐빗이 독립이라 확률 분포가 곱 형태로 제한됨.\n- qml.probs는 2^7 = 128개 basis state의 확률을 반환함.");
+  const s = slide("CONTENT", "PART 2 · 노트북 §4 코드", "sub-generator 회로", "RY로 노이즈를 넣고, [학습 RY + 인접 CZ]를 10번 반복한 뒤 7큐빗 전체를 측정");
   code(s, [
     "@qml.qnode(dev)",
     "def sub_generator_circuit(noise, weights):",
@@ -383,8 +378,7 @@ newSection("PART 2 · 양자 회로");
   text(s, "③ 측정", dx + 4.2, 6.05, 0.95, 0.3, { fontSize: 11, bold: true, color: C.accent4, align: "center" });
 }
 {
-  const s = slide("CONTENT", "PART 2 · 노트북 §4 코드", "ancilla qubit과 post-selection", "128개 확률 중 ancilla qubit = 0인 64개만 patch로 씀. 코드로는 probs_all[::2]",
-    "- PennyLane은 wire 0을 최상위 비트, 마지막 wire를 최하위 비트로 둠. 마지막 wire가 ancilla이므로 인덱스가 짝수일 때 ancilla = 0.\n- 데이터 큐빗만 측정하면 64개 확률의 합은 항상 1. 배경이 대부분인 patch(합이 0에 가까워야 함)를 표현할 수 없음.\n- ancilla = 0인 항목만 쓰면 합이 0 ~ 1 사이에서 자유로워지고, 이 '밝기 총합'도 학습 대상이 됨.\n- 3일차 노트북 §6 ①: 이 측정 방식으로 바꾸자 생성 이미지 평균과 실제 평균의 상관계수가 0.00에서 0.49로 올랐음(8×8 단계 사전 실험).\n- 일반적인 ancilla 용도(오류 정정 신드롬 측정 등)와는 목적이 다름.");
+  const s = slide("CONTENT", "PART 2 · 노트북 §4 코드", "ancilla qubit과 post-selection", "128개 확률 중 ancilla qubit = 0인 64개만 patch로 씀. 코드로는 probs_all[::2]");
   table(s, [
     ["인덱스", "q0 … q5 (데이터)", "anc", "사용"],
     ["0", "000000", "0", { text: "patch 픽셀 0", options: { bold: true, color: C.accent1 } }],
@@ -414,8 +408,7 @@ newSection("PART 2 · 양자 회로");
   ], 7.45, 5.2, 5.0, 1.6, { fontSize: 13, paraSpaceAfter: 6 });
 }
 {
-  const s = slide("CONTENT", "PART 2 · 노트북 §5 코드", "PatchQuantumGenerator : patch 4개를 이어 한 장으로", "sub-generator별로 batch 크기만큼 회로를 실행하고, patch를 가로로 이어붙임",
-    "- §4의 회로와 같지만 device가 default.qubit, diff_method가 backprop임. PyTorch 자동미분으로 회전각까지 기울기를 계산하기 위함(lightning.qubit은 backprop 미지원).\n- forward의 이중 루프가 비용의 핵심: sub-generator 4 × batch 8 = 회로 32번 실행.\n- torch.cat(dim=1)로 이어붙이면 (batch, 256). 이미지로 볼 때 reshape(16, 16).");
+  const s = slide("CONTENT", "PART 2 · 노트북 §5 코드", "PatchQuantumGenerator : patch 4개를 이어 한 장으로", "sub-generator별로 batch 크기만큼 회로를 실행하고, patch를 가로로 이어붙임");
   code(s, [
     "class PatchQuantumGenerator(nn.Module):",
     "    def __init__(self, n_generators, n_data_qubits, ...):",
@@ -449,8 +442,7 @@ newSection("PART 2 · 양자 회로");
   text(s, "회로 실행 4 × 8 = 32번", 8.55, 6.25, 3.9, 0.4, { fontSize: 13, bold: true, align: "center" });
 }
 {
-  const s = slide("CONTENT", "PART 2 · 노트북 §5 코드", "파라미터 수 : 생성자 280개, 판별자 19,201개", "약 70배 차이가 나서 학습률을 다르게 둠 (생성자 0.05, 판별자 0.001)",
-    "- 생성자 파라미터 = sub-generator 4 × depth 10 × 큐빗 7 = 280. noise encoding의 RY는 학습 대상이 아님.\n- 판별자는 256→64→32→16→8→1 완전연결. 첫 층 하나가 16,448개로 대부분을 차지함.\n- 판별자가 훨씬 크고 빨리 배우므로, 생성자 학습률을 크게(0.05), 판별자는 작게(0.001) 둬 균형을 맞춤.\n- 3일차 MediQ-GAN은 Adam betas (0.5, 0.999), lr 2e-4라는 GAN 관례값을 씀. 두 모델의 학습 설정이 다르다는 점도 비교 대상임.");
+  const s = slide("CONTENT", "PART 2 · 노트북 §5 코드", "파라미터 수 : 생성자 280개, 판별자 19,201개", "약 70배 차이가 나서 학습률을 다르게 둠 (생성자 0.05, 판별자 0.001)");
   const g = (t) => ({ text: t, options: { bold: true, color: C.accent1 } });
   table(s, [
     ["구성", "모양", "파라미터"],
@@ -469,15 +461,13 @@ newSection("PART 2 · 양자 회로");
 // =====================================================================
 newSection("PART 3 · QGAN 학습");
 {
-  const s = slide("SECTION_DARK", "PART 3 · 노트북 §5", "QGAN 학습", "학습 루프, 손실 읽는 법, 계산 비용과 한계",
-    "진행 로그는 20 step마다 출력됨. 로그 숫자를 읽는 기준은 이 PART의 '손실 기준값' 장.");
+  const s = slide("SECTION_DARK", "PART 3 · 노트북 §5", "QGAN 학습", "학습 루프, 손실 읽는 법, 계산 비용과 한계");
   sectionRows(s, [["노트북 범위", "§5 학습 셀 (400 step)"],
     ["다루는 코드", "학습 루프 (판별자 step · 생성자 step) · BCE 손실"],
     ["소요 시간", "Colab CPU 약 35분, 진행 로그는 20 step마다"]]);
 }
 {
-  const s = slide("CONTENT", "PART 3 · 노트북 §5 코드", "학습 루프 : 한 step에 두 번 갱신", "판별자를 먼저 갱신하고, 같은 step에서 생성자를 갱신함",
-    "- 판별자 step: 실제 batch는 1, 생성 이미지는 0으로 맞히도록 학습. gen(BATCH).detach()로 생성자 쪽 계산 그래프를 끊어 판별자만 갱신함.\n- 생성자 step: 생성 이미지에 정답 라벨 1을 붙여 손실을 계산함(non-saturating loss). 판별자를 속이는 방향으로 회전각이 갱신됨.\n- 실제 이미지는 복원추출로 8장씩 뽑음. 115장이라 1 epoch ≈ 14 step.");
+  const s = slide("CONTENT", "PART 3 · 노트북 §5 코드", "학습 루프 : 한 step에 두 번 갱신", "판별자를 먼저 갱신하고, 같은 step에서 생성자를 갱신함");
   code(s, [
     "for step in range(STEPS):                    # 400",
     "    batch = real_flat[torch.randint(0, 115, (8,))]",
@@ -500,8 +490,7 @@ newSection("PART 3 · QGAN 학습");
   ], 8.1, 2.3, 4.6, 1.3);
 }
 {
-  const s = slide("CONTENT", "PART 3 · 진행 로그 읽기", "손실 기준값 : 1.386과 0.693", "판별자가 진짜·가짜를 구분하지 못할 때(D = 0.5)의 BCE 값이 기준선",
-    "- loss_d = −[log D(x) + log(1 − D(G(z)))]. D가 모두 0.5면 2 ln 2 ≈ 1.386.\n- loss_g = −log D(G(z)). D(G(z)) = 0.5면 ln 2 ≈ 0.693. 거꾸로 D(G(z)) ≈ exp(−loss_g).\n- 차트는 Colab 실행 로그(step 20 ~ 180). loss_g가 0.57 → 0.85로 오름 = 판별자가 생성 이미지를 진짜로 볼 확률이 0.57 → 0.43으로 떨어짐. 판별자가 조금씩 우세해지는 흐름.\n- loss_d가 0으로 가면 판별자 완승(생성자 학습 신호 소실). README '학습 안정성' 사례 참고.");
+  const s = slide("CONTENT", "PART 3 · 진행 로그 읽기", "손실 기준값 : 1.386과 0.693", "판별자가 진짜·가짜를 구분하지 못할 때(D = 0.5)의 BCE 값이 기준선");
   const steps = ["20", "40", "60", "80", "100", "120", "140", "160", "180"];
   const lg = [0.5651, 0.5864, 0.6169, 0.6624, 0.7102, 0.7095, 0.7226, 0.8258, 0.8515];
   const ld = [1.4052, 1.3990, 1.3929, 1.3842, 1.3775, 1.3764, 1.3996, 1.2880, 1.3529];
@@ -530,8 +519,7 @@ newSection("PART 3 · QGAN 학습");
   text(s, "GAN 손실은 단조 감소하지 않음. 손실이 균형처럼 보여도 품질은 낮을 수 있어 §6 지표로 따로 평가함.", 8.3, 5.0, 4.4, 1.3, { fontSize: 12.5, color: C.accent6 });
 }
 {
-  const s = slide("CONTENT", "PART 3 · 계산 비용", "계산 비용 : 학습에 35분이 걸리는 이유", "회로 하나는 작지만(2⁷ = 128차원) 실행 횟수가 많음",
-    "- 25,600번 = 32(gen 1회) × 2(step당 호출) × 400 step.\n- backprop은 상태벡터 전체를 미분하므로 시뮬레이터에서만 가능함.\n- 실제 하드웨어는 parameter-shift: 회전각마다 θ ± π/2로 회로를 두 번 더 실행해 기울기를 얻음. 생성자 280개면 샘플 하나의 기울기에 560번, 게다가 각 실행은 확률 추정을 위해 수천 shot이 필요함.\n- 3일차 MediQ-GAN은 16큐빗이라 lightning.qubit + adjoint 미분을 씀(backprop 미지원, 메모리 효율).\n- README 실험: sub-generator가 적을수록 빠른 이유도 회로 호출 횟수(sub-generator 수 × batch)가 비용을 지배하기 때문.");
+  const s = slide("CONTENT", "PART 3 · 계산 비용", "계산 비용 : 학습에 35분이 걸리는 이유", "회로 하나는 작지만(2⁷ = 128차원) 실행 횟수가 많음");
   card(s, 0.6, 2.3, 12.1, 0.9, HEX.white, { line: HEX.green });
   text(s, "회로 실행 수 = sub-generator 4 × batch 8 × step당 gen() 2회 × 400 step = 25,600회", 0.6, 2.3, 12.1, 0.9, { fontSize: 17, bold: true, color: C.accent1, align: "center", valign: "middle" });
   text(s, "회로 하나는 7큐빗(상태벡터 128차원)으로 작지만, 이 횟수만큼 forward와 backprop을 반복함.", 0.6, 3.4, 12.1, 0.4, { fontSize: 13, color: C.accent6 });
@@ -543,8 +531,7 @@ newSection("PART 3 · QGAN 학습");
   ], 0.6, 4.45, 12.1, [2.0, 1.8, 4.9, 3.4], { fontSize: 12, rowH: 0.5 });
 }
 {
-  const s = slide("CONTENT", "PART 3 · 한계", "한계 : 실제와 생성 이미지의 픽셀 합 불일치", "정규화 단위가 달라, 판별자가 형태가 아닌 밝기 총합만으로도 구분할 수 있음",
-    "- real_flat은 이미지 한 장의 합을 1로 나눔. 생성 이미지는 patch마다 ancilla = 0 확률이라 patch 합이 0 ~ 1, 4개를 이으면 0 ~ 4.\n- Colab 실행에서 생성 이미지의 장당 픽셀 합은 약 1.63(지표 표의 '픽셀합/장').\n- 6번 섹션 지표는 to_unit_scale이 이미지별 min-max로 다시 맞추므로 지표 값에는 직접 섞이지 않음. 영향을 받는 것은 학습 과정임.\n- 공개된 수치(README, 강사 checkpoint)는 현재 방식 그대로 학습한 결과임. 고친 방식으로 다시 학습해 비교하는 것은 실습 후 과제로 적합함.");
+  const s = slide("CONTENT", "PART 3 · 한계", "한계 : 실제와 생성 이미지의 픽셀 합 불일치", "정규화 단위가 달라, 판별자가 형태가 아닌 밝기 총합만으로도 구분할 수 있음");
   table(s, [
     ["", "정규화 단위", "이미지 한 장의 픽셀 합"],
     ["실제 이미지 (real_flat)", "이미지 전체", "항상 1"],
@@ -567,8 +554,21 @@ newSection("PART 4 · 생성과 평가");
     ["다루는 코드", "gm.to_unit_scale · mean_image_correlation · nearest_neighbor_distance · sample_diversity"]]);
 }
 {
-  const s = slide("CONTENT", "PART 4 · 노트북 §6", "생성품질 지표 4종", "16×16 저해상도라 FID 대신 해석 가능한 지표를 씀 (practice/gen_metrics.py)",
-    "- FID는 Inception 특징을 쓰는데 16×16에서는 특징이 의미를 갖지 못하고, 표본도 수백 장 수준이라 쓰지 않음.\n- 모든 지표는 to_unit_scale로 0 ~ 1로 맞춘 뒤 계산함. QGAN은 'prob'(이미지별 min-max), MediQ-GAN은 'tanh'((x+1)/2), 전처리 데이터는 'unit'(그대로).\n- ②는 평균 형태만 봄. 모든 샘플이 같은 평균 이미지여도 높게 나오므로 ④와 함께 봐야 함.\n- ③이 0에 가까우면 학습 데이터를 복사한 것이라 증강 가치가 없음.");
+  const s = slide("CONTENT", "PART 4 · 노트북 §6", "지표 용어: 평균 이미지, 상관계수, L2 거리", "지표 4종에 쓰이는 용어를 먼저 정의함. 모든 이미지는 16×16 = 256차원 벡터로 다룸");
+  table(s, [
+    ["용어", "정의", "쓰이는 지표"],
+    ["픽셀 강도 histogram", "픽셀 값(0 ~ 1)을 구간별로 나누어 개수를 센 분포", "①"],
+    ["클래스 평균 이미지", "실제 DF 이미지 115장을 픽셀별로 평균한 이미지. 클래스의 전형적인 형태", "②"],
+    ["Pearson 상관계수", "두 이미지 벡터에서 각각 평균을 뺀 뒤 코사인 유사도를 계산. -1 ~ 1이고, 1이면 밝기 패턴이 같은 모양", "②"],
+    ["L2 거리", "두 이미지 벡터 차이의 길이, √(Σ (픽셀 차)²). 0이면 같은 이미지", "③ ④"],
+    ["최근접 실제 거리", "생성 이미지 하나에서 모든 실제 이미지까지 L2 거리의 최솟값. 0에 가까우면 학습 이미지를 외운 것(암기)", "③"],
+    ["샘플 간 거리", "생성 이미지 쌍의 L2 거리 평균. 0에 가까우면 모두 같은 이미지(mode collapse). 비교 기준은 실제 DF 쌍의 평균 2.505", "④"],
+  ], 0.6, 2.15, 12.1, [2.4, 8.3, 1.4], { fontSize: 11, rowH: 0.4 });
+  s.addImage({ path: path.join(__dirname, "fig_day1", "metric_real_mean.png"), x: 0.6, y: 5.2, w: 5.5, h: 5.5 * 0.288 });
+  text(s, "왼쪽 네 장은 실제 DF 이미지 예이고, 오른쪽이 115장의 픽셀별 평균임. 지표 ②는 생성 이미지와 이 평균 이미지의 상관계수를 구함", 6.4, 5.4, 6.3, 1.0, { fontSize: 12, color: C.accent6 });
+}
+{
+  const s = slide("CONTENT", "PART 4 · 노트북 §6", "생성품질 지표 4종", "16×16 저해상도라 FID 대신 해석 가능한 지표를 씀 (practice/gen_metrics.py)");
   table(s, [
     ["지표", "보는 것", "함수", "읽는 법"],
     ["① 픽셀 강도 분포", "밝기 분포가 실제와 맞는가", "plot_pixel_histogram", "척도 변환 전 값도 함께 봄"],
@@ -585,8 +585,7 @@ newSection("PART 4 · 생성과 평가");
   ], 0.6, 5.25, 12.1, [1.6, 6.0, 4.5], { fontSize: 12, rowH: 0.34 });
 }
 {
-  const s = slide("CONTENT", "PART 4 · 결과 읽기", "Colab 실행 결과", "형태는 어느 정도 재현했지만 DF와 NV의 상관 차이는 작음. 실행마다 값이 조금씩 다름",
-    "- 수치는 Colab에서 노트북을 끝까지 실행한 결과임. README의 600 step 결과(상관 0.195, 최근접 1.64, 다양성 1.92)와 실행마다 차이가 있음.\n- DF 0.297 대 NV 0.284: 노트북 출력 기준으로는 'DF 특징을 잡았다'고 말하기 어려움. 토론 포인트: 16×16 그레이에서는 DF와 NV의 평균 형태(가운데 어두운 덩어리)가 원래 비슷할 수 있음 → 클래스 평균 이미지 두 장을 직접 비교해 보게 함.\n- 최근접 거리 최솟값 0.956 > 0이므로 암기는 아님.\n- 다양성 1.731은 실제 DF 2.505의 약 70%. mode collapse는 아님.");
+  const s = slide("CONTENT", "PART 4 · 결과 읽기", "Colab 실행 결과", "형태는 어느 정도 재현했지만 DF와 NV의 상관 차이는 작음. 실행마다 값이 조금씩 다름");
   s.addChart(pres.charts.BAR, [{ name: "상관계수", labels: ["DF 평균 대비", "NV 평균 대비"], values: [0.297, 0.284] }], {
     x: 0.6, y: 2.15, w: 4.6, h: 4.55, barDir: "col", chartColors: [THEME.colors.accent1, THEME.colors.accent6],
     showValue: true, dataLabelPosition: "outEnd", dataLabelFontSize: 12, dataLabelFontFace: "+mn-lt", dataLabelColor: THEME.colors.dk1, dataLabelFormatCode: "0.000",
@@ -609,8 +608,7 @@ newSection("PART 4 · 생성과 평가");
 // =====================================================================
 newSection("정리");
 {
-  const s = slide("CONTENT", "정리", "2일차 정리", "segmentation 전처리부터 QGAN 학습·평가까지",
-    "오늘 다룬 내용을 PART 순서대로 정리함.");
+  const s = slide("CONTENT", "정리", "2일차 정리", "segmentation 전처리부터 QGAN 학습·평가까지");
   summary(s, [
     ["데이터와 전처리", "DF 115장을 증강 대상으로 둠. K-means + FCM segmentation으로 병변만 남기고 16×16, 0 ~ 1로 축소 (INTER_AREA)"],
     ["sub-generator 회로", "7큐빗(데이터 6 + ancilla 1), RY encoding 후 [학습 RY + 인접 CZ] × 10. ancilla = 0인 확률 64개가 patch 하나"],

@@ -85,8 +85,8 @@ With 92 DF images this difference is not an improvement, so the practicals use t
 
 ```
 practice/            for students
-  day1_slides/       Day 1 theory (52, speaker notes included)
-  day2_slides/       Day 2 walkthrough (24)
+  day1_slides/       Day 1 theory (66, speaker notes included)
+  day2_slides/       Day 2 walkthrough (25)
   day3_slides/       Day 3 walkthrough (10)
   day2_practice.ipynb, day3_practice.ipynb
   gen_metrics.py     the four metrics (shared by Day 2 and 3)
