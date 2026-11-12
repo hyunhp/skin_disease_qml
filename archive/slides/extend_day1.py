@@ -31,6 +31,8 @@ INK, GRAY, GREEN, GREEN2, DARK = "212121", "6B6B6B", "00754A", "006241", "1E3932
 ROW, CARD, CREAM, AMBER = "EDEBE9", "F2F0EB", "FAF6EE", "9C5000"
 PURPLE_BG, PURPLE, GREEN_BG, SAND, MUTED = "ECE6F5", "5B3F8C", "E4F0EA", "DFC49D", "CFC9B8"
 X0, W0 = 0.7, 11.93  # 본문 좌측 여백, 본문 폭 (인치)
+# PowerPoint로 넣었던 GAN 도입 3장. 캐릭터 그림·라벨 오류·'보상/페널티' 표현이 있어 템플릿 슬라이드 GAN1 ~ GAN3으로 대체하고 실행 시 지움
+REPLACED_USER = {"user:gan1", "user:gan2", "user:gan3"}
 
 
 # ----------------------------------------------------------------------------- 저수준 도우미
@@ -211,6 +213,8 @@ class Deck:
         auto = 0
         for s in self.prs.slides:
             nm = s._element.cSld.get("name") or ""
+            if nm in REPLACED_USER:
+                continue
             m = re.fullmatch(r"orig:(\d+)", nm)
             if m:
                 key = "O" + m.group(1)
@@ -230,7 +234,8 @@ class Deck:
         lst = self.prs.slides._sldIdLst
         for sid in list(lst):
             sl = self.prs.part.related_part(sid.rId).slide
-            if (sl._element.cSld.get("name") or "").startswith("added:"):
+            nm = sl._element.cSld.get("name") or ""
+            if nm.startswith("added:") or nm in REPLACED_USER:
                 self.prs.part.drop_rel(sid.rId)
                 lst.remove(sid)
         # 남은 슬라이드 파트 이름을 연속 번호로 되돌려, 새 슬라이드의 파트 이름과 충돌하지 않게 함
@@ -338,32 +343,6 @@ def fix_o20(slide):
             runs[3].text = " → 측정 → 고전 "
 
 
-# 업로드한 GAN 도입 슬라이드의 그림 오른쪽 상자가 "D(G(z)) : 0 real / D(x) : 1 fake"로 적혀 있어 식(D(x)=1이 실제)과 반대임.
-# 그림(이미지)은 고치지 못하므로 같은 색 상자를 위에 덮어 올바른 표기로 바꿈. 좌표(인치)는 렌더링에서 측정함.
-LABEL_FIX_BOXES = {"user:gan1": (9.72, 4.80, 1.85, 0.88), "user:gan2": (9.72, 4.01, 1.85, 0.88), "user:gan3": (9.72, 4.0, 1.85, 0.78)}
-
-
-def fix_gan_labels(d):
-    for key, (x, y, w, h) in LABEL_FIX_BOXES.items():
-        if key not in d.by_key:
-            continue
-        s = d.by_key[key]
-        for sh in list(s.shapes):
-            if sh.name == "label_fix":
-                sh._element.getparent().remove(sh._element)
-        box = rect(s, x, y, w, h, "D5D5D5", rounded=True)
-        box.name = "label_fix"
-        tf = box.text_frame
-        tf.word_wrap = True
-        tf.vertical_anchor = MSO_ANCHOR.MIDDLE
-        for i, line in enumerate(["D(G(z)) : 0 → fake", "D(x) : 1 → real"]):
-            p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
-            p.alignment = PP_ALIGN.CENTER
-            r = p.add_run()
-            r.text = line
-            _set_font(r, 12, "212121", False)
-
-
 def fix_terms(d):
     """런 단위로 치환하고, 문구가 여러 런에 걸쳐 있으면 문단의 첫 런으로 합쳐 치환함."""
     log = []
@@ -385,7 +364,6 @@ def fix_terms(d):
                         r._r.getparent().remove(r._r)
                 log.append((key, old))
     fix_o20(d.slide_of("O20"))
-    fix_gan_labels(d)
     return log
 
 
@@ -441,14 +419,63 @@ def build_new(d):
         ("이후 내용과의 관계", "이 장에서 정의한 용어(RY, CNOT, 기댓값, WGAN-GP, FID)를 QGAN·MediQ-GAN 설명에서 그대로 사용함"),
     ])
 
+    # --- GAN1 개요
+    s = d.add("GAN1")
+    header(s, "사전 지식 · GAN", "GAN: 적대적 학습으로 데이터 분포를 근사하는 생성모델",
+           "Generative Adversarial Network(생성적 적대 신경망). Goodfellow et al., NeurIPS 2014")
+    picture(s, f("gan_dist.png"), 1.2, 2.15, w=10.9)
+    card(s, X0, 5.2, 6.85, 1.55, None, [
+        "**목적**: 실제 분포 p_data를 근사하는 생성 분포 p_g를 학습해 새 샘플을 만듦",
+        "**구성**: 생성자 G와 판별자 D, 두 신경망",
+        "**학습 신호**: D의 판단이 G의 손실이 됨. 정답 이미지와 픽셀 단위로 비교하지 않음",
+    ], fs=11)
+    callout(s, 7.8, 5.2, 4.83, 1.55, "의료 이미지 증강에서의 용도", [
+        "희귀 병변은 수집이 어렵고 개인정보 문제로 공유가 제한됨",
+        "소수 클래스(df 115장)를 새 샘플로 보충. 유용성은 지표로 별도 검증",
+    ], fs=11)
+    caption(s, "그림: 개념도(1차원 예시). 수치 데이터가 아님")
+    d.finish_slide(s)
+
+    # --- GAN2 역할
+    s = d.add("GAN2")
+    header(s, "사전 지식 · GAN", "생성자와 판별자의 역할", "두 신경망은 입력·출력이 다르고 목표가 서로 반대임. 이 반대 관계가 '적대적'의 의미임")
+    picture(s, f("gan_roles.png"), X0, 2.25, w=5.9)
+    table(s, 6.85, 2.2, [1.15, 2.45, 2.18], [
+        ["항목", "생성자 G", "판별자 D"],
+        ["입력", "노이즈 벡터 z", "이미지 (실제 x 또는 생성 x̃)"],
+        ["출력", "이미지 x̃ = G(z)", "진짜일 확률 (0 ~ 1)"],
+        ["목표", "D(G(z))를 1에 가깝게", "D(x)는 1, D(G(z))는 0에 가깝게"],
+        ["모델 유형", "생성모델", "이진 분류기"],
+        ["2일차 구현", "양자회로 4개, 파라미터 280개", "5층 완전연결, 파라미터 19,201개"],
+    ], fs=11, hfs=11.5, min_rh=0.5)
+    callout(s, X0, 5.65, W0, 1.1, "실습과의 연결", [
+        "QGAN·MediQ-GAN은 G에만 양자회로를 넣음. 2일차는 D가 G보다 약 70배 커서 학습률을 G 0.05, D 0.001로 다르게 둠 (2일차 노트북)"], fs=11)
+    d.finish_slide(s)
+
+    # --- GAN3 학습 과정
+    s = d.add("GAN3")
+    header(s, "사전 지식 · GAN", "학습 과정: 판별자와 생성자를 번갈아 갱신",
+           "한 step 안에서 D를 먼저, G를 나중에 갱신함. 2·3일차 노트북의 학습 루프와 같은 순서임")
+    picture(s, f("gan_step.png"), X0, 2.15, w=6.25)
+    card(s, 7.3, 2.2, 5.33, 3.45, "종료와 손실 해석", [
+        "보상이 아니라 손실의 gradient로 파라미터를 갱신함",
+        "학습은 정해진 step 수에서 멈춤 (2일차 400 step). 생성 분포가 실제와 같아지는 시점을 손실로 알 수는 없음",
+        "이론상 평형(p_g = p_data)에서 D = 1/2이고 이때 D 손실 2 ln 2 ≈ 1.386, G 손실 ln 2 ≈ 0.693. 2일차 로그의 기준값",
+        "D 손실이 0에 가까우면 D가 압도해 G의 gradient가 약해짐",
+        "품질은 손실이 아닌 평가 지표로 판단함 (이어지는 지표 슬라이드)",
+    ], fs=11)
+    callout(s, X0, 5.85, W0, 0.9, "코드 대응 (2일차 노트북)", [
+        "loss_d = bce(disc(batch), 1) + bce(disc(gen(B).detach()), 0) → opt_d.step()   /   loss_g = bce(disc(gen(B)), 1) → opt_g.step()"], fs=10.5)
+    d.finish_slide(s)
+
     # --- G1
     s = d.add("G1")
-    header(s, "사전 지식 · GAN", "GAN의 목적함수와 학습 순서", "앞 슬라이드의 경쟁 구조를 하나의 목적함수(minimax)와 갱신 방향으로 정식화함")
+    header(s, "사전 지식 · GAN", "GAN의 목적함수(minimax)", "앞의 학습 과정을 하나의 목적함수와 갱신 방향으로 정식화함")
     w, h = picture(s, f("gan_game.png"), X0, 2.15, w=7.7)
     card(s, 8.7, 2.15, 3.93, 3.0, None, [
         "**D 갱신**: 실제 x는 1, 생성 x̃는 0으로 분류하도록 V를 최대화",
         "**G 갱신**: D가 x̃를 1로 판단하도록 V를 최소화",
-        "**학습 순서**: D 갱신과 G 갱신을 번갈아 반복",
+        "**D의 최적해**: D*(x) = p_data(x) / (p_data(x) + p_g(x)). p_g = p_data이면 1/2",
         "QGAN·MediQ-GAN은 이 구조에서 G만 양자회로를 포함함",
     ], fs=11.5)
     rect(s, X0, 5.45, W0, 1.2, "FFFFFF", line=GREEN, rounded=True)
@@ -924,7 +951,7 @@ def build_new(d):
 
 
 ORDER = (
-    ["O1", "O2", "O3", "O4", "O5", "PRE", "user:gan1", "user:gan2", "user:gan3", "G1", "G2", "G2B", "G3", "G4", "G5", "G6",
+    ["O1", "O2", "O3", "O4", "O5", "PRE", "GAN1", "GAN2", "GAN3", "G1", "G2", "G2B", "G3", "G4", "G5", "G6",
      "QI1", "QI2", "QI3", "Q1", "Q1B", "Q2", "Q3", "Q4", "ENC", "Q5", "BRK"]
     + ["O6", "O7", "O8", "O9", "PATCH", "O10", "T1", "O11", "IMG", "O12", "O13", "O14"]
     + ["O15", "O16", "M1", "O17", "O18", "O19", "M2", "O20", "O21", "O22", "O23", "O24", "O25", "PS", "O26"]
