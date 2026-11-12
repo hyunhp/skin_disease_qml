@@ -21,6 +21,7 @@
   | 인코딩, 디코더, (듀얼)스트림, 레이어 | encoding, decoder, (dual-)stream, layer |
   | 에폭, 스텝, 배치(batch 의미) | epoch, step, batch (숫자와 띄어 씀: "600 step", "25 epoch") |
   | 클러스터(링), 히스토그램, 그래디언트, 하이브리드, 앙상블 | cluster(ing), histogram, gradient, hybrid, ensemble |
+| 변분 양자회로, 변분층 | variational quantum circuit(VQC), variational layer (PQC는 parameterized quantum circuit) |
   | 보조큐빗, 사후선택, 모드붕괴 | ancilla qubit, post-selection, mode collapse |
 
   정착된 한국어 용어(큐빗, 생성자, 판별자, 손실, 얽힘, 상태벡터, 미세조정)와 일상 외래어(데이터, 이미지, 픽셀, 파라미터)는 그대로 쓴다.
@@ -37,7 +38,9 @@
 
 ## 작업 방식
 
-- 변경은 작업 브랜치에 commit·push한다. main 반영은 사용자가 요청할 때 PR을 만들어 merge한다.
+- 변경은 작업 브랜치에 commit·push한 뒤 PR을 만들어 main에 merge하는 것까지를 기본으로 한다(별도 요청이 없어도). merge 방식은 merge commit이고, main이 앞서 있으면 먼저 main을 작업 브랜치에 merge한다.
+- 1일차 슬라이드는 `archive/slides/extend_day1.py`(대본은 `day1_notes.py`)를 고친 뒤 다시 실행한다. PowerPoint에서 직접 만든 슬라이드(`user:*`)는 직접 고쳐도 되며 스크립트가 보존한다.
+- 발표 대본 소요 시간은 분당 300자(공백 포함)로 계산한다. 대본을 고치면 `archive/slides/check_script_length.py`로 분량을 확인한다.
 - 2·3일차 슬라이드는 `archive/slides/build_day*.js`를 고친 뒤 다시 빌드하고 `export_pdf.py`로 PDF를 만든다. pptx를 직접 고치지 않는다.
 - 실행 결과(Colab 출력 등)를 받으면 설명과 수치를 실제 결과에 맞춘다.
 - "남은 작업 확인" 요청 시 점검 항목: 용어표·문체·`~` 띄어쓰기·줄표, 노트북 출력 비움, 링크·이미지 URL, 슬라이드 스크립트와 pptx·pdf 일치, README의 장 수·수치.
