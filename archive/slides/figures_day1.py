@@ -564,7 +564,66 @@ def fig_param_shift():
     save(fig, "param_shift.png")
 
 
+# 23. GAN 도입 3장 (분포 근사, 역할, 학습 1 step) ------------------------------------------------------
+def fig_gan_dist():
+    x = np.linspace(-5, 5, 400)
+    g = lambda m, sd: np.exp(-0.5 * ((x - m) / sd) ** 2) / (sd * np.sqrt(2 * np.pi))
+    real = 0.5 * g(-1.6, 0.6) + 0.5 * g(1.6, 0.6)
+    gens = [("학습 초기", g(3.0, 1.4)), ("학습 중간", 0.25 * g(-1.2, 0.9) + 0.75 * g(1.6, 0.8)), ("학습 후반", 0.5 * g(-1.55, 0.65) + 0.5 * g(1.6, 0.62))]
+    fig, axes = plt.subplots(1, 3, figsize=(9.6, 2.6), sharey=True)
+    for ax, (title, gen) in zip(axes, gens):
+        ax.fill_between(x, real, color=LGRAY, alpha=0.8, lw=0, label="p_data (실제)")
+        ax.plot(x, gen, color=GREEN, lw=2.2, label="p_g (생성자)")
+        ax.set_title(title, fontsize=10.5, color=INK, pad=6); ax.set_xticks([]); ax.set_yticks([])
+        ax.set_xlabel("데이터 공간 (1차원 예시)", fontsize=9)
+    axes[0].legend(frameon=False, fontsize=9, loc="upper left")
+    fig.tight_layout(w_pad=1.2)
+    save(fig, "gan_dist.png")
+
+
+def fig_gan_roles():
+    fig, ax = plt.subplots(figsize=(7.4, 3.9))
+    ax.set_xlim(0, 10); ax.set_ylim(0, 5.4); ax.axis("off")
+    ax.text(0.1, 5.1, "생성자 G", color=GREEN, fontsize=11, fontweight="bold")
+    box(ax, 0.1, 3.3, 1.9, 1.3, "노이즈 벡터\nz ~ p_z", fs=10.5)
+    box(ax, 2.9, 3.3, 2.0, 1.3, "Generator\nG(z; θ_G)", fc="#E4F0EA", ec=GREEN, tc=GREEN, bold=True)
+    box(ax, 5.8, 3.3, 1.9, 1.3, "생성 이미지\nx̃ = G(z)", fs=10.5)
+    arrow(ax, 2.05, 3.95, 2.85, 3.95); arrow(ax, 4.95, 3.95, 5.75, 3.95)
+    ax.text(0.1, 2.3, "판별자 D", color=PURPLE, fontsize=11, fontweight="bold")
+    box(ax, 0.1, 0.5, 1.9, 1.3, "입력 이미지\nx 또는 x̃", fs=10.5)
+    box(ax, 2.9, 0.5, 2.0, 1.3, "Discriminator\nD(·; θ_D)", fc="#ECE6F5", ec=PURPLE, tc=PURPLE, bold=True)
+    box(ax, 5.8, 0.5, 1.9, 1.3, "진짜일 확률\n0 ~ 1", fs=10.5)
+    arrow(ax, 2.05, 1.15, 2.85, 1.15); arrow(ax, 4.95, 1.15, 5.75, 1.15)
+    arrow(ax, 6.75, 3.25, 1.05, 1.85, color=GRAY, ls="--", rad=-0.08)
+    ax.text(7.95, 1.55, "D의 목표\nD(x) → 1 (real)\nD(G(z)) → 0 (fake)", fontsize=10, color=PURPLE, va="center", linespacing=1.5)
+    ax.text(7.95, 3.95, "G의 목표\nD(G(z)) → 1", fontsize=10, color=GREEN, va="center", linespacing=1.5)
+    save(fig, "gan_roles.png")
+
+
+def fig_gan_step():
+    fig, ax = plt.subplots(figsize=(7.7, 4.3))
+    ax.set_xlim(0, 10.1); ax.set_ylim(0, 6.2); ax.axis("off")
+    steps = [
+        ("1", "batch 준비: 실제 x 추출, x̃ = G(z) 생성", "#F2F0EB", GRAY, INK),
+        ("2", "D 손실: BCE(D(x), 1) + BCE(D(x̃), 0)", "#ECE6F5", PURPLE, PURPLE),
+        ("3", "D 갱신 (x̃는 detach, G 고정)", "#ECE6F5", PURPLE, PURPLE),
+        ("4", "G 손실: BCE(D(G(z)), 1) = −log D(G(z))", "#E4F0EA", GREEN, GREEN),
+        ("5", "G 갱신 (D를 거쳐 G까지 역전파, D 고정)", "#E4F0EA", GREEN, GREEN),
+    ]
+    y = 5.2
+    for i, (n, t, fc, ec, tc) in enumerate(steps):
+        ax.add_patch(FancyBboxPatch((0.2, y), 7.6, 0.75, boxstyle="round,pad=0.02,rounding_size=0.08", fc=fc, ec=ec, lw=1.2))
+        ax.text(0.45, y + 0.375, n, ha="center", va="center", color=tc, fontsize=12, fontweight="bold")
+        ax.text(0.8, y + 0.375, t, ha="left", va="center", color=INK, fontsize=10.5)
+        if i < 4:
+            arrow(ax, 4.0, y - 0.02, 4.0, y - 0.4)
+        y -= 1.18
+    arrow(ax, 7.85, 0.65, 7.85, 5.55, color=DARK, rad=0.25, ls="--")
+    ax.text(9.35, 3.1, "다음 step\n(정해진\nstep 수까지)", fontsize=9.5, color=DARK, ha="center", va="center", linespacing=1.4)
+    save(fig, "gan_step.png")
+
+
 if __name__ == "__main__":
-    for fn in (fig_gan, fig_ry, fig_bell, fig_shots, fig_loop, fig_memory, fig_state3, fig_taxonomy, fig_interference, fig_layer_compare, fig_roc, fig_lpips, fig_metric_mean, fig_encoding, fig_mode_collapse, fig_js_w, fig_bloch, fig_patch, fig_param_shift, fig_fid, fig_fid_minority, fig_ibm, fig_acc, fig_shapes):
+    for fn in (fig_gan, fig_gan_dist, fig_gan_roles, fig_gan_step, fig_ry, fig_bell, fig_shots, fig_loop, fig_memory, fig_state3, fig_taxonomy, fig_interference, fig_layer_compare, fig_roc, fig_lpips, fig_metric_mean, fig_encoding, fig_mode_collapse, fig_js_w, fig_bloch, fig_patch, fig_param_shift, fig_fid, fig_fid_minority, fig_ibm, fig_acc, fig_shapes):
         fn()
     print(sorted(os.listdir(OUT)))
