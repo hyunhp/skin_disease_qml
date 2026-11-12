@@ -37,7 +37,7 @@ class PatchQuantumGenerator(nn.Module):
             # 1) 노이즈 angle encoding
             for i in range(n_qubits):
                 qml.RY(noise[i], wires=i)
-            # 2) 변분 layer: 회전 + 인접 CZ (논문 Fig.10)
+            # 2) variational layer: 회전 + 인접 CZ (논문 Fig.10)
             for layer in range(q_depth):
                 for i in range(n_qubits):
                     qml.RY(weights[layer, i], wires=i)

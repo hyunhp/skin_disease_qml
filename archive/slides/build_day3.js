@@ -64,12 +64,17 @@ pres.defineSlideMaster({
 
 // ---------- helpers ----------
 let section = "";
+const NOTES = require("./day3_notes.json"); // 발표 대본(슬라이드 번호 -> 대본). 없으면 인라인 notes를 씀
+let slideNo = 0;
 function slide(master, kicker, title, sub, notes) {
   const s = pres.addSlide({ masterName: master, sectionTitle: section });
+  slideNo += 1;
   if (kicker) s.addText(kicker, { placeholder: "kicker" });
   s.addText(title, { placeholder: "title" });
   if (sub) s.addText(sub, { placeholder: "sub" });
-  if (notes) s.addNotes(notes);
+  const script = NOTES[String(slideNo)];
+  if (script) s.addNotes(`[약 ${Math.max(1, Math.round(script.replace(/\n/g, "").length / 300))}분]\n` + script);
+  else if (notes) s.addNotes(notes);
   return s;
 }
 function newSection(t) { section = t; pres.addSection({ title: t }); }
@@ -154,16 +159,14 @@ function chartStyle(extra) {
 // =====================================================================
 newSection("표지");
 {
-  const s = slide("TITLE_DARK", "QML Lecture · 3일차", "실습 설명 자료", "MediQ-GAN 미세조정 → QGAN과 같은 지표로 비교",
-    "3일차 노트북(practice/day3_practice.ipynb)의 내용을 설명하는 자료.\n- 핵심만 10장: MediQ-GAN 구조, 계산 비용, QGAN과의 비교. 2일차 복습·checkpoint 코드·논문 결과는 노트북에 있음.");
+  const s = slide("TITLE_DARK", "QML Lecture · 3일차", "실습 설명 자료", "MediQ-GAN 미세조정 → QGAN과 같은 지표로 비교");
   s.addShape(pres.shapes.OVAL, { x: 10.55, y: 0.85, w: 1.55, h: 1.55, fill: { color: C.text2 }, line: { color: C.accent1, width: 1.25 } });
   s.addShape(pres.shapes.OVAL, { x: 11.0, y: 1.3, w: 0.65, h: 0.65, fill: { color: C.accent1 }, line: { type: "none" } });
 }
 // =====================================================================
 newSection("MediQ-GAN 구조");
 {
-  const s = slide("CONTENT", "MediQ-GAN 구조 · 1일차 복습", "hybrid 수준 : model-level과 layer-level", "QGAN은 생성자 전체가 양자회로, MediQ-GAN은 생성자 안의 한 갈래만 양자회로",
-    "- 1일차 슬라이드 31 'Hybrid 분류체계' 복습.\n- model-level hybrid: 판별자만 고전, 생성자는 처음부터 끝까지 양자회로. 출력이 측정 확률이라 척도가 확률(patch별 합 0 ~ 1).\n- layer-level hybrid: 생성자 안에서 고전 layer와 양자 layer가 함께 동작. 최종 출력은 고전 decoder가 만들고 Tanh(-1 ~ 1).\n- MediQ-GAN 논문의 주장: 전역 구조는 고전, 세부는 양자가 맡는 쪽이 더 높은 해상도로 확장됨.");
+  const s = slide("CONTENT", "MediQ-GAN 구조 · 1일차 복습", "hybrid 수준 : model-level과 layer-level", "QGAN은 생성자 전체가 양자회로, MediQ-GAN은 생성자 안의 한 갈래만 양자회로");
   card(s, 0.6, 2.3, 5.9, 4.3, HEX.mint, { line: HEX.green });
   text(s, "QGAN - model-level hybrid", 0.85, 2.5, 5.4, 0.4, { fontSize: 17, bold: true, color: C.accent1 });
   text(s, "Andra et al., 2025 · 2일차 실습", 0.85, 2.9, 5.4, 0.35, { fontSize: 12, color: C.accent6 });
@@ -186,8 +189,7 @@ newSection("MediQ-GAN 구조");
   box(s, "z → [고전 ∥ 양자] → concat → decoder", 7.05, 5.65, 5.4, 0.6, C.accent2, C.background1, { fontSize: 13 });
 }
 {
-  const s = slide("CONTENT", "MediQ-GAN 구조 · 노트북 §3 코드", "dual-stream의 데이터 흐름", "잠재벡터 256차원을 절반씩 나누고, 두 stream의 출력을 이어붙여 decoder로 보냄",
-    "- forward 코드: z[:, :half]는 고전 stream, z[:, half:]는 양자 stream으로 감(논문 Fig. 1 'Feature Split').\n- 고전 stream은 128 → 32 → 128 MLP. 논문은 conv encoder지만 16×16 저해상도라 MLP로 단순화함.\n- 양자 stream은 128차원을 4×4 = 16 site(site당 8차원)로 보고, site [0, 4, 8, 11, 15]만 회로 5개가 하나씩 처리함. 나머지 11칸은 0.\n- 양자 stream 출력은 16채널 × 4×4 = 256차원. 고전 128과 concat하면 384차원.\n- decoder는 384 → 32 → 256 MLP + Tanh. 최종 이미지는 이 고전 decoder가 만듦 → Tanh가 포화되면 z와 무관한 상수 이미지가 나올 수 있음(README 학습 안정성).");
+  const s = slide("CONTENT", "MediQ-GAN 구조 · 노트북 §3 코드", "dual-stream의 데이터 흐름", "잠재벡터 256차원을 절반씩 나누고, 두 stream의 출력을 이어붙여 decoder로 보냄");
   box(s, "잠재벡터 z\n256차원\nN(0, 1)", 0.6, 3.25, 1.5, 1.2, HEX.card2, C.text1, { fontSize: 12 });
   // classical row
   box(s, "z[:, :128]", 2.55, 2.25, 1.5, 0.7, HEX.white, C.text1, { fontSize: 12, line: HEX.line });
@@ -214,8 +216,7 @@ newSection("MediQ-GAN 구조");
   ], 0.6, 5.72, 12.1, 1.1, 10.5);
 }
 {
-  const s = slide("CONTENT", "MediQ-GAN 구조 · 노트북 §3 코드", "양자 회로 : 16큐빗, depth 8", "같은 값으로 RY → RX encoding, [학습 RY + 인접 CZ] × 8, 큐빗별 PauliX 기댓값",
-    "- 2일차 회로와 다른 점: ① 입력이 난수가 아니라 q_align이 만든 학습된 특징값, ② RY와 RX를 같은 값으로 연속 적용, ③ 확률 대신 PauliX 기댓값(-1 ~ 1, 큐빗당 1개)을 출력.\n- 기댓값 출력이라 ancilla qubit이나 post-selection이 필요 없음.\n- lightning.qubit(C++ 시뮬레이터)은 backprop을 지원하지 않아 adjoint 미분을 씀. 16큐빗 상태벡터는 2^16 = 65,536차원.\n- 공식 레포(mediq-gan.py의 quantum_circuit)와 같은 구성. depth는 논문 그림 기준 8(레포 CLI 기본값은 6).");
+  const s = slide("CONTENT", "MediQ-GAN 구조 · 노트북 §3 코드", "양자 회로 : 16큐빗, depth 8", "같은 값으로 RY → RX encoding, [학습 RY + 인접 CZ] × 8, 큐빗별 PauliX 기댓값");
   code(s, [
     '@qml.qnode(dev, interface="torch", diff_method="adjoint")',
     "def q_circuit(x, weights):",
@@ -257,8 +258,7 @@ newSection("MediQ-GAN 구조");
   text(s, "출력: 큐빗 16개의 기댓값 → 평균 → site당 스칼라 1개", dx + 0.25, 6.12, 4.7, 0.35, { fontSize: 12, align: "center" });
 }
 {
-  const s = slide("CONTENT", "MediQ-GAN 구조 · 파라미터 분포", "생성자 파라미터 구성", "30,000개 중 양자 회전각은 640개(2.1%). 2일차 QGAN 생성자는 280개 전부가 양자 회전각임",
-    "- 값은 노트북의 ToyDualStreamGenerator(in_dim 256)를 그대로 만들어 센 것.\n- 파라미터 수로는 양자 stream이 2.1%에 불과하지만, 학습 시간의 대부분은 16큐빗 회로 시뮬레이션에서 나옴.\n- 2일차 QGAN은 생성자 280개가 전부 양자 파라미터. '양자 비율'이 hybrid 수준의 차이를 수치로 보여줌.\n- parameter-shift로 실제 장치에서 학습한다면 640개 × 2 = 1,280회 회로 실행이 샘플 하나의 기울기에 필요함.");
+  const s = slide("CONTENT", "MediQ-GAN 구조 · 파라미터 분포", "생성자 파라미터 구성", "30,000개 중 양자 회전각은 640개(2.1%). 2일차 QGAN 생성자는 280개 전부가 양자 회전각임");
   const q = (t) => ({ text: t, options: { bold: true, color: C.accent2 } });
   table(s, [
     ["모듈", "구성", "파라미터", "비율"],
@@ -273,8 +273,7 @@ newSection("MediQ-GAN 구조");
   source(s, "노트북 ToyDualStreamGenerator(in_dim 256)에서 직접 센 값");
 }
 {
-  const s = slide("CONTENT", "MediQ-GAN 구조 · 한계", "원 논문과 실습의 차이", "양자 stream은 원 논문 스펙 그대로, 고전 부분과 판별자·평가를 단순화함",
-    "- 양자 stream을 줄이지 않은 이유: 줄이면 '논문이 말한 모델'이 아니게 됨. 대신 해상도와 학습 구간을 줄임(README 설계 원칙 1).\n- 판별자 차이가 가장 큼: 원 논문은 WGAN-GP critic(gradient penalty로 판별자를 제약). 실습은 QGAN과 같은 표준 BCE 판별자라 판별자가 우세함(README 학습 안정성).\n- 평가: 16×16에서는 FID가 의미 없어 지표 4종을 씀.");
+  const s = slide("CONTENT", "MediQ-GAN 구조 · 한계", "원 논문과 실습의 차이", "양자 stream은 원 논문 스펙 그대로, 고전 부분과 판별자·평가를 단순화함");
   table(s, [
     ["항목", "원 논문 (Jiao et al.)", "3일차 실습", "비고"],
     ["양자 stream", "16큐빗 × 5, depth 8", { text: "동일", options: { bold: true, color: C.accent1 } }, "공식 레포와 같은 회로"],
@@ -288,8 +287,7 @@ newSection("MediQ-GAN 구조");
 // =====================================================================
 newSection("미세조정");
 {
-  const s = slide("CONTENT", "미세조정 · 계산 비용", "계산 비용 : 수업에서 미세조정만 하는 이유", "16큐빗 회로 시뮬레이션이 비싸 25 epoch 사전학습에 196분(약 3시간 15분)이 걸림",
-    "- 1 epoch = DF 115장을 batch 4로 28 step. checkpoint 기록상 epoch당 평균 7.8분(453 ~ 487초).\n- 1 step 약 20초: batch 4 × 샘플당 약 3초(판별자 step + 생성자 step).\n- 큐빗 수에 따른 비용: 16큐빗은 12큐빗 대비 상태벡터가 16배(2^16 vs 2^12), 실측 소요시간은 약 20배였음(3일차 노트북 §6 ④).\n- 그래서 수업에서는 10 epoch checkpoint(약 80분 학습분)에서 출발해 20 step만 더 돌림.");
+  const s = slide("CONTENT", "미세조정 · 계산 비용", "계산 비용 : 수업에서 미세조정만 하는 이유", "16큐빗 회로 시뮬레이션이 비싸 25 epoch 사전학습에 196분(약 3시간 15분)이 걸림");
   const b = (t) => ({ text: t, options: { bold: true } });
   table(s, [
     ["", "2일차 QGAN", "3일차 MediQ-GAN"],
@@ -306,8 +304,7 @@ newSection("미세조정");
 // =====================================================================
 newSection("비교");
 {
-  const s = slide("CONTENT", "비교 · 노트북 §5", "지표 비교 : 형태 재현과 다양성", "상관은 MediQ-GAN이 높고, 샘플 간 거리는 QGAN이 실제 DF에 가까움",
-    "- MediQ-GAN 25 epoch: 클래스 평균 상관 0.365로 QGAN(0.195)보다 높음 - 평균적인 병변 형태를 더 잘 맞춤.\n- 그러나 샘플 간 거리 0.30은 실제 DF(2.505)의 약 1/8 - 비슷한 이미지를 반복 생성(mode collapse 경향).\n- QGAN은 상관이 낮지만 다양성 1.92로 실제 분포에 가까움.\n- 10 epoch(0.018)과 25 epoch(0.365) 차이로 학습량이 결과를 크게 바꾼다는 점도 확인함.\n- 이 자료 작성 중 노트북 실행 결과: MediQ-GAN 25 epoch 상관 0.366, 다양성 0.285 - README와 일치.");
+  const s = slide("CONTENT", "비교 · 노트북 §5", "지표 비교 : 형태 재현과 다양성", "상관은 MediQ-GAN이 높고, 샘플 간 거리는 QGAN이 실제 DF에 가까움");
   s.addChart(pres.charts.BAR, [{ name: "상관", labels: ["QGAN 600 step", "MediQ 10 epoch", "MediQ 25 epoch"], values: [0.195, 0.018, 0.365] }], chartStyle({
     x: 0.6, y: 2.15, w: 6.0, h: 4.6, barDir: "col", chartColors: [THEME.colors.accent1, "B9B3D6", THEME.colors.accent2], varyColors: true,
     showValue: true, dataLabelPosition: "outEnd", dataLabelFontSize: 12, dataLabelFontFace: "+mn-lt", dataLabelColor: THEME.colors.dk1, dataLabelFormatCode: "0.000",
@@ -318,29 +315,27 @@ newSection("비교");
     showValue: true, dataLabelPosition: "outEnd", dataLabelFontSize: 12, dataLabelFontFace: "+mn-lt", dataLabelColor: THEME.colors.dk1, dataLabelFormatCode: "0.00",
     showLegend: false, title: "④ 샘플 간 거리 (0에 가까우면 mode collapse)", valAxisMinVal: 0, valAxisMaxVal: 3, valAxisMajorUnit: 0.5, valAxisLabelFormatCode: "0.0",
   }));
-  source(s, "수치: README 결과표 (로컬 CPU). MediQ-GAN은 16장, QGAN은 64장으로 평가");
+  source(s, "수치: README 결과표(로컬 CPU), MediQ-GAN 16장, QGAN 64장 평가. 지표 정의는 2일차 참고");
 }
 {
-  const s = slide("CONTENT", "비교 · 결과 해석", "결과 해석 : 두 모델의 한계", "QGAN은 형태 재현이 약하고, MediQ-GAN은 평균 이미지에 가까운 그림을 반복함",
-    "- MediQ-GAN의 최근접 실제 거리 3.44는 QGAN(1.64)의 두 배. 생성 이미지가 어떤 실제 이미지와도 가깝지 않음 → 개별 병변이 아니라 평균적인 형태를 반복해 그린다는 해석과 맞음(상관은 높고 다양성은 낮음).\n- 클래스 평균 상관(②)은 평균 형태만 보므로, 같은 평균 이미지를 반복해도 높게 나옴. ②만 보면 MediQ-GAN이 낫다고 잘못 결론 내리게 됨.\n- 토론: 데이터 증강이 목적이라면 어느 쪽이 더 쓸모 있는가 / 지표 하나로 순위를 매길 수 있는가.");
+  const s = slide("CONTENT", "비교 · 결과 해석", "결과 해석 : 두 모델의 한계", "QGAN은 형태 재현이 약하고, MediQ-GAN은 평균 이미지에 가까운 그림을 반복함");
   table(s, [
     ["지표", "QGAN 600 step", "MediQ-GAN 25 epoch", "의미"],
-    ["② 클래스 평균 상관 ↑", "0.195", { text: "0.365", options: { bold: true, color: C.accent2 } }, "평균 형태는 MediQ-GAN이 더 가까움"],
-    ["③ 최근접 실제 거리", "1.64", "3.44", "MediQ-GAN은 실제 이미지 어느 것과도 멂"],
-    ["④ 샘플 간 거리 (실제 2.505)", { text: "1.92", options: { bold: true, color: C.accent1 } }, "0.30", "MediQ-GAN은 비슷한 그림을 반복"],
-  ], 0.6, 2.25, 12.1, [3.2, 2.2, 2.4, 4.3], { fontSize: 13, rowH: 0.55 });
-  text(s, "해석", 0.6, 4.6, 12.1, 0.35, { fontSize: 14, bold: true, color: C.accent1 });
+    ["② 클래스 평균 상관 ↑\n(평균 이미지와의 Pearson 상관)", "0.195", { text: "0.365", options: { bold: true, color: C.accent2 } }, "평균 형태는 MediQ-GAN이 더 가까움"],
+    ["③ 최근접 실제 거리\n(가장 가까운 실제 이미지까지 L2)", "1.64", "3.44", "MediQ-GAN은 실제 이미지 어느 것과도 멂"],
+    ["④ 샘플 간 거리 (실제 2.505)\n(생성 이미지 쌍 L2 평균)", { text: "1.92", options: { bold: true, color: C.accent1 } }, "0.30", "MediQ-GAN은 비슷한 그림을 반복"],
+  ], 0.6, 2.25, 12.1, [3.4, 2.1, 2.4, 4.2], { fontSize: 13, rowH: 0.62 });
+  text(s, "해석", 0.6, 4.95, 12.1, 0.35, { fontSize: 14, bold: true, color: C.accent1 });
   text(s, [
     { text: "QGAN: 다양성은 실제에 가깝지만 병변 형태 재현이 약함. patch를 서로 독립적으로 만들어 이미지 전체 구조를 잡기 어려움.", options: { breakLine: true } },
     { text: "MediQ-GAN: 평균 형태는 잘 맞추지만 다양성이 실제의 1/8. 최종 출력을 고전 decoder가 만들기 때문에 Tanh가 포화되면 z와 무관한 이미지가 나옴.", options: { breakLine: true } },
     { text: "②만 보면 MediQ-GAN이 낫다고 결론 내리게 됨. ②는 평균 형태만 보므로 같은 이미지를 반복해도 높게 나옴." },
-  ], 0.6, 5.0, 12.1, 1.6, { fontSize: 13, paraSpaceAfter: 6 });
+  ], 0.6, 5.3, 12.1, 1.5, { fontSize: 12, paraSpaceAfter: 4 });
 }
 // =====================================================================
 newSection("정리");
 {
-  const s = slide("CONTENT", "정리", "3일차 정리", "MediQ-GAN 구조와 미세조정, QGAN과의 비교",
-    "오늘 다룬 내용을 노트북 순서대로 정리함.");
+  const s = slide("CONTENT", "정리", "3일차 정리", "MediQ-GAN 구조와 미세조정, QGAN과의 비교");
   summary(s, [
     ["hybrid 수준", "QGAN은 생성자 전체가 양자회로(model-level), MediQ-GAN은 생성자 안의 양자 stream만 양자회로(layer-level)"],
     ["dual-stream", "잠재벡터 256차원을 절반씩 고전 MLP와 양자 stream으로 나눠 처리한 뒤 concat → decoder → Tanh"],

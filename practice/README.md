@@ -4,8 +4,8 @@
 
 | 파일 | 내용 |
 |---|---|
-| `day1_slides/` | 1일차 이론 슬라이드 (52장, 발표자 노트 포함). `*_notes.pdf`는 슬라이드 + 대본 노트 보기 |
-| `day2_slides/` | 2일차 설명 슬라이드 (24장, 발표자 노트 포함) |
+| `day1_slides/` | 1일차 이론 슬라이드 (66장, 발표자 노트 포함). `*_notes.pdf`는 슬라이드 + 대본 노트 보기 |
+| `day2_slides/` | 2일차 설명 슬라이드 (25장, 발표자 노트 포함) |
 | `day3_slides/` | 3일차 설명 슬라이드 (10장, 발표자 노트 포함) |
 | `day2_practice.ipynb` | EDA · segmentation · 회로 구성 → QGAN 학습 · 평가 |
 | `day3_practice.ipynb` | MediQ-GAN 미세조정 → QGAN과 같은 지표로 비교 |
