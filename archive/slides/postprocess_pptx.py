@@ -174,6 +174,24 @@ def style_notes(slide, font="Noto Sans KR", size=10.5):
                         rPr.append(rPr.makeelement(qn(tag), {"typeface": font}))
 
 
+def fix_duplicate_ids(slide):
+    """슬라이드 안에서 같은 도형 ID가 겹치면 PowerPoint가 복구 경고를 띄울 수 있어, 뒤의 중복에 새 ID를 줌."""
+    P = "http://schemas.openxmlformats.org/presentationml/2006/main"
+    els = list(slide._element.iter("{%s}cNvPr" % P))
+    seen, nxt = set(), max([int(e.get("id", 0)) for e in els] + [1]) + 1
+    n = 0
+    for e in els:
+        i = int(e.get("id", 0))
+        if i in seen:
+            e.set("id", str(nxt))
+            seen.add(nxt)
+            nxt += 1
+            n += 1
+        else:
+            seen.add(i)
+    return n
+
+
 def process(prs):
     notesSz = prs.part._element.find(qn("p:notesSz"))
     if notesSz is not None:  # 노트 페이지 크기를 7.5 x 10인치로 통일
@@ -183,6 +201,7 @@ def process(prs):
     for s in prs.slides:
         stats["paragraphs"] += wrap_by_word(s)
         stats["centered"] += center_text_in_boxes(s)
+        stats["ids"] = stats.get("ids", 0) + fix_duplicate_ids(s)
         style_notes(s)
     return stats
 

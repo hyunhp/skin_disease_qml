@@ -338,6 +338,32 @@ def fix_o20(slide):
             runs[3].text = " → 측정 → 고전 "
 
 
+# 업로드한 GAN 도입 슬라이드의 그림 오른쪽 상자가 "D(G(z)) : 0 real / D(x) : 1 fake"로 적혀 있어 식(D(x)=1이 실제)과 반대임.
+# 그림(이미지)은 고치지 못하므로 같은 색 상자를 위에 덮어 올바른 표기로 바꿈. 좌표(인치)는 렌더링에서 측정함.
+LABEL_FIX_BOXES = {"user:gan1": (9.72, 4.80, 1.85, 0.88), "user:gan2": (9.72, 4.01, 1.85, 0.88), "user:gan3": (9.72, 4.0, 1.85, 0.78)}
+
+
+def fix_gan_labels(d):
+    for key, (x, y, w, h) in LABEL_FIX_BOXES.items():
+        if key not in d.by_key:
+            continue
+        s = d.by_key[key]
+        for sh in list(s.shapes):
+            if sh.name == "label_fix":
+                sh._element.getparent().remove(sh._element)
+        box = rect(s, x, y, w, h, "D5D5D5", rounded=True)
+        box.name = "label_fix"
+        tf = box.text_frame
+        tf.word_wrap = True
+        tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+        for i, line in enumerate(["D(G(z)) : 0 → fake", "D(x) : 1 → real"]):
+            p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+            p.alignment = PP_ALIGN.CENTER
+            r = p.add_run()
+            r.text = line
+            _set_font(r, 12, "212121", False)
+
+
 def fix_terms(d):
     """런 단위로 치환하고, 문구가 여러 런에 걸쳐 있으면 문단의 첫 런으로 합쳐 치환함."""
     log = []
@@ -359,6 +385,7 @@ def fix_terms(d):
                         r._r.getparent().remove(r._r)
                 log.append((key, old))
     fix_o20(d.slide_of("O20"))
+    fix_gan_labels(d)
     return log
 
 
