@@ -274,7 +274,7 @@ newSection("MediQ-GAN 구조");
 }
 {
   const s = slide("CONTENT", "MediQ-GAN 구조 · 한계", "원 논문과 실습의 차이", "양자 stream은 원 논문 스펙 그대로, 고전 부분과 판별자·평가를 단순화함",
-    "- 양자 stream을 줄이지 않은 이유: 줄이면 '논문이 말한 모델'이 아니게 됨. 대신 해상도와 학습 구간을 줄임(README 설계 원칙 1).\n- 판별자 차이가 가장 큼: 원 논문은 WGAN-GP critic(gradient penalty로 판별자를 제약). 실습은 QGAN과 같은 표준 BCE 판별자라 판별자가 쉽게 이김(README 학습 안정성).\n- 평가: 16×16에서는 FID가 의미 없어 지표 4종을 씀.");
+    "- 양자 stream을 줄이지 않은 이유: 줄이면 '논문이 말한 모델'이 아니게 됨. 대신 해상도와 학습 구간을 줄임(README 설계 원칙 1).\n- 판별자 차이가 가장 큼: 원 논문은 WGAN-GP critic(gradient penalty로 판별자를 제약). 실습은 QGAN과 같은 표준 BCE 판별자라 판별자가 우세함(README 학습 안정성).\n- 평가: 16×16에서는 FID가 의미 없어 지표 4종을 씀.");
   table(s, [
     ["항목", "원 논문 (Jiao et al.)", "3일차 실습", "비고"],
     ["양자 stream", "16큐빗 × 5, depth 8", { text: "동일", options: { bold: true, color: C.accent1 } }, "공식 레포와 같은 회로"],
@@ -347,7 +347,7 @@ newSection("정리");
     ["양자 stream", "16큐빗 × depth 8 회로 5개가 16 site 중 5개만 처리. PauliX 기댓값 출력이라 ancilla qubit이 필요 없음"],
     ["파라미터와 비용", "30,000개 중 양자 회전각은 640개(2.1%)지만 학습 시간 대부분이 16큐빗 시뮬레이션 (25 epoch 196분)"],
     ["checkpoint와 미세조정", "config로 같은 구조를 만든 뒤 가중치를 불러옴. 판별자도 같은 시점 상태로 불러와 20 step 추가 학습"],
-    ["학습 안정성", "BCE 판별자가 쉽게 이김 (lr_g 0.02에서 3 epoch 만에 mode collapse). 원 논문은 WGAN-GP critic을 씀"],
+    ["학습 안정성", "BCE 판별자가 우세함 (lr_g 0.02에서 3 epoch 만에 mode collapse). 원 논문은 WGAN-GP critic을 씀"],
     ["비교 결과", "상관은 MediQ-GAN 0.365 > QGAN 0.195, 다양성은 QGAN 1.92 > MediQ-GAN 0.30. 지표 하나로 순위를 정하지 않음"],
   ]);
 }
