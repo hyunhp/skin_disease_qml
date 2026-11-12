@@ -326,7 +326,7 @@ def fig_interference():
     save(fig, "interference_amp.png")
 
 
-# 14. 고전 layer와 변분 양자회로 layer 비교 ----------------------------------------------
+# 14. 고전 layer와 VQC layer 비교 ----------------------------------------------
 def fig_layer_compare():
     fig, ax = plt.subplots(figsize=(10.0, 3.3))
     ax.set_xlim(0, 15); ax.set_ylim(0, 5); ax.axis("off")

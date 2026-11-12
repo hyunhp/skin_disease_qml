@@ -38,7 +38,7 @@ python3 export_pdf.py ../../practice/day1_slides/day1_theory_slides.pptx ../../p
 ```
 - 슬라이드는 cSld 이름으로 식별함: `orig:N` 원본 N번, `user:*` PowerPoint에서 직접 만든 슬라이드, `added:*` 이 스크립트가 만든 슬라이드. 이름이 없는 새 슬라이드는 `user:autoN`으로 이름을 붙이고 앞 슬라이드 뒤에 둠
 - 대본 시간: 분당 300자(공백 포함) 기준으로 표기하며, 1일차는 휴식 전 약 50분, 전체 약 123분(휴식 제외). 실제 강의는 설명을 덧붙이므로 더 길어짐
-- 용어: 변분 양자회로 = variational quantum circuit(VQC), PQC = parameterized quantum circuit. QGAN 논문은 PQC, MediQ-GAN 논문은 VQC로 부름. 슬라이드를 옮기면 2·3일차 대본의 "1일차 슬라이드 N" 참조도 맞춤
+- 용어: VQC = variational quantum circuit, PQC = parameterized quantum circuit. QGAN 논문은 PQC, MediQ-GAN 논문은 VQC로 부름. 슬라이드를 옮기면 2·3일차 대본의 "1일차 슬라이드 N" 참조도 맞춤
 
 - 폰트는 Noto Sans KR. 설치되지 않은 PC에서는 줄바꿈이 달라질 수 있음
 - `export_pdf.py`는 LibreOffice와 python3-uno가 필요함. 기본 설정으로 내보내면 "2일차"가 "2 일차"처럼 벌어져서 이 스크립트를 씀
