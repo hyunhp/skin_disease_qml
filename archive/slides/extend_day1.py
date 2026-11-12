@@ -941,7 +941,7 @@ def build_new(d):
         ["이론 (1일차)", "실습 구현", "원 논문과의 차이"],
         ["QGAN patch 생성자", "2일차: sub-generator 4개 × 7큐빗(데이터 6 + ancilla 1), depth 10", "논문: 16개 × 8큐빗. 16×16 그레이스케일"],
         ["QGAN 판별자", "5층 완전연결 (2·3일차 공통)", "동일 (Table 4)"],
-        ["MediQ-GAN dual-stream", "3일차: 양자 stream 16큐빗 × 5, depth 8. 25 epoch 미세조정", "고전 부분·판별자는 MLP + 표준 BCE (논문: conv + WGAN-GP)"],
+        ["MediQ-GAN dual-stream", "3일차: 양자 stream 16큐빗 × 5, depth 8. 10 epoch checkpoint에서 20 step 미세조정", "고전 부분·판별자는 MLP + 표준 BCE (논문: conv + WGAN-GP)"],
         ["평가", "지표 4종 (16×16에서 FID 불가)", "논문: FID, LPIPS, 분류 성능"],
         ["실행 환경", "PennyLane exact 시뮬레이션, Colab CPU", "논문: GPU, IBM 실기는 inference"],
     ], fs=11.5, hfs=11.5, min_rh=0.62)
