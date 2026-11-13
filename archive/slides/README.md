@@ -1,13 +1,13 @@
 # slides - 슬라이드 생성
 
 `practice/day2_slides/`, `practice/day3_slides/`의 pptx는 이 폴더의 스크립트로 만든다.
-1일차 슬라이드(`practice/day1_slides/`)의 원본 31장은 PowerPoint로 직접 만든 파일이라 `extend_day1.py`가 이 위에 35장을 삽입하고 전체 발표 대본을 넣는다. PowerPoint로 넣었던 GAN 도입 3장(`user:gan1` ~ `user:gan3`)은 템플릿 슬라이드 `added:GAN1` ~ `GAN3`으로 대체되어 실행 시 지워진다.
+1일차 슬라이드(`practice/day1_slides/`)의 원본 31장은 PowerPoint로 직접 만든 파일이라 `extend_day1.py`가 이 위에 34장을 삽입하고 전체 발표 대본을 넣는다. PowerPoint로 넣었던 GAN 도입 3장(`user:gan1` ~ `user:gan3`)은 템플릿 슬라이드 `added:GAN1` ~ `GAN3`으로 대체되어 실행 시 지워진다. 1일차는 이론만 다루므로 2·3일차 실습 언급은 일정 안내(2번)와 첫·마지막 장 대본에만 둔다.
 
 | 파일 | 내용 |
 |---|---|
 | `build_day2.js` | 2일차 슬라이드 25장 (내용 포함). 발표 대본은 `day2_notes.json` |
 | `build_day3.js` | 3일차 슬라이드 10장 (내용 포함). 발표 대본은 `day3_notes.json` |
-| `extend_day1.py` | 1일차 슬라이드 확장 (사전 지식 · 보충 자료 · 휴식 · 결과 · 정리 슬라이드 삽입, 학습목표·용어 수정, 66장 전체에 발표자 노트). 재실행 가능 |
+| `extend_day1.py` | 1일차 슬라이드 확장 (사전 지식 · 보충 자료 · 휴식 · 결과 · 정리 슬라이드 삽입, 학습목표·용어 수정, 65장 전체에 발표자 노트). 재실행 가능 |
 | `day1_notes.py` | 1일차 발표 대본 (소요 시간은 글자 수에서 자동 계산) |
 | `check_script_length.py` | 대본 분량 점검: 분당 300자 기준으로 글자 수와 표기 시간을 비교 |
 | `figures_day1.py` | 1일차 설명 그림 27종 → `fig_day1/*.png` (matplotlib, 논문 수치는 Table 1, Extended Data Table 2·3·4) |
@@ -37,7 +37,7 @@ python3 extend_day1.py     # ../../practice/day1_slides/day1_theory_slides.pptx 
 python3 export_pdf.py ../../practice/day1_slides/day1_theory_slides.pptx ../../practice/day1_slides/day1_theory_slides.pdf
 ```
 - 슬라이드는 cSld 이름으로 식별함: `orig:N` 원본 N번, `user:*` PowerPoint에서 직접 만든 슬라이드, `added:*` 이 스크립트가 만든 슬라이드. 이름이 없는 새 슬라이드는 `user:autoN`으로 이름을 붙이고 앞 슬라이드 뒤에 둠
-- 대본 시간: 분당 300자(공백 포함) 기준으로 표기하며, 1일차는 휴식 전 약 52분, 전체 약 125분(휴식 제외), 2일차 약 52분, 3일차 약 26분. 2·3일차 대본에는 Colab 실행 안내와 확인 질문이 포함되며, 학습 셀(2일차 약 35분, 3일차 약 14분)은 설명과 병행함. 실제 강의는 설명을 덧붙이므로 더 길어짐
+- 대본 시간: 분당 300자(공백 포함) 기준으로 표기하며, 1일차는 휴식 전 약 52분, 전체 약 121분(휴식 제외), 2일차 약 52분, 3일차 약 26분. 2·3일차 대본에는 Colab 실행 안내와 확인 질문이 포함되며, 학습 셀(2일차 약 35분, 3일차 약 14분)은 설명과 병행함. 실제 강의는 설명을 덧붙이므로 더 길어짐
 - 용어: VQC = variational quantum circuit, PQC = parameterized quantum circuit. QGAN 논문은 PQC, MediQ-GAN 논문은 VQC로 부름. 슬라이드를 옮기면 2·3일차 대본의 "1일차 슬라이드 N" 참조도 맞춤
 
 - 폰트는 Noto Sans KR. 설치되지 않은 PC에서는 줄바꿈이 달라질 수 있음

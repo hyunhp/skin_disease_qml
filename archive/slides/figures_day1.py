@@ -540,7 +540,7 @@ def fig_patch():
     c.text(0.2, 6.6, "64픽셀 = 2⁶", fontsize=10, color=INK)
     c.text(0.2, 5.0, "→ 데이터 큐빗 6개", fontsize=10, color=INK)
     c.text(0.2, 3.4, "+ ancilla 1개", fontsize=10, color=INK)
-    c.text(0.2, 1.8, "= 회로당 7큐빗 (실습)", fontsize=10, color=GREEN2, fontweight="bold")
+    c.text(0.2, 1.8, "= 회로당 7큐빗 (예시)", fontsize=10, color=GREEN2, fontweight="bold")
     save(fig, "patch_split.png")
 
 
