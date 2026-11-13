@@ -399,6 +399,23 @@ def edit_originals(d):
     for sh in d.slide_of("O24").shapes:
         if sh.has_text_frame and "IBM Marrakesh 실기에 올려" in sh.text_frame.text:
             clear_text_runs(sh, "학습 완료된 회로를 IBM Marrakesh 실기에 올려 inference만 검증 (클래스별 FID +19 ~ +79 상승, 논문은 '비교 가능한 수준'으로 평가)")
+    # 21번: 1일차는 이론만 다루므로 실습(3일차) 언급을 각주에서 뺌
+    for sh in d.slide_of("O21").shapes:
+        if sh.has_text_frame and " - 3일차 데모는 코드 기준" in sh.text_frame.text:
+            for p in sh.text_frame.paragraphs:
+                for r in p.runs:
+                    r.text = r.text.replace(" - 3일차 데모는 코드 기준", "")
+    # 23번: '노트북'이 Colab 노트북으로 읽히지 않도록 '개인 PC'로 바꿈
+    for sh in d.slide_of("O23").shapes:
+        if sh.has_text_frame:
+            for p in sh.text_frame.paragraphs:
+                for r in p.runs:
+                    if r.text == "노트북":
+                        r.text = "개인 PC로"
+            # 실습(3일차) 데모 언급 문단 삭제
+            for p in list(sh.text_frame.paragraphs):
+                if "데모도" in "".join(r.text for r in p.runs):
+                    p._p.getparent().remove(p._p)
     # 26번: 줄표 규칙(CLAUDE.md)에 맞춰 en dash를 하이픈으로
     for sh in d.slide_of("O26").shapes:
         if sh.has_text_frame and "–" in sh.text_frame.text:
@@ -446,25 +463,24 @@ def build_new(d):
         ["출력", "이미지 x̃ = G(z)", "진짜일 확률 (0 ~ 1)"],
         ["목표", "D(G(z))를 1에 가깝게", "D(x)는 1, D(G(z))는 0에 가깝게"],
         ["모델 유형", "생성모델", "이진 분류기"],
-        ["2일차 구현", "양자회로 4개, 파라미터 280개", "5층 완전연결, 파라미터 19,201개"],
     ], fs=11, hfs=11.5, min_rh=0.5)
-    callout(s, X0, 5.65, W0, 1.1, "실습과의 연결", [
-        "QGAN·MediQ-GAN은 G에만 양자회로를 넣음. 2일차는 D가 G보다 약 70배 커서 학습률을 G 0.05, D 0.001로 다르게 둠 (2일차 노트북)"], fs=11)
+    callout(s, X0, 5.65, W0, 1.1, "두 논문에서의 구현", [
+        "QGAN·MediQ-GAN 모두 G에만 양자회로를 넣고 D는 고전 신경망으로 둠. D는 QGAN이 5층 완전연결(Table 4), MediQ-GAN이 convolutional critic"], fs=11)
     d.finish_slide(s)
 
     # --- GAN3 학습 과정
     s = d.add("GAN3")
     header(s, "사전 지식 · GAN", "학습 과정: 판별자와 생성자를 번갈아 갱신",
-           "한 step 안에서 D를 먼저, G를 나중에 갱신함. 2·3일차 노트북의 학습 루프와 같은 순서임")
+           "한 step 안에서 D를 먼저, G를 나중에 갱신함")
     picture(s, f("gan_step.png"), X0, 2.15, w=6.25)
     card(s, 7.3, 2.2, 5.33, 3.45, "종료와 손실 해석", [
         "보상이 아니라 손실의 gradient로 파라미터를 갱신함",
-        "학습은 정해진 step 수에서 멈춤 (2일차 400 step). 생성 분포가 실제와 같아지는 시점을 손실로 알 수는 없음",
-        "이론상 평형(p_g = p_data)에서 D = 1/2이고 이때 D 손실 2 ln 2 ≈ 1.386, G 손실 ln 2 ≈ 0.693. 2일차 로그의 기준값",
+        "학습은 정해진 step 수에서 멈춤. 생성 분포가 실제와 같아지는 시점을 손실로 알 수는 없음",
+        "이론상 평형(p_g = p_data)에서 D = 1/2이고 이때 D 손실 2 ln 2 ≈ 1.386, G 손실 ln 2 ≈ 0.693",
         "D 손실이 0에 가까우면 D가 압도해 G의 gradient가 약해짐",
         "품질은 손실이 아닌 평가 지표로 판단함 (이어지는 지표 슬라이드)",
     ], fs=11)
-    callout(s, X0, 5.85, W0, 0.9, "코드 대응 (2일차 노트북)", [
+    callout(s, X0, 5.85, W0, 0.9, "코드 예시 (PyTorch)", [
         "loss_d = bce(disc(batch), 1) + bce(disc(gen(B).detach()), 0) → opt_d.step()   /   loss_g = bce(disc(gen(B)), 1) → opt_g.step()"], fs=10.5)
     d.finish_slide(s)
 
@@ -502,22 +518,21 @@ def build_new(d):
         ["안정화", "없음", "critic gradient 노름을 1로 유도 (1-Lipschitz)"],
         ["사용 논문", "QGAN (Table 4)", "MediQ-GAN (식 (1)·(2))"],
     ], fs=11, hfs=11.5, hl={4})
-    callout(s, X0, 5.6, W0, 1.2, "용어와 실습 연결", [
-        "support: 분포가 0이 아닌 값을 갖는 영역. JS divergence, Wasserstein-1: 두 확률분포 사이의 거리 척도. 1-Lipschitz: 입력이 변할 때 출력 변화율이 1 이하인 함수",
-        "3일차: MediQ-GAN을 생성자 학습률 0.02로 학습하면 3 epoch 만에 mode collapse가 발생함. 원 논문이 WGAN-GP critic을 쓰는 이유에 해당함"], fs=10.5)
+    callout(s, X0, 5.6, W0, 1.2, "용어", [
+        "support: 분포가 0이 아닌 값을 갖는 영역. JS divergence, Wasserstein-1: 두 확률분포 사이의 거리 척도",
+        "critic: WGAN에서 판별자 자리의 신경망(확률 대신 실수 점수). 1-Lipschitz: 입력이 변할 때 출력 변화율이 1 이하인 함수"], fs=10.5)
     d.finish_slide(s)
 
     # --- G3
     s = d.add("G3")
     header(s, "사전 지식 · GAN", "생성 품질 평가: 지표별 측정 대상", "생성 이미지의 품질은 눈으로 판단하기 어려워 정량 지표를 병행함. 용어는 이어지는 세 장에서 풀어 설명함")
-    table(s, X0, 2.2, [2.0, 3.55, 1.45], [
+    end = table(s, X0, 2.2, [2.0, 3.55, 1.45], [
         ["지표", "측정 대상", "방향"],
         ["Downstream 분류 성능\n(AUC-ROC, 정확도)", "생성 이미지를 학습 데이터에 추가했을 때 분류기 성능 변화\nQGAN 논문, MediQ-GAN Table 1", "높을수록 좋음"],
         ["FID", "실제와 생성 이미지의 Inception 특징 분포(평균·공분산) 사이 Fréchet 거리\nMediQ-GAN 논문 (클래스별)", "낮을수록 좋음"],
         ["intra-class LPIPS", "같은 클래스 생성 이미지 쌍의 지각적 거리 평균. mode collapse 점검\nMediQ-GAN 논문", "높을수록 다양"],
-        ["지표 4종 (실습)", "픽셀 분포, 클래스 평균 상관, 최근접 실제 거리, 샘플 다양성\n2·3일차 노트북 (16×16에서는 FID 사용 불가)", "지표별 상이"],
     ], fs=10.5, hfs=11.5)
-    card(s, 8.05, 2.2, 4.58, 4.4, "해석 시 유의", [
+    card(s, 8.05, 2.2, 4.58, end - 2.2, "해석 시 유의", [
         "FID가 낮아도 LPIPS가 낮으면 비슷한 이미지만 생성한 것이므로 두 지표를 함께 봄",
         "표본이 적은 클래스(df 115장)에서는 FID 공분산 추정이 불안정함",
         "분류 성능은 분류기와 증강 비율에 의존함",
@@ -557,7 +572,7 @@ def build_new(d):
     card(s, 7.85, 4.6, 4.78, 2.1, "읽는 법", [
         "r은 실제(real), g는 생성(generated) 이미지 집합",
         "왼쪽 그림: 분포가 겹쳐 FID 낮음. 오른쪽: 분포가 어긋나고 일부 영역만 덮어 FID 높음",
-        "이 강의의 실습은 16×16이라 Inception 입력 크기에 맞지 않아 FID를 쓰지 않음",
+        "표본이 적은 클래스(df 115장)는 공분산 추정이 불안정해 FID 변동이 큼",
     ], fs=10.5)
     d.finish_slide(s)
 
@@ -669,8 +684,8 @@ def build_new(d):
     s = d.add("PATCH")
     header(s, "01 · QGAN 논문", "patch 분할 예시: 16×16 = 4 patch × 64픽셀", "큐빗 수에 맞춰 이미지를 띠로 나누고, sub-generator마다 patch 하나를 생성함")
     picture(s, f("patch_split.png"), (13.333 - 11.0) / 2, 2.0, w=11.0)
-    callout(s, X0, 5.95, W0, 0.9, "논문과 실습의 구성", [
-        "논문: sub-generator 16개 × 데이터 큐빗 7개(patch당 128픽셀). 실습: 4개 × 6개(patch당 64픽셀). patch는 서로 독립인 회로가 만들어 경계가 어긋날 수 있음"], fs=10.5)
+    callout(s, X0, 5.95, W0, 0.9, "논문의 구성", [
+        "논문: sub-generator 16개 × 데이터 큐빗 7개(patch당 128픽셀). 위 그림은 4 patch로 나눈 예시임. patch는 서로 독립인 회로가 만들어 경계가 어긋날 수 있음"], fs=10.5)
     d.finish_slide(s)
 
     # --- PS parameter-shift 예시
@@ -763,7 +778,7 @@ def build_new(d):
     picture(s, f("statevector_memory.png"), X0, 2.25, w=5.6)
     table(s, 6.6, 2.2, [1.55, 4.48], [
         ["항목", "내용"],
-        ["시뮬레이션 규모", "16큐빗은 1 MiB로 노트북에서 처리 가능. 30큐빗부터 16 GiB로 일반 PC 한계"],
+        ["시뮬레이션 규모", "16큐빗은 1 MiB로 개인 PC에서 처리 가능. 30큐빗부터 16 GiB로 일반 PC 한계"],
         ["해석", "정확히 시뮬레이션되는 규모의 회로는 양자 우위의 근거가 아님. MediQ-GAN 논문도 quantum-inspired로 규정하고 양자 소자를 계산 가속 용도로 한정"],
         ["NISQ 실기", "게이트 오류와 decoherence로 얕은 회로만 신뢰 가능"],
         ["Barren plateau", "큐빗 수·깊이가 커질수록 gradient 분산이 지수적으로 감소하는 현상"],
@@ -799,7 +814,6 @@ def build_new(d):
     callout(s, X0, end + 0.25, W0, 1.45, "설정에서 확인할 점", [
         "- 학습률: 생성자 0.1, 판별자 5×10⁻³ (Table 3·4). 생성자가 20배 큼",
         "- 논문은 손실을 Binary Cross Entropy로 표기함. G 손실 형태는 일반적인 non-saturating 형태로 적은 것임",
-        "- 실습(2일차)은 sub-generator 4개, 600 step으로 줄인 설정을 사용함",
     ])
     d.finish_slide(s)
 
@@ -841,7 +855,6 @@ def build_new(d):
         ["critic 구조", "원 WGAN-GP 논문의 convolutional 구조, 입력 3×64×64"],
         ["critic을 고전으로 둔 이유\n(논문)", "1. 3×64×64 입력을 매 iteration 처리해야 하므로 NISQ 소자에서 구현이 비현실적\n2. 안정적이고 잘 알려진 critic을 두어 성능 향상을 양자 설계의 효과로 귀속"],
         ["QGAN과의 차이", "QGAN: 5층 완전연결 + BCE (Table 4)\nMediQ-GAN: convolution + WGAN-GP"],
-        ["실습과의 차이", "3일차: MLP 판별자 + 표준 BCE, lr 2×10⁻⁴, betas (0.5, 0.999)로 25 epoch 완주 (README '원 논문과 다른 점')"],
     ], fs=11.5, hfs=11.5, min_rh=0.6)
     d.finish_slide(s)
 
@@ -934,21 +947,6 @@ def build_new(d):
     ], fs=12.5, hfs=12, min_rh=0.8)
     d.finish_slide(s)
 
-    # --- C2 2·3일차 대응
-    s = d.add("C2")
-    header(s, "03 · 내용 정리", "2·3일차 실습과의 대응", "회로 사양은 유지하고 해상도와 학습량을 줄여 Colab 무료 CPU에서 끝까지 실행")
-    end = table(s, X0, 2.2, [2.5, 4.9, 4.53], [
-        ["이론 (1일차)", "실습 구현", "원 논문과의 차이"],
-        ["QGAN patch 생성자", "2일차: sub-generator 4개 × 7큐빗(데이터 6 + ancilla 1), depth 10", "논문: 16개 × 8큐빗. 16×16 그레이스케일"],
-        ["QGAN 판별자", "5층 완전연결 (2·3일차 공통)", "동일 (Table 4)"],
-        ["MediQ-GAN dual-stream", "3일차: 양자 stream 16큐빗 × 5, depth 8. 10 epoch checkpoint에서 20 step 미세조정", "고전 부분·판별자는 MLP + 표준 BCE (논문: conv + WGAN-GP)"],
-        ["평가", "지표 4종 (16×16에서 FID 불가)", "논문: FID, LPIPS, 분류 성능"],
-        ["실행 환경", "PennyLane exact 시뮬레이션, Colab CPU", "논문: GPU, IBM 실기는 inference"],
-    ], fs=11.5, hfs=11.5, min_rh=0.62)
-    callout(s, X0, end + 0.2, W0, 6.75 - end - 0.2, "실측 (로컬 CPU, README)", [
-        "QGAN 600 step: 클래스 평균 상관 0.195. MediQ-GAN 25 epoch: 0.365, 단 다양성은 실제의 약 1/8. 두 모델의 평균 형태와 다양성 절충이 다르게 나타남"], fs=11)
-    d.finish_slide(s)
-
 
 ORDER = (
     ["O1", "O2", "O3", "O4", "O5", "PRE", "GAN1", "GAN2", "GAN3", "G1", "G2", "G2B", "G3", "G4", "G5", "G6",
@@ -956,7 +954,7 @@ ORDER = (
     + ["O6", "O7", "O8", "O9", "PATCH", "O10", "T1", "O11", "IMG", "O12", "O13", "O14"]
     + ["O15", "O16", "M1", "O17", "O18", "O19", "M2", "O20", "O21", "O22", "O23", "O24", "O25", "PS", "O26"]
     + ["R1", "R2", "R3", "R4", "R5"]
-    + ["O27", "O28", "C1", "C2", "O29", "O30", "O31"]
+    + ["O27", "O28", "C1", "O29", "O30", "O31"]
 )
 
 

@@ -85,7 +85,7 @@ With 92 DF images this difference is not an improvement, so the practicals use t
 
 ```
 practice/            for students
-  day1_slides/       Day 1 theory (66, speaker notes included)
+  day1_slides/       Day 1 theory (65, speaker notes included)
   day2_slides/       Day 2 walkthrough (25)
   day3_slides/       Day 3 walkthrough (10)
   day2_practice.ipynb, day3_practice.ipynb

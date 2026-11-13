@@ -89,7 +89,7 @@
 
 ```
 practice/            학생용
-  day1_slides/       1일차 이론 (66장, 발표자 노트 포함)
+  day1_slides/       1일차 이론 (65장, 발표자 노트 포함)
   day2_slides/       2일차 설명 (25장)
   day3_slides/       3일차 설명 (10장)
   day2_practice.ipynb, day3_practice.ipynb
