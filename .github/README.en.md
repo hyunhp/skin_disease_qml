@@ -24,9 +24,9 @@ Design principles
 
 | Day | Content | Links |
 |---|---|---|
-| Day 1 | Theory: dataset, GAN and quantum-circuit basics, both architectures and their results, VQC training cost (speaker notes included) | [pptx](../practice/day1_slides/day1_theory_slides.pptx) · [pdf](../practice/day1_slides/day1_theory_slides.pdf) · [script pdf](../practice/day1_slides/day1_theory_slides_notes.pdf) |
-| Day 2 | EDA · segmentation · circuit → QGAN training → evaluation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) · [pptx](../practice/day2_slides/day2_practice_slides.pptx) · [pdf](../practice/day2_slides/day2_practice_slides.pdf) · [script pdf](../practice/day2_slides/day2_practice_slides_notes.pdf) |
-| Day 3 | MediQ-GAN fine-tuning → comparison with QGAN on the same metrics | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day3_practice.ipynb) · [pptx](../practice/day3_slides/day3_practice_slides.pptx) · [pdf](../practice/day3_slides/day3_practice_slides.pdf) · [script pdf](../practice/day3_slides/day3_practice_slides_notes.pdf) |
+| Day 1 | Theory: dataset, GAN and quantum-circuit basics, both architectures and their results, VQC training cost (speaker notes included) | [pptx](../practice/day1_slides/day1_theory_slides.pptx) · [pdf](../practice/day1_slides/day1_theory_slides.pdf) |
+| Day 2 | EDA · segmentation · circuit → QGAN training → evaluation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) · [pptx](../practice/day2_slides/day2_practice_slides.pptx) · [pdf](../practice/day2_slides/day2_practice_slides.pdf) |
+| Day 3 | MediQ-GAN fine-tuning → comparison with QGAN on the same metrics | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day3_practice.ipynb) · [pptx](../practice/day3_slides/day3_practice_slides.pptx) · [pdf](../practice/day3_slides/day3_practice_slides.pdf) |
 
 Run `File → Save a copy in Drive` first. The notebooks clone this repository at runtime for [`practice/assets/`](../practice/assets/) and [`gen_metrics.py`](../practice/gen_metrics.py); only the HAM10000 originals (~6 GB) come from `kagglehub`.
 

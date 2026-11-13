@@ -12,7 +12,7 @@
 | `check_script_length.py` | 대본 분량 점검: 분당 300자 기준으로 글자 수와 표기 시간을 비교 |
 | `figures_day1.py` | 1일차 설명 그림 27종 → `fig_day1/*.png` (matplotlib, 논문 수치는 Table 1, Extended Data Table 2·3·4) |
 | `postprocess_pptx.py` | 후처리: 한글 줄바꿈을 단어 단위로, 박스 안 텍스트 세로 가운데 정렬, 노트 페이지 배치. `npm run day2·day3`와 `extend_day1.py`가 자동 실행 |
-| `export_pdf.py` | pptx → pdf (한글·영문 자동 간격 끔). `--notes`를 붙이면 슬라이드 + 대본 노트 보기 PDF |
+| `export_pdf.py` | pptx → pdf (한글·영문 자동 간격 끔). `--notes`를 붙이면 노트 보기 PDF(배포하지 않음, 검토용) |
 | `package.json` · `package-lock.json` | pptxgenjs 4.0.1 고정 |
 
 ## 다시 만들기
@@ -24,8 +24,6 @@ npm run day2      # ../../practice/day2_slides/day2_practice_slides.pptx 덮어�
 npm run day3
 python3 export_pdf.py ../../practice/day2_slides/day2_practice_slides.pptx ../../practice/day2_slides/day2_practice_slides.pdf
 python3 export_pdf.py ../../practice/day3_slides/day3_practice_slides.pptx ../../practice/day3_slides/day3_practice_slides.pdf
-# 대본 PDF (슬라이드 + 발표자 노트, 일차별로 *_notes.pdf)
-python3 export_pdf.py ../../practice/day2_slides/day2_practice_slides.pptx ../../practice/day2_slides/day2_practice_slides_notes.pdf --notes
 ```
 
 1일차는 그림을 만든 뒤 삽입 스크립트를 실행함. 추가 슬라이드는 cSld 이름이 `added:`로 시작하며, 다시 실행하면 지우고 새로 만듦.
