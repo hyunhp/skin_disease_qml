@@ -399,6 +399,10 @@ def edit_originals(d):
     for sh in d.slide_of("O24").shapes:
         if sh.has_text_frame and "IBM Marrakesh 실기에 올려" in sh.text_frame.text:
             clear_text_runs(sh, "학습 완료된 회로를 IBM Marrakesh 실기에 올려 inference만 검증 (클래스별 FID +19 ~ +79 상승, 논문은 '비교 가능한 수준'으로 평가)")
+    # 12번: 저장소 8×8 재현 결과는 1일차(논문 이론)에서 다루지 않음
+    for sh in d.slide_of("O12").shapes:
+        if sh.has_text_frame and "8×8 재현" in sh.text_frame.text:
+            clear_text_runs(sh, "막대 높이는 0부터 비례. 증가폭은 +0.017이며, 시드별 변동 범위가 제시되지 않아 개선으로 단정하기 어려움")
     # 21번: 1일차는 이론만 다루므로 실습(3일차) 언급을 각주에서 뺌
     for sh in d.slide_of("O21").shapes:
         if sh.has_text_frame and " - 3일차 데모는 코드 기준" in sh.text_frame.text:
@@ -943,7 +947,7 @@ def build_new(d):
         ["평가 방식", "분류 성능 (AUC-ROC, 정확도)", "분류 성능 + FID + LPIPS"],
         ["양자 요소의 범위", "생성자 전체", "생성자 일부 (공식 코드 기준 16개 위치 중 5개)"],
         ["조건 의존성", "segmentation 입력에서만 증강 효과", "모든 지표에서 최고는 아님 (결과 ①, ②)"],
-        ["한계의 명시", "개선 폭 AUC +0.017. 이 저장소 8×8 재현에서는 정확도 하락", "실기 검증은 inference에 한정. 고전 모델을 전 영역에서 넘지는 못함"],
+        ["한계의 명시", "개선 폭 AUC +0.017. 시드별 변동 범위 미제시", "실기 검증은 inference에 한정. 고전 모델을 전 영역에서 넘지는 못함"],
     ], fs=12.5, hfs=12, min_rh=0.8)
     d.finish_slide(s)
 

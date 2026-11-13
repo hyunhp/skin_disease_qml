@@ -37,7 +37,7 @@ python3 extend_day1.py     # ../../practice/day1_slides/day1_theory_slides.pptx 
 python3 export_pdf.py ../../practice/day1_slides/day1_theory_slides.pptx ../../practice/day1_slides/day1_theory_slides.pdf
 ```
 - 슬라이드는 cSld 이름으로 식별함: `orig:N` 원본 N번, `user:*` PowerPoint에서 직접 만든 슬라이드, `added:*` 이 스크립트가 만든 슬라이드. 이름이 없는 새 슬라이드는 `user:autoN`으로 이름을 붙이고 앞 슬라이드 뒤에 둠
-- 대본 시간: 분당 300자(공백 포함) 기준으로 표기하며, 1일차는 휴식 전 약 52분, 전체 약 121분(휴식 제외), 2일차 약 52분, 3일차 약 26분. 2·3일차 대본에는 Colab 실행 안내와 확인 질문이 포함되며, 학습 셀(2일차 약 35분, 3일차 약 14분)은 설명과 병행함. 실제 강의는 설명을 덧붙이므로 더 길어짐
+- 대본 시간: 분당 300자(공백 포함) 기준으로 표기하며, 1일차는 휴식 전 약 52분, 전체 약 120분(휴식 제외), 2일차 약 52분, 3일차 약 26분. 2·3일차 대본에는 Colab 실행 안내와 확인 질문이 포함되며, 학습 셀(2일차 약 35분, 3일차 약 14분)은 설명과 병행함. 실제 강의는 설명을 덧붙이므로 더 길어짐
 - 용어: VQC = variational quantum circuit, PQC = parameterized quantum circuit. QGAN 논문은 PQC, MediQ-GAN 논문은 VQC로 부름. 슬라이드를 옮기면 2·3일차 대본의 "1일차 슬라이드 N" 참조도 맞춤
 
 - 폰트는 Noto Sans KR. 설치되지 않은 PC에서는 줄바꿈이 달라질 수 있음
