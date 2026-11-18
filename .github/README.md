@@ -8,7 +8,7 @@
 
 | 항목 | 내용 |
 |---|---|
-| 데이터 | HAM10000 중 DF 115장 · NV 345장 → K-means + Fuzzy C-means segmentation → 16×16 그레이스케일 |
+| 데이터 | HAM10000 중 DF 115장 · NV 345장 → K-means + Fuzzy C-means segmentation → 16×16 grayscale |
 | 모델 ① | Patch QGAN (모델 단위 hybrid): sub-generator 4개 × 7큐빗(데이터 6 + ancilla 1), depth 10 |
 | 모델 ② | MediQ-GAN (layer 단위 hybrid): 고전 stream + 양자 stream(16큐빗 × 5, depth 8) |
 | 판별자 | 두 모델 공통, 논문 Table 4의 5층 완전연결 |
@@ -16,8 +16,8 @@
 | 환경 | Colab 기본 CPU. PennyLane exact 시뮬레이션, 설치·GPU·양자 하드웨어 불필요 |
 
 설계 원칙
-- 양자 회로 스펙은 줄이지 않고, 해상도와 학습량을 줄임
-- 출력 척도(확률 · Tanh · 0 ~ 1)를 0 ~ 1로 맞춘 뒤에만 지표를 계산함
+- 양자 회로 spec은 줄이지 않고, 해상도와 학습량을 줄임
+- 출력 scale(확률 · Tanh · 0 ~ 1)를 0 ~ 1로 맞춘 뒤에만 지표를 계산함
 - 원 논문과 다른 점, 실패한 설정, 한계를 자료에 함께 적음
 
 ## 실습 자료
@@ -26,7 +26,7 @@
 |---|---|---|
 | 1일차 | 이론: 데이터셋, GAN·양자회로 기초, 두 논문 아키텍처와 결과, VQC 학습 비용 (발표자 노트 포함) | [pptx](../practice/day1_slides/day1_theory_slides.pptx) · [pdf](../practice/day1_slides/day1_theory_slides.pdf) |
 | 2일차 | EDA · segmentation · 회로 구성 → QGAN 학습 → 평가 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day2_practice.ipynb) · [pptx](../practice/day2_slides/day2_practice_slides.pptx) · [pdf](../practice/day2_slides/day2_practice_slides.pdf) |
-| 3일차 | MediQ-GAN 미세조정 → QGAN과 같은 지표로 비교 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day3_practice.ipynb) · [pptx](../practice/day3_slides/day3_practice_slides.pptx) · [pdf](../practice/day3_slides/day3_practice_slides.pdf) |
+| 3일차 | MediQ-GAN fine-tuning → QGAN과 같은 지표로 비교 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hyunhp/skin_disease_qml/blob/main/practice/day3_practice.ipynb) · [pptx](../practice/day3_slides/day3_practice_slides.pptx) · [pdf](../practice/day3_slides/day3_practice_slides.pdf) |
 
 - 노트북을 열면 `파일 → Drive에 사본 저장`을 먼저 실행함.
 - 노트북은 실행 중 이 저장소를 clone해 [`practice/assets/`](../practice/assets/)와 [`gen_metrics.py`](../practice/gen_metrics.py)를 씀. HAM10000 원본(약 6GB)만 `kagglehub`로 받음.
@@ -79,7 +79,7 @@
 |---|---|---|
 | QGAN sub-generator | 16개 × (데이터 7 + ancilla 1) | 4개 × (데이터 6 + ancilla 1) |
 | QGAN 학습량 | 2,000 epoch (1 ~ 1.5시간) | 600 step (약 22분) |
-| 해상도 | MediQ-GAN 64×64 RGB | 16×16 그레이스케일 |
+| 해상도 | MediQ-GAN 64×64 RGB | 16×16 grayscale |
 | MediQ-GAN 양자 stream | 16큐빗 × 5, depth 8 | 동일 |
 | MediQ-GAN 고전 부분 · 판별자 | conv · WGAN-GP critic | MLP · 표준 BCE |
 | 평가 | FID, 분류 정확도·AUC | 지표 4종 |
