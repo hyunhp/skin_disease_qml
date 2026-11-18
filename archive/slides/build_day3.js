@@ -303,18 +303,18 @@ newSection("fine-tuning");
 // =====================================================================
 newSection("비교");
 {
-  const s = slide("CONTENT", "비교 · 노트북 §5", "지표 비교 : 형태 재현과 다양성", "상관은 MediQ-GAN이 높고, 샘플 간 거리는 QGAN이 실제 DF에 가까움");
+  const s = slide("CONTENT", "비교 · 노트북 §5", "지표 비교 : 형태 재현과 다양성", "상관은 MediQ-GAN이 높고, 샘플 간 거리는 QGAN이 높음");
   s.addChart(pres.charts.BAR, [{ name: "상관", labels: ["QGAN 600 step", "MediQ 10 epoch", "MediQ 25 epoch"], values: [0.195, 0.018, 0.365] }], chartStyle({
     x: 0.6, y: 2.15, w: 6.0, h: 4.6, barDir: "col", chartColors: [THEME.colors.accent1, "B9B3D6", THEME.colors.accent2], varyColors: true,
     showValue: true, dataLabelPosition: "outEnd", dataLabelFontSize: 12, dataLabelFontFace: "+mn-lt", dataLabelColor: THEME.colors.dk1, dataLabelFormatCode: "0.000",
     showLegend: false, title: "② 클래스 평균 상관 (높을수록 형태 재현)", valAxisMinVal: 0, valAxisMaxVal: 0.4, valAxisMajorUnit: 0.1, valAxisLabelFormatCode: "0.0",
   }));
-  s.addChart(pres.charts.BAR, [{ name: "다양성", labels: ["QGAN 600 step", "MediQ 25 epoch", "실제 DF"], values: [1.92, 0.30, 2.505] }], chartStyle({
-    x: 6.8, y: 2.15, w: 5.9, h: 4.6, barDir: "col", chartColors: [THEME.colors.accent1, THEME.colors.accent2, THEME.colors.accent6], varyColors: true,
+  s.addChart(pres.charts.BAR, [{ name: "다양성", labels: ["QGAN 600 step", "MediQ 25 epoch"], values: [1.92, 0.30] }], chartStyle({
+    x: 6.8, y: 2.15, w: 5.9, h: 4.6, barDir: "col", chartColors: [THEME.colors.accent1, THEME.colors.accent2], varyColors: true,
     showValue: true, dataLabelPosition: "outEnd", dataLabelFontSize: 12, dataLabelFontFace: "+mn-lt", dataLabelColor: THEME.colors.dk1, dataLabelFormatCode: "0.00",
     showLegend: false, title: "④ 샘플 간 거리 (0에 가까우면 mode collapse)", valAxisMinVal: 0, valAxisMaxVal: 3, valAxisMajorUnit: 0.5, valAxisLabelFormatCode: "0.0",
   }));
-  source(s, "수치: README 결과표(로컬 CPU), MediQ-GAN 16장, QGAN 64장 평가. 지표 정의는 2일차 참고");
+  source(s, "수치: README 결과표(로컬 CPU), MediQ-GAN 16장·QGAN 64장 평가");
 }
 {
   const s = slide("CONTENT", "비교 · 결과 해석", "결과 해석 : 두 모델의 한계", "QGAN은 형태 재현이 약하고, MediQ-GAN은 평균 이미지에 가까운 그림을 반복함");
@@ -322,13 +322,14 @@ newSection("비교");
     ["지표", "QGAN 600 step", "MediQ-GAN 25 epoch", "의미"],
     ["② 클래스 평균 상관 ↑\n(평균 이미지와의 Pearson 상관)", "0.195", { text: "0.365", options: { bold: true, color: C.accent2 } }, "평균 형태는 MediQ-GAN이 더 가까움"],
     ["③ 최근접 실제 거리\n(가장 가까운 실제 이미지까지 L2)", "1.64", "3.44", "MediQ-GAN은 실제 이미지 어느 것과도 멂"],
-    ["④ 샘플 간 거리 (실제 2.505)\n(생성 이미지 쌍 L2 평균)", { text: "1.92", options: { bold: true, color: C.accent1 } }, "0.30", "MediQ-GAN은 비슷한 그림을 반복"],
+    ["④ 샘플 간 거리\n(생성 이미지 쌍 L2 평균)", { text: "1.92", options: { bold: true, color: C.accent1 } }, "0.30", "MediQ-GAN은 실제(2.505)의 약 1/8로 비슷한 그림을 반복"],
   ], 0.6, 2.25, 12.1, [3.4, 2.1, 2.4, 4.2], { fontSize: 13, rowH: 0.62 });
   text(s, "해석", 0.6, 4.95, 12.1, 0.35, { fontSize: 14, bold: true, color: C.accent1 });
   text(s, [
-    { text: "QGAN: 다양성은 실제에 가깝지만 병변 형태 재현이 약함. patch를 서로 독립적으로 만들어 이미지 전체 구조를 잡기 어려움.", options: { breakLine: true } },
-    { text: "MediQ-GAN: 평균 형태는 잘 맞추지만 다양성이 실제의 1/8. 최종 출력을 고전 decoder가 만들기 때문에 Tanh가 포화되면 z와 무관한 이미지가 나옴.", options: { breakLine: true } },
-    { text: "②만 보면 MediQ-GAN이 낫다고 결론 내리게 됨. ②는 평균 형태만 보므로 같은 이미지를 반복해도 높게 나옴." },
+    { text: "QGAN: 다양성은 MediQ-GAN보다 높지만 병변 형태 재현이 약함. patch를 서로 독립적으로 만들어 이미지 전체 구조를 잡기 어려움.", options: { breakLine: true } },
+    { text: "MediQ-GAN: 평균 형태는 잘 맞추지만 다양성이 실제의 약 1/8. 최종 출력을 고전 decoder가 만들기 때문에 Tanh가 포화되면 z와 무관한 이미지가 나옴.", options: { breakLine: true } },
+    { text: "②만 보면 MediQ-GAN이 낫다고 결론 내리게 됨. ②는 평균 형태만 보므로 같은 이미지를 반복해도 높게 나옴.", options: { breakLine: true } },
+    { text: "QGAN의 ③④는 이미지별 min-max 값이라 실제와 직접 비교하지 않음. 세 대상을 같은 방식으로 맞춰도 두 모델의 순서는 같음." },
   ], 0.6, 5.3, 12.1, 1.5, { fontSize: 12, paraSpaceAfter: 4 });
 }
 // =====================================================================
