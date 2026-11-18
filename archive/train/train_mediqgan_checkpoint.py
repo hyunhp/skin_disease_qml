@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-[준비 스크립트 ③] MediQ-GAN 사전학습 - 3일차 미세조정용 checkpoint 생성.
+[준비 스크립트 ③] MediQ-GAN pretraining - 3일차 fine-tuning용 checkpoint 생성.
 
-- 16큐빗 시뮬레이션이 비싸(샘플당 약 3초) 수업에서는 이 checkpoint에서 출발해 미세조정만 함
+- 16큐빗 시뮬레이션이 비싸(샘플당 약 3초) 수업에서는 이 checkpoint에서 출발해 fine-tuning만 함
 - 입력은 전처리 npy(0 ~ 1)뿐이라 Kaggle 불필요. 로컬 CPU epoch당 약 7.8분(25 epoch 196분)
-- 중간 checkpoint(--save_every)를 남김. 수렴한 모델로는 미세조정 손실이 거의 움직이지 않아 덜 학습된 본을 수업용으로 씀
+- 중간 checkpoint(--save_every)를 남김. 수렴한 모델로는 fine-tuning 손실이 거의 움직이지 않아 덜 학습된 본을 수업용으로 씀
 - 마지막 epoch이 최선은 아님(uniform z 실측: 40 epoch이 20 epoch보다 나빴음). 출력되는 [품질] 수치로 고를 것
 - 학습률: lr_g 0.02로는 3 epoch 만에 loss_d 0.0027로 붕괴함. DCGAN 관례(lr 2e-4, betas (0.5, 0.999))가 기본값
-- 척도: real을 2x-1로 맞춰 Tanh 출력과 학습함. 평가 때는 gen_metrics.to_unit_scale(x, "tanh")
+- scale: real을 2x-1로 맞춰 Tanh 출력과 학습함. 평가 때는 gen_metrics.to_unit_scale(x, "tanh")
 
 실행 예:
     C:/qmlvenv/Scripts/python.exe -X utf8 train_mediqgan_checkpoint.py \
@@ -33,7 +33,7 @@ from qgan_model import ClassicalDiscriminator
 
 
 def load_real(npy_path, img_size, max_n=None):
-    """전처리 npy(0 ~ 1) → Tanh 척도(-1 ~ 1) 평탄화 텐서."""
+    """전처리 npy(0 ~ 1) → Tanh scale(-1 ~ 1) 평탄화 tensor."""
     arr = np.load(npy_path)
     if arr.ndim == 3:
         if arr.shape[1] != img_size:
@@ -45,7 +45,7 @@ def load_real(npy_path, img_size, max_n=None):
     if max_n:
         arr = arr[:max_n]
     if arr.min() < -0.01 or arr.max() > 1.01:
-        raise ValueError(f"npy 값 범위가 0 ~ 1이 아님(min {arr.min():.3f}, max {arr.max():.3f}) - 척도 규약 위반")
+        raise ValueError(f"npy 값 범위가 0 ~ 1이 아님(min {arr.min():.3f}, max {arr.max():.3f}) - scale 규약 위반")
     return torch.tensor(arr * 2.0 - 1.0, dtype=torch.float32)
 
 
@@ -70,7 +70,7 @@ def train_step(generator, discriminator, real_batch, opt_g, opt_d, in_dim, devic
     loss_d.backward()
     opt_d.step()
 
-    # --- 생성자 (양자 stream까지 역전파) ---
+    # --- 생성자 (양자 stream까지 backpropagation) ---
     opt_g.zero_grad()
     z = sample_z(bsz, in_dim, z_dist, device)
     loss_g = bce(discriminator(generator(z)), real_labels)
@@ -100,9 +100,9 @@ def main():
     ap.add_argument("--npy", help="전처리 완료 npy 경로(0 ~ 1). --smoke일 때는 불필요")
     ap.add_argument("--out_dir", default="./checkpoints")
     ap.add_argument("--img_size", type=int, default=16, help="2일차 자산과 같아야 함")
-    ap.add_argument("--n_qubits", type=int, default=16, help="원 논문 스펙 16 (내리지 말 것)")
-    ap.add_argument("--q_depth", type=int, default=8, help="원 논문 그림 기준 8(레포 CLI 기본값은 6)")
-    ap.add_argument("--n_generators", type=int, default=5, help="원 논문 스펙 5")
+    ap.add_argument("--n_qubits", type=int, default=16, help="원 논문 spec 16 (내리지 말 것)")
+    ap.add_argument("--q_depth", type=int, default=8, help="원 논문 그림 기준 8(저장소 CLI 기본값은 6)")
+    ap.add_argument("--n_generators", type=int, default=5, help="원 논문 spec 5")
     ap.add_argument("--epochs", type=int, default=30)
     ap.add_argument("--batch_size", type=int, default=4,
                     help="키워도 빨라지지 않음 (샘플마다 회로를 따로 실행)")
@@ -111,13 +111,13 @@ def main():
     ap.add_argument("--lr_d", type=float, default=2e-4)
     ap.add_argument("--beta1", type=float, default=0.5, help="GAN 관례 0.5 (0.9는 불안정)")
     ap.add_argument("--z_dist", default="normal", choices=["uniform", "normal"],
-                    help="잠재벡터 분포 (normal이 uniform보다 다양성·상관 모두 좋았음)")
+                    help="latent vector 분포 (normal이 uniform보다 다양성·상관 모두 좋았음)")
     ap.add_argument("--save_every", type=int, default=5, help="중간 checkpoint 저장 간격(epoch)")
     ap.add_argument("--max_n", type=int, default=None)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--resume", default=None, help="이어할 checkpoint 경로")
     ap.add_argument("--smoke", action="store_true",
-                    help="합성 데이터·축소 스펙으로 코드만 점검")
+                    help="합성 데이터·축소 spec으로 코드만 점검")
     args = ap.parse_args()
 
     torch.manual_seed(args.seed)
@@ -133,12 +133,12 @@ def main():
         blob = np.exp(-((yy - args.img_size / 2) ** 2 + (xx - args.img_size / 2) ** 2) / 8.0)
         synth = np.clip(blob[None] + rng.normal(0, 0.1, (12, args.img_size, args.img_size)), 0, 1)
         real = torch.tensor(synth.reshape(12, -1) * 2 - 1, dtype=torch.float32)
-        print("[smoke] 합성 데이터 12장 · 축소 스펙으로 코드 점검만 수행")
+        print("[smoke] 합성 데이터 12장 · 축소 spec으로 코드 점검만 수행")
     else:
         if not args.npy:
             ap.error("--npy가 필요함(또는 --smoke로 코드만 점검)")
         real = load_real(args.npy, args.img_size, args.max_n)
-        print(f"학습 데이터: {len(real)}장 ({args.img_size}x{args.img_size}, Tanh 척도로 변환됨)")
+        print(f"학습 데이터: {len(real)}장 ({args.img_size}x{args.img_size}, Tanh scale로 변환됨)")
 
     in_dim = args.img_size * args.img_size
     gen = ToyDualStreamGenerator(in_dim=in_dim, n_qubits=args.n_qubits, q_depth=args.q_depth,
@@ -148,7 +148,7 @@ def main():
            "q_depth": args.q_depth, "n_generators": args.n_generators,
            "scale": "tanh", "lr_g": args.lr_g, "lr_d": args.lr_d, "beta1": args.beta1,
            "z_dist": args.z_dist, "batch_size": args.batch_size}
-    print(f"생성자 스펙: {args.n_generators}개 sub-generator × {args.n_qubits}큐빗, depth {args.q_depth} "
+    print(f"생성자 spec: {args.n_generators}개 sub-generator × {args.n_qubits}큐빗, depth {args.q_depth} "
           f"| site_dim={gen.site_dim}, 사용 site={gen.site_idx}")
 
     betas = (args.beta1, 0.999)
@@ -219,7 +219,7 @@ def main():
         if args.save_every and (epoch + 1) % args.save_every == 0 and (epoch + 1) < args.epochs:
             mid = out_dir / f"mediqgan_e{epoch + 1:03d}.pt"
             save_checkpoint(mid, gen, disc, cfg, history, epoch + 1, opt_g, opt_d)
-            print(f"  → 중간 checkpoint 저장: {mid.name} (3일차 미세조정 출발점 후보)")
+            print(f"  → 중간 checkpoint 저장: {mid.name} (3일차 fine-tuning 출발점 후보)")
 
     final = out_dir / "mediqgan_final.pt"
     save_checkpoint(final, gen, disc, cfg, history, args.epochs, opt_g, opt_d)

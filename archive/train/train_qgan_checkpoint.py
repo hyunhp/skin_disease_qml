@@ -2,7 +2,7 @@
 """
 [준비 스크립트 ②] QGAN checkpoint 학습 (HAM10000 DF segmentation 이미지).
 
-- 기본값 = 실습 스펙: 16x16, sub-generator 4개, depth 10 (데이터 6 + ancilla 1 = 7큐빗).
+- 기본값 = 실습 spec: 16x16, sub-generator 4개, depth 10 (데이터 6 + ancilla 1 = 7큐빗).
   2·4·8·16개를 600 step으로 비교해 4개가 가장 좋았음(README sub-generator 실험)
 - 3일차 비교 기준인 강사 checkpoint를 만듦. 2일차 학생은 같은 학습을 Colab에서 400 step 돌림
 - --epochs는 랜덤 batch step 수임(데이터 순회 아님). 600 step 로컬 CPU 약 22분
@@ -84,7 +84,7 @@ def main():
             raise SystemExit(f"npy 해상도 {imgs.shape[1]}x{imgs.shape[2]}가 --img_size {args.img_size}와 다름 "
                              f"- 16x16 재생성이 안 된 파일일 수 있음(재생산 체인 ① 참고)")
         if imgs.min() < -0.01 or imgs.max() > 1.01:
-            raise SystemExit(f"npy 값 범위가 0 ~ 1이 아님(min {imgs.min():.3f}, max {imgs.max():.3f}) - 척도 규약 위반")
+            raise SystemExit(f"npy 값 범위가 0 ~ 1이 아님(min {imgs.min():.3f}, max {imgs.max():.3f}) - scale 규약 위반")
         print(f"  로드된 이미지: {len(imgs)}장 ({imgs.shape[1]}x{imgs.shape[2]}, 0 ~ 1)")
     else:
         if not (args.metadata and args.img_dir):
@@ -97,7 +97,7 @@ def main():
         return
 
     real_flat = torch.tensor(imgs.reshape(len(imgs), -1))
-    # real을 확률 척도(장당 합 1)로 맞춤
+    # real을 확률 scale(장당 합 1)로 맞춤
     real_flat = real_flat / real_flat.sum(dim=1, keepdim=True).clamp(min=1e-6)
 
     print("[2/3] QGAN 학습...")

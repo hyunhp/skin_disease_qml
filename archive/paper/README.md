@@ -16,7 +16,7 @@
 > Jiao, Q., Tang, Y., Zhuang, J., Cong, J. & Shi, Y. **MediQ-GAN: Quantum-Inspired GAN for High Resolution Medical Image Generation.** arXiv:[2506.21015](https://arxiv.org/abs/2506.21015) (v2 2025-11-03).
 
 - [`MediQ-GAN_arXiv-2506.21015v2.pdf`](MediQ-GAN_arXiv-2506.21015v2.pdf) 포함 (CC BY 4.0). 공식 구현: https://github.com/QingyueJ-nd/MediQ-GAN
-- 가져온 것: dual-stream 생성자, 양자 stream 스펙(16큐빗 × 5, depth 8), 16 site 중 5개만 양자 처리, `lightning.qubit` + `adjoint` 학습, 생성 이미지(Fig. 2, 3일차 노트북)
+- 가져온 것: dual-stream 생성자, 양자 stream spec(16큐빗 × 5, depth 8), 16 site 중 5개만 양자 처리, `lightning.qubit` + `adjoint` 학습, 생성 이미지(Fig. 2, 3일차 노트북)
 
 원 논문과 실습의 차이는 [저장소 README](../../.github/README.md#원-논문과-다른-점)에 정리했다.
 
