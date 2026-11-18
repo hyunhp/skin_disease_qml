@@ -15,8 +15,8 @@ import pennylane as qml
 class PatchQuantumGenerator(nn.Module):
     """sub-generator ensemble 양자 생성자.
 
-    논문 스펙: n_generators=16, n_data_qubits=7, n_ancillas=1, q_depth=10
-    실습 스펙: n_generators=4, n_data_qubits=6, n_ancillas=1, q_depth=10 (train_qgan_checkpoint.py가 지정)
+    논문 spec: n_generators=16, n_data_qubits=7, n_ancillas=1, q_depth=10
+    실습 spec: n_generators=4, n_data_qubits=6, n_ancillas=1, q_depth=10 (train_qgan_checkpoint.py가 지정)
     """
 
     def __init__(self, n_generators=4, n_data_qubits=4, n_ancillas=1, q_depth=3, dev_name="default.qubit"):
@@ -153,4 +153,4 @@ if __name__ == "__main__":
     changed = not torch.allclose(param_before, param_after)
     print("양자 회로 파라미터가 학습으로 실제 갱신됨:", changed)
     assert changed, "gradient가 양자 회로까지 전파되지 않음 - 버그"
-    print("OK - 양자 생성자까지 역전파(gradient) 정상 흐름 확인")
+    print("OK - 양자 생성자까지 backpropagation(gradient) 정상 흐름 확인")

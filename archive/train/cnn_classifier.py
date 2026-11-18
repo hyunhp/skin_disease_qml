@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CNN 분류기 (HAM10000 QGAN 논문 Table 1·2 스펙). 옛 8×8 구성의 증강 전/후 비교에 씀.
+CNN 분류기 (HAM10000 QGAN 논문 Table 1·2 spec). 옛 8×8 구성의 증강 전/후 비교에 씀.
 """
 import torch
 import torch.nn as nn
@@ -102,7 +102,7 @@ def evaluate(model, loader, device="cpu"):
 
 
 if __name__ == "__main__":
-    print("[검증] CNN 분류기 forward+1epoch 학습 동작 확인 - 랜덤 텐서 사용")
+    print("[검증] CNN 분류기 forward+1epoch 학습 동작 확인 - 랜덤 tensor 사용")
     torch.manual_seed(0)
     img_size = 16  # 테스트는 작은 사이즈로 빠르게
 

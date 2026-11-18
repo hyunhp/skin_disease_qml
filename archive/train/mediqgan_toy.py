@@ -2,9 +2,9 @@
 """
 MediQ-GAN(arXiv:2506.21015) dual-stream 생성자 - 3일차 실습용 축소판.
 
-- 양자 stream은 원 논문 스펙 그대로: sub-generator 5개 × 16큐빗, depth 8, lightning.qubit + adjoint.
-  회로는 공식 레포(mediq-gan.py의 quantum_circuit)와 같음: RY→RX encoding, [RY + 인접 CZ], PauliX 측정
-- 단순화: 고전 encoder/decoder가 conv 대신 MLP, 입력이 64×64 RGB 대신 16×16 그레이스케일
+- 양자 stream은 원 논문 spec 그대로: sub-generator 5개 × 16큐빗, depth 8, lightning.qubit + adjoint.
+  회로는 공식 저장소(mediq-gan.py의 quantum_circuit)와 같음: RY→RX encoding, [RY + 인접 CZ], PauliX 측정
+- 단순화: 고전 encoder/decoder가 conv 대신 MLP, 입력이 64×64 RGB 대신 16×16 grayscale
 """
 import math
 import torch
@@ -13,10 +13,10 @@ import pennylane as qml
 
 
 class ToyDualStreamGenerator(nn.Module):
-    """잠재벡터를 절반씩 고전/양자 stream으로 처리한 뒤 concat으로 융합 (논문 Fig.1 "Feature Split").
+    """latent vector를 절반씩 고전/양자 stream으로 처리한 뒤 concat으로 융합 (논문 Fig.1 "Feature Split").
 
     양자 stream: 16 site 중 [0,4,8,11,15]만 회로 5개가 처리 → 큐빗 평균 스칼라를 4×4 맵에 배치 → 1×1 conv.
-    q_depth는 논문 그림 기준 8 (레포 CLI 기본값 6).
+    q_depth는 논문 그림 기준 8 (저장소 CLI 기본값 6).
     """
 
     def __init__(self, in_dim=64, n_qubits=16, q_depth=8, n_generators=5, out_dim=64,
@@ -37,14 +37,14 @@ class ToyDualStreamGenerator(nn.Module):
             nn.Linear(32, self.half),
         )
 
-        # site 벡터를 큐빗 수(16)에 맞춤 (레포의 q_align)
+        # site 벡터를 큐빗 수(16)에 맞춤 (저장소의 q_align)
         self.q_align = nn.Linear(self.site_dim, n_qubits)
 
         dev = qml.device(dev_name, wires=n_qubits)
 
         @qml.qnode(dev, interface="torch", diff_method="adjoint")
         def q_circuit(x, weights):
-            # 공식 레포와 같은 회로
+            # 공식 저장소와 같은 회로
             for i in range(n_qubits):
                 qml.RY(x[i], wires=i)
                 qml.RX(x[i], wires=i)
@@ -59,7 +59,7 @@ class ToyDualStreamGenerator(nn.Module):
         self.q_weights = nn.ParameterList([
             nn.Parameter(torch.rand(q_depth, n_qubits) * math.pi) for _ in range(n_generators)
         ])
-        # 5채널 4×4 맵 → q_ch채널 (1×1 conv, 레포의 proj_qexp)
+        # 5채널 4×4 맵 → q_ch채널 (1×1 conv, 저장소의 proj_qexp)
         self.proj_qexp = nn.Conv2d(n_generators, q_ch, 1)
 
         # 융합 특징 → 최종 이미지 (원 논문 conv decoder를 MLP로 단순화)
@@ -82,7 +82,7 @@ class ToyDualStreamGenerator(nn.Module):
         return self.proj_qexp(q_maps).flatten(1)            # (B, q_ch*16)
 
     def forward(self, z):
-        # 잠재벡터를 절반씩 두 stream에 분배
+        # latent vector를 절반씩 두 stream에 분배
         z_classical, z_quantum = z[:, :self.half], z[:, self.half:]
         classical_feat = self.classical_stream(z_classical)  # (batch, half)
         quantum_feat = self.quantum_stream(z_quantum)        # (batch, q_ch*16)
@@ -93,10 +93,10 @@ class ToyDualStreamGenerator(nn.Module):
 if __name__ == "__main__":
     import time
 
-    print("[검증] MediQ-GAN dual-stream 생성자 forward+backward 확인 (원 논문 스펙: 16큐빗×5 sub-generator)")
+    print("[검증] MediQ-GAN dual-stream 생성자 forward+backward 확인 (원 논문 spec: 16큐빗×5 sub-generator)")
     torch.manual_seed(0)
 
-    # 구조 검증용으로 작은 8x8(64픽셀) 입력을 씀 - 실습 스펙은 16x16(256). batch 1
+    # 구조 검증용으로 작은 8x8(64픽셀) 입력을 씀 - 실습 spec은 16x16(256). batch 1
     IMG_SIZE = 8
     gen = ToyDualStreamGenerator(in_dim=IMG_SIZE * IMG_SIZE, n_qubits=16, q_depth=8,
                                   n_generators=5, out_dim=IMG_SIZE * IMG_SIZE)
@@ -118,5 +118,5 @@ if __name__ == "__main__":
     print("고전 stream gradient 존재:", has_grad_classical)
     print("양자 stream gradient 존재(sub-generator 5개 전부):", has_grad_quantum)
     assert has_grad_classical and has_grad_quantum, "두 stream 중 하나는 학습이 안 됨 - 버그"
-    print("OK - 고전+양자 stream(5개 sub-generator 전부) 역전파(gradient) 정상 흐름 확인")
+    print("OK - 고전+양자 stream(5개 sub-generator 전부) backpropagation(gradient) 정상 흐름 확인")
     print("→ 위 forward+backward 소요시간이 Colab 라이브 시연(1회 forward, 학습 없음) 기준 수용 가능한지 확인할 것")

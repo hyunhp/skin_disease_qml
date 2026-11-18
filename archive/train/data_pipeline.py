@@ -58,7 +58,7 @@ def segment_fcm_kmeans(img_bgr, n_clusters=4, resize_to=None):
     # 1단계: K-means 사전 clustering (FCM 시간 단축)
     from sklearn.cluster import KMeans
     km = KMeans(n_clusters=n_clusters, n_init=4, random_state=0).fit(pixels)
-    # FCM 초기 소속도 = K-means 중심까지 거리의 역제곱
+    # FCM 초기 membership = K-means 중심까지 거리의 역제곱
     dist = np.abs(pixels - km.cluster_centers_.reshape(1, -1)) + 1e-6
     u_init = 1.0 / dist ** 2
     u_init = (u_init / u_init.sum(axis=1, keepdims=True)).T  # (cluster 수, 픽셀 수)

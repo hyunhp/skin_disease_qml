@@ -5,7 +5,8 @@
   ① 픽셀 강도 분포    pixel_stats() / plot_pixel_histogram()
   ② 클래스 평균 상관  mean_image_correlation()
   ③ 최근접 실제 거리  nearest_neighbor_distance() / plot_nearest_neighbors()
-  ④ 샘플 간 다양성    sample_diversity() / plot_loss_curves()
+  ④ 샘플 간 다양성    sample_diversity()
+  손실 곡선           plot_loss_curves()
 
 scale: 전처리 0 ~ 1, QGAN 확률(장당 합 0 ~ 4), MediQ-GAN Tanh(-1 ~ 1).
 ②③④는 to_unit_scale()로 0 ~ 1로 맞춘 뒤 계산함. ①은 원 scale로도 봄.
@@ -114,7 +115,7 @@ def plot_nearest_neighbors(fake, real, img_size, n_show=4, cmap="gray"):
     return fig, dist
 
 
-# ──────────────── ④ 샘플 간 다양성 + 판별자 손실곡선 ────────────────
+# ──────────────── ④ 샘플 간 다양성 + 손실 곡선 ────────────────
 
 def sample_diversity(fake):
     """샘플 간 L2 거리 평균·최솟값, 픽셀별 표준편차. 0에 가까우면 mode collapse."""
@@ -131,7 +132,7 @@ def sample_diversity(fake):
 
 
 def plot_loss_curves(loss_g, loss_d, ax=None):
-    """생성자·판별자 손실곡선."""
+    """생성자·판별자 손실 곡선."""
     import matplotlib.pyplot as plt
     if ax is None:
         _, ax = plt.subplots(figsize=(5, 3))
