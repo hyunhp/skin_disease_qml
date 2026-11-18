@@ -34,13 +34,14 @@ Run `File → Save a copy in Drive` first. The notebooks clone this repository a
 
 Measured on a local CPU. Every generation call draws fresh noise, so compare the gap between models rather than decimals.
 
-| Model | Training | ② Class-mean corr. ↑ | ③ Nearest-real dist. | ④ Diversity (real 2.505) |
+| Model | Training | ② Class-mean corr. ↑ | ③ Nearest-real dist. | ④ Diversity |
 |---|---|---|---|---|
 | QGAN | 600 steps (~22 min) | 0.195 ± 0.012 (64 samples × 10 seeds) | 1.64 | 1.92 |
 | MediQ-GAN | 10 epochs (~80 min) | 0.018 | - | - |
 | MediQ-GAN | 25 epochs (196 min) | 0.365 | 3.44 | 0.30 |
 
-- MediQ-GAN matches the average shape better but its diversity is one eighth of the real data, so it repeats similar images. QGAN reproduces shape less well but its diversity is close to real.
+- MediQ-GAN matches the average shape better but its diversity is about one eighth of the real DF (2.505), so it repeats similar images. QGAN reproduces shape less well but is more diverse than MediQ-GAN.
+- The 0-1 rescaling differs: QGAN uses per-image min-max, real images and MediQ-GAN use a fixed mapping. Metric ② is unaffected, but ③ and ④ depend on scale, so QGAN's ③④ are compared only in order against MediQ-GAN, not with the real value. With per-image min-max applied to all three, the order is the same (diversity: real 5.02, QGAN 1.83, MediQ-GAN 0.48; recomputed on a local CPU).
 - At 16×16 both models stay far from the papers' image quality; the Day 3 notebook shows the papers' samples next to ours.
 
 ### Sub-generator sweep (600 steps, depth 10)
