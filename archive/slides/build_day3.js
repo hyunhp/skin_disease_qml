@@ -159,7 +159,7 @@ function chartStyle(extra) {
 // =====================================================================
 newSection("표지");
 {
-  const s = slide("TITLE_DARK", "QML Lecture · 3일차", "실습 설명 자료", "MediQ-GAN 미세조정 → QGAN과 같은 지표로 비교");
+  const s = slide("TITLE_DARK", "QML Lecture · 3일차", "실습 설명 자료", "MediQ-GAN fine-tuning → QGAN과 같은 지표로 비교");
   s.addShape(pres.shapes.OVAL, { x: 10.55, y: 0.85, w: 1.55, h: 1.55, fill: { color: C.text2 }, line: { color: C.accent1, width: 1.25 } });
   s.addShape(pres.shapes.OVAL, { x: 11.0, y: 1.3, w: 0.65, h: 0.65, fill: { color: C.accent1 }, line: { type: "none" } });
 }
@@ -184,13 +184,13 @@ newSection("MediQ-GAN 구조");
     { text: "생성자 = 고전 stream + 양자 stream", options: { bullet: true, breakLine: true } },
     { text: "입력을 절반씩 나눠 병렬 처리 후 concat", options: { bullet: true, breakLine: true } },
     { text: "출력 = 고전 decoder → Tanh (-1 ~ 1)", options: { bullet: true, breakLine: true } },
-    { text: "양자 stream은 원 논문 스펙(16큐빗 × 5, depth 8)", options: { bullet: true } },
+    { text: "양자 stream은 원 논문 spec(16큐빗 × 5, depth 8)", options: { bullet: true } },
   ], 7.05, 3.45, 5.4, 2.0, { fontSize: 14, paraSpaceAfter: 8 });
   box(s, "z → [고전 ∥ 양자] → concat → decoder", 7.05, 5.65, 5.4, 0.6, C.accent2, C.background1, { fontSize: 13 });
 }
 {
-  const s = slide("CONTENT", "MediQ-GAN 구조 · 노트북 §3 코드", "dual-stream의 데이터 흐름", "잠재벡터 256차원을 절반씩 나누고, 두 stream의 출력을 이어붙여 decoder로 보냄");
-  box(s, "잠재벡터 z\n256차원\nN(0, 1)", 0.6, 3.25, 1.5, 1.2, HEX.card2, C.text1, { fontSize: 12 });
+  const s = slide("CONTENT", "MediQ-GAN 구조 · 노트북 §3 코드", "dual-stream의 데이터 흐름", "latent vector 256차원을 절반씩 나누고, 두 stream의 출력을 이어붙여 decoder로 보냄");
+  box(s, "latent vector z\n256차원\nN(0, 1)", 0.6, 3.25, 1.5, 1.2, HEX.card2, C.text1, { fontSize: 12 });
   // classical row
   box(s, "z[:, :128]", 2.55, 2.25, 1.5, 0.7, HEX.white, C.text1, { fontSize: 12, line: HEX.line });
   box(s, "고전 stream\nMLP 128→32→128", 4.45, 2.15, 2.3, 0.9, C.text2, C.background1, { fontSize: 12 });
@@ -273,21 +273,21 @@ newSection("MediQ-GAN 구조");
   source(s, "노트북 ToyDualStreamGenerator(in_dim 256)에서 직접 센 값");
 }
 {
-  const s = slide("CONTENT", "MediQ-GAN 구조 · 한계", "원 논문과 실습의 차이", "양자 stream은 원 논문 스펙 그대로, 고전 부분과 판별자·평가를 단순화함");
+  const s = slide("CONTENT", "MediQ-GAN 구조 · 한계", "원 논문과 실습의 차이", "양자 stream은 원 논문 spec 그대로, 고전 부분과 판별자·평가를 단순화함");
   table(s, [
     ["항목", "원 논문 (Jiao et al.)", "3일차 실습", "비고"],
-    ["양자 stream", "16큐빗 × 5, depth 8", { text: "동일", options: { bold: true, color: C.accent1 } }, "공식 레포와 같은 회로"],
+    ["양자 stream", "16큐빗 × 5, depth 8", { text: "동일", options: { bold: true, color: C.accent1 } }, "공식 저장소와 같은 회로"],
     ["고전 encoder / decoder", "conv", "MLP", "16×16 저해상도라 단순화"],
-    ["입력 · 출력", "64×64 RGB", "16×16 그레이스케일", "2일차 전처리 자산 사용"],
+    ["입력 · 출력", "64×64 RGB", "16×16 grayscale", "2일차 전처리 자산 사용"],
     ["판별자", "WGAN-GP critic", "표준 BCE 판별자 (Table 4)", "QGAN과 같은 판별자"],
-    ["학습", "GPU, 전체 학습", "25 epoch 사전학습. 수업에서는 10 epoch checkpoint + 20 step", "16큐빗 시뮬레이션 비용"],
+    ["학습", "GPU, 전체 학습", "25 epoch pretraining. 수업에서는 10 epoch checkpoint + 20 step", "16큐빗 시뮬레이션 비용"],
     ["평가", "FID, 분류 성능", "지표 4종", "FID는 16×16에서 의미 없음"],
   ], 0.6, 2.25, 12.1, [2.6, 2.8, 3.6, 3.1], { fontSize: 13, rowH: 0.55 });
 }
 // =====================================================================
-newSection("미세조정");
+newSection("fine-tuning");
 {
-  const s = slide("CONTENT", "미세조정 · 계산 비용", "계산 비용 : 수업에서 미세조정만 하는 이유", "16큐빗 회로 시뮬레이션이 비싸 25 epoch 사전학습에 196분(약 3시간 15분)이 걸림");
+  const s = slide("CONTENT", "fine-tuning · 계산 비용", "계산 비용 : 수업에서 fine-tuning만 하는 이유", "16큐빗 회로 시뮬레이션이 비싸 25 epoch pretraining에 196분(약 3시간 15분)이 걸림");
   const b = (t) => ({ text: t, options: { bold: true } });
   table(s, [
     ["", "2일차 QGAN", "3일차 MediQ-GAN"],
@@ -334,13 +334,13 @@ newSection("비교");
 // =====================================================================
 newSection("정리");
 {
-  const s = slide("CONTENT", "정리", "3일차 정리", "MediQ-GAN 구조와 미세조정, QGAN과의 비교");
+  const s = slide("CONTENT", "정리", "3일차 정리", "MediQ-GAN 구조와 fine-tuning, QGAN과의 비교");
   summary(s, [
     ["hybrid 수준", "QGAN은 생성자 전체가 양자회로(model-level), MediQ-GAN은 생성자 안의 양자 stream만 양자회로(layer-level)"],
-    ["dual-stream", "잠재벡터 256차원을 절반씩 고전 MLP와 양자 stream으로 나눠 처리한 뒤 concat → decoder → Tanh"],
+    ["dual-stream", "latent vector 256차원을 절반씩 고전 MLP와 양자 stream으로 나눠 처리한 뒤 concat → decoder → Tanh"],
     ["양자 stream", "16큐빗 × depth 8 회로 5개가 16 site 중 5개만 처리. PauliX 기댓값 출력이라 ancilla qubit이 필요 없음"],
     ["파라미터와 비용", "30,000개 중 양자 회전각은 640개(2.1%)지만 학습 시간 대부분이 16큐빗 시뮬레이션 (25 epoch 196분)"],
-    ["checkpoint와 미세조정", "config로 같은 구조를 만든 뒤 가중치를 불러옴. 판별자도 같은 시점 상태로 불러와 20 step 추가 학습"],
+    ["checkpoint와 fine-tuning", "config로 같은 구조를 만든 뒤 가중치를 불러옴. 판별자도 같은 시점 상태로 불러와 20 step 추가 학습"],
     ["학습 안정성", "BCE 판별자가 우세함 (lr_g 0.02에서 3 epoch 만에 mode collapse). 원 논문은 WGAN-GP critic을 씀"],
     ["비교 결과", "상관은 MediQ-GAN 0.365 > QGAN 0.195, 다양성은 QGAN 1.92 > MediQ-GAN 0.30. 지표 하나로 순위를 정하지 않음"],
   ]);

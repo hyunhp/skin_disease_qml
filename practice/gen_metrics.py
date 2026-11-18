@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-생성품질 지표 4종 + 척도 변환 (2·3일차 공통 모듈).
+생성품질 지표 4종 + scale 변환 (2·3일차 공통 모듈).
 
   ① 픽셀 강도 분포    pixel_stats() / plot_pixel_histogram()
   ② 클래스 평균 상관  mean_image_correlation()
   ③ 최근접 실제 거리  nearest_neighbor_distance() / plot_nearest_neighbors()
   ④ 샘플 간 다양성    sample_diversity() / plot_loss_curves()
 
-척도: 전처리 0 ~ 1, QGAN 확률(장당 합 0 ~ 4), MediQ-GAN Tanh(-1 ~ 1).
-②③④는 to_unit_scale()로 0 ~ 1로 맞춘 뒤 계산함. ①은 원 척도로도 봄.
+scale: 전처리 0 ~ 1, QGAN 확률(장당 합 0 ~ 4), MediQ-GAN Tanh(-1 ~ 1).
+②③④는 to_unit_scale()로 0 ~ 1로 맞춘 뒤 계산함. ①은 원 scale로도 봄.
 """
 import numpy as np
 
@@ -16,7 +16,7 @@ SCALE_MODES = ("unit", "prob", "tanh")
 
 
 def to_unit_scale(x, mode):
-    """0 ~ 1 척도로 변환. unit: 그대로, prob: 이미지별 min-max, tanh: (x+1)/2."""
+    """0 ~ 1 scale로 변환. unit: 그대로, prob: 이미지별 min-max, tanh: (x+1)/2."""
     if mode not in SCALE_MODES:
         raise ValueError(f"mode는 {SCALE_MODES} 중 하나여야 함 (받은 값: {mode!r})")
     arr = np.asarray(x, dtype=np.float64)
@@ -151,8 +151,8 @@ def evaluate(fake, real, scale_mode, real_scale_mode="unit"):
     nn_dist, _ = nearest_neighbor_distance(fake_u, real_u)
     div = sample_diversity(fake_u)
     return {
-        "픽셀평균(원척도)": pixel_stats(fake)["mean"],
-        "픽셀합/장(원척도)": pixel_stats(fake)["sum_per_image"],
+        "픽셀평균(원 scale)": pixel_stats(fake)["mean"],
+        "픽셀합/장(원 scale)": pixel_stats(fake)["sum_per_image"],
         "픽셀평균(0 ~ 1환산)": pixel_stats(fake_u)["mean"],
         "클래스평균 상관계수": float(np.mean(corr)),
         "상관계수 최댓값": float(np.max(corr)),
@@ -209,8 +209,8 @@ if __name__ == "__main__":
     print(f"④ 샘플간 거리: 정상 {div_good:.3f} vs mode collapse {div_col:.3f}")
     assert div_col < 1e-9 < div_good, "mode collapse를 검출하지 못함"
 
-    table = comparison_table({"정상생성(prob척도)": (good / good.reshape(8, -1).sum(1)[:, None, None], "prob"),
-                              "무작위(tanh척도)": (noise * 2 - 1, "tanh")}, real)
+    table = comparison_table({"정상생성(prob scale)": (good / good.reshape(8, -1).sum(1)[:, None, None], "prob"),
+                              "무작위(tanh scale)": (noise * 2 - 1, "tanh")}, real)
     print("\n=== comparison_table 출력 예시 ===")
     print(table)
     print("\nOK - 지표 4종이 좋은 생성/무작위/암기/mode collapse를 전부 구분함")

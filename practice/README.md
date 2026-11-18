@@ -8,7 +8,7 @@
 | `day2_slides/` | 2일차 설명 슬라이드 (25장, 발표자 노트 포함) |
 | `day3_slides/` | 3일차 설명 슬라이드 (10장, 발표자 노트 포함) |
 | `day2_practice.ipynb` | EDA · segmentation · 회로 구성 → QGAN 학습 · 평가 |
-| `day3_practice.ipynb` | MediQ-GAN 미세조정 → QGAN과 같은 지표로 비교 |
+| `day3_practice.ipynb` | MediQ-GAN fine-tuning → QGAN과 같은 지표로 비교 |
 | `gen_metrics.py` | 생성품질 지표 4종 (두 노트북 공통) |
 | `assets/` | 16×16 전처리 데이터 + checkpoint ([README](assets/README.md)) |
 | `docs/image/` | 노트북에 쓰는 캡처와 논문 그림 |

@@ -162,7 +162,7 @@ newSection("PART 0 · 1일차 복습");
 {
   const s = slide("SECTION_DARK", "PART 0", "1일차 복습", "오늘 구현하는 QGAN의 구조와 논문 대비 축소 범위");
   const rows = [["오늘 구현하는 것", "논문 ① QGAN의 patch 방식 생성자 - sub-generator 4개 + 고전 판별자"],
-    ["입력 데이터", "HAM10000 DF 115장 → segmentation → 16×16 그레이스케일"],
+    ["입력 데이터", "HAM10000 DF 115장 → segmentation → 16×16 grayscale"],
     ["오늘의 결과물", "직접 학습한 생성자 checkpoint + 생성품질 지표 4종 표 (3일차 비교 기준)"]];
   rows.forEach((r, i) => {
     text(s, r[0], 0.9, 3.25 + i * 0.95, 2.6, 0.4, { fontSize: 14, bold: true, color: C.accent3 });
@@ -195,7 +195,7 @@ newSection("PART 0 · 1일차 복습");
   s.addShape(pres.shapes.LINE, { x: 4.55, y: 6.4, w: 7.6, h: 0, line: { color: C.accent4, width: 1.5, dashType: "dash" } });
   s.addShape(pres.shapes.LINE, { x: 12.15, y: 4.27, w: 0, h: 2.13, line: { color: C.accent4, width: 1.5, dashType: "dash" } });
   s.addShape(pres.shapes.LINE, { x: 4.55, y: 6.12, w: 0, h: 0.28, line: { color: C.accent4, width: 1.5, dashType: "dash", beginArrowType: "triangle" } });
-  text(s, "손실 → 역전파 → 회전각 θ 갱신", 6.2, 6.47, 4.5, 0.32, { fontSize: 12, bold: true, color: C.accent4, align: "center" });
+  text(s, "손실 → backpropagation → 회전각 θ 갱신", 6.2, 6.47, 4.5, 0.32, { fontSize: 12, bold: true, color: C.accent4, align: "center" });
 }
 {
   const s = slide("CONTENT", "PART 0 · 1일차 복습", "논문과 오늘 실습의 차이", "회로의 형태(RY encoding + RY·CZ variational layer + post-selection)는 같고, 규모와 학습량을 줄임");
@@ -243,7 +243,7 @@ newSection("PART 1 · 데이터와 전처리");
 }
 {
   const s = slide("CONTENT", "PART 1 · 노트북 §3", "전처리 pipeline", "원본 → 병변만 남긴 64×64 → 16×16, 0 ~ 1. 저장소 자산(df_preprocessed.npy)도 같은 조건으로 만들어짐");
-  const flow = [["원본", "600×450 RGB"], ["그레이 + 축소", "64×64\nINTER_AREA"], ["K-means", "k = 4\n사전 cluster"], ["FCM", "m = 2\n소속도 정제"],
+  const flow = [["원본", "600×450 RGB"], ["gray + 축소", "64×64\nINTER_AREA"], ["K-means", "k = 4\n사전 cluster"], ["FCM", "m = 2\nmembership 정제"],
     ["mask", "가장 어두운\ncluster = 병변"], ["축소 + 정규화", "16×16\n/255 → 0 ~ 1"]];
   const w = 1.75, gap = 0.32, y = 2.5;
   flow.forEach((f, i) => {
@@ -282,19 +282,19 @@ newSection("PART 1 · 데이터와 전처리");
   barList(s, [
     ["① 밝기만 사용", "위치 정보 없이 (픽셀 수, 1)로 clustering"],
     ["② K-means 사전 cluster", "k-means++ 초기화 4회 중 최선 채택"],
-    ["③ FCM 초기 소속도", "중심 거리의 역제곱 - 수렴이 빠르고 재현 가능"],
+    ["③ FCM 초기 membership", "중심 거리의 역제곱 - 수렴이 빠르고 재현 가능"],
     ["④ 병변 cluster 선택", "중심이 가장 어두운 cluster = 병변"],
     ["⑤ mask 적용", "병변은 원래 밝기 유지, 배경은 0"],
   ], 8.5, 2.2, 4.2, 0.9, C.accent4);
 }
 {
-  const s = slide("CONTENT", "PART 1 · 노트북 §3", "K-means와 Fuzzy C-means", "K-means는 픽셀마다 cluster 하나, FCM은 cluster별 소속도를 나눠 가짐");
+  const s = slide("CONTENT", "PART 1 · 노트북 §3", "K-means와 Fuzzy C-means", "K-means는 픽셀마다 cluster 하나, FCM은 cluster별 membership을 나눠 가짐");
   table(s, [
     ["", "K-means", "Fuzzy C-means (FCM)"],
-    ["배정 방식", "hard - 픽셀마다 cluster 1개", "soft - 소속도 u (픽셀별 합 = 1)"],
-    ["중심 갱신", "배정된 픽셀의 평균", "소속도^m 가중 평균"],
+    ["배정 방식", "hard - 픽셀마다 cluster 1개", "soft - membership u (픽셀별 합 = 1)"],
+    ["중심 갱신", "배정된 픽셀의 평균", "membership^m 가중 평균"],
     ["주요 파라미터", "n_clusters, n_init", "c, m (fuzziness), error, maxiter, init"],
-    ["이 코드에서의 역할", "FCM 초기값을 만드는 사전 cluster", "소속도 정제 → argmax로 최종 라벨"],
+    ["이 코드에서의 역할", "FCM 초기값을 만드는 사전 cluster", "membership 정제 → argmax로 최종 라벨"],
     ["출력", "cluster_centers_, labels_", "cntr, u, u0, d, jm, p, fpc"],
   ], 0.6, 2.25, 7.4, [2.0, 2.6, 2.8], { fontSize: 13, rowH: 0.55 });
   card(s, 8.3, 2.25, 4.4, 4.0, HEX.lav);
@@ -305,7 +305,7 @@ newSection("PART 1 · 데이터와 전처리");
     { text: "보통 2를 씀 (이 코드도 2)", options: { bullet: true } },
   ], 8.55, 2.95, 3.9, 1.5, { fontSize: 13, paraSpaceAfter: 6 });
   text(s, "fpc (0 ~ 1)", 8.55, 4.55, 3.9, 0.35, { fontSize: 15, bold: true, color: C.accent2 });
-  text(s, "분할 선명도. 1에 가까울수록 명확하고, 1/c(여기서는 0.25)에 가까울수록 모호함", 8.55, 5.0, 3.9, 1.0, { fontSize: 13 });
+  text(s, "fuzzy partition coefficient. 1에 가까울수록 명확하고, 1/c(여기서는 0.25)에 가까울수록 모호함", 8.55, 5.0, 3.9, 1.0, { fontSize: 13 });
 }
 {
   const s = slide("CONTENT", "PART 1 · 노트북 §3", "16×16 해상도와 축소 방법", "픽셀 수가 큐빗 수를 정함. 256픽셀 = sub-generator 4개 × 2⁶");
@@ -327,8 +327,8 @@ newSection("PART 1 · 데이터와 전처리");
   table(s, [
     ["보간법", "방식", "16×16 축소에서"],
     ["INTER_AREA", "출력 픽셀이 덮는 영역의 평균", "사용 - 저장소 자산과 같은 조건"],
-    ["INTER_LINEAR", "주변 2×2 선형 보간 (기본값)", "큰 축소에서 앨리어싱"],
-    ["INTER_NEAREST", "가장 가까운 픽셀 1개 복사", "마스크용, 밝기 정보 손실"],
+    ["INTER_LINEAR", "주변 2×2 선형 보간 (기본값)", "큰 축소에서 aliasing"],
+    ["INTER_NEAREST", "가장 가까운 픽셀 1개 복사", "mask용, 밝기 정보 손실"],
   ], 5.2, 4.15, 7.5, [2.0, 2.9, 2.6], { fontSize: 12, rowH: 0.48 });
 }
 
@@ -484,13 +484,13 @@ newSection("PART 3 · QGAN 학습");
     "    loss_g.backward(); opt_g.step()",
   ], 0.6, 2.2, 7.2, 4.45, 12);
   barList(s, [
-    ["① 판별자 step", "실제 → 1, 생성 → 0. detach로 생성자 쪽 기울기는 계산하지 않음", C.accent2],
+    ["① 판별자 step", "실제 → 1, 생성 → 0. detach로 생성자 쪽 gradient는 계산하지 않음", C.accent2],
     ["② 생성자 step", "생성 이미지에 라벨 1을 붙여 손실 계산. 판별자를 속이는 방향으로 θ 갱신", C.accent1],
     ["③ gen() 호출 2번", "판별자용 1번 + 생성자용 1번. step당 회로 64번 실행", C.accent4],
   ], 8.1, 2.3, 4.6, 1.3);
 }
 {
-  const s = slide("CONTENT", "PART 3 · 진행 로그 읽기", "손실 기준값 : 1.386과 0.693", "판별자가 진짜·가짜를 구분하지 못할 때(D = 0.5)의 BCE 값이 기준선");
+  const s = slide("CONTENT", "PART 3 · 진행 로그 읽기", "손실 기준값 : 1.386과 0.693", "판별자가 진짜·가짜를 구분하지 못할 때(D = 0.5)의 BCE 값이 기준값");
   const steps = ["20", "40", "60", "80", "100", "120", "140", "160", "180"];
   const lg = [0.5651, 0.5864, 0.6169, 0.6624, 0.7102, 0.7095, 0.7226, 0.8258, 0.8515];
   const ld = [1.4052, 1.3990, 1.3929, 1.3842, 1.3775, 1.3764, 1.3996, 1.2880, 1.3529];
@@ -524,9 +524,9 @@ newSection("PART 3 · QGAN 학습");
   text(s, "회로 실행 수 = sub-generator 4 × batch 8 × step당 gen() 2회 × 400 step = 25,600회", 0.6, 2.3, 12.1, 0.9, { fontSize: 17, bold: true, color: C.accent1, align: "center", valign: "middle" });
   text(s, "회로 하나는 7큐빗(상태벡터 128차원)으로 작지만, 이 횟수만큼 forward와 backprop을 반복함.", 0.6, 3.4, 12.1, 0.4, { fontSize: 13, color: C.accent6 });
   table(s, [
-    ["미분 방식", "어디서", "샘플 하나의 생성자 기울기 비용", "사용처"],
-    ["backprop", "시뮬레이터만", "forward 1번 + 역전파 (상태벡터 직접 미분)", "2일차 QGAN (default.qubit)"],
-    ["adjoint", "시뮬레이터만", "forward 1번 + 역방향 1번, 메모리 적음", "3일차 MediQ-GAN (lightning)"],
+    ["미분 방식", "어디서", "샘플 하나의 생성자 gradient 비용", "사용처"],
+    ["backprop", "시뮬레이터만", "forward 1번 + backpropagation (상태벡터 직접 미분)", "2일차 QGAN (default.qubit)"],
+    ["adjoint", "시뮬레이터만", "forward 1번 + backward 1번, 메모리 적음", "3일차 MediQ-GAN (lightning)"],
     ["parameter-shift", "하드웨어 가능", "파라미터당 2번 → 280 × 2 = 560번 (× shot 수)", "실제 양자 장치"],
   ], 0.6, 4.45, 12.1, [2.0, 1.8, 4.9, 3.4], { fontSize: 12, rowH: 0.5 });
 }
@@ -543,7 +543,7 @@ newSection("PART 3 · QGAN 학습");
   ], 0.6, 4.2, 12.1, 0.95, 12);
   text(s, "수정 방법 (실습 후 과제)", 0.6, 5.3, 12.1, 0.35, { fontSize: 14, bold: true, color: C.accent1 });
   barList(s, [["실제 이미지도 patch별로 정규화", "patch마다 합 1로 맞춰 생성 쪽과 단위를 맞춤"]], 0.6, 5.75, 5.9, 1.0, C.accent4);
-  barList(s, [["생성 patch를 최댓값으로 나눔", "0 ~ 1 척도로 맞추고 실제 이미지는 그대로 둠 (PennyLane QGAN 튜토리얼 방식)"]], 6.8, 5.75, 5.9, 1.0, C.accent4);
+  barList(s, [["생성 patch를 최댓값으로 나눔", "0 ~ 1 scale로 맞추고 실제 이미지는 그대로 둠 (PennyLane QGAN 튜토리얼 방식)"]], 6.8, 5.75, 5.9, 1.0, C.accent4);
 }
 
 // =====================================================================
@@ -571,12 +571,12 @@ newSection("PART 4 · 생성과 평가");
   const s = slide("CONTENT", "PART 4 · 노트북 §6", "생성품질 지표 4종", "16×16 저해상도라 FID 대신 해석 가능한 지표를 씀 (practice/gen_metrics.py)");
   table(s, [
     ["지표", "보는 것", "함수", "읽는 법"],
-    ["① 픽셀 강도 분포", "밝기 분포가 실제와 맞는가", "plot_pixel_histogram", "척도 변환 전 값도 함께 봄"],
+    ["① 픽셀 강도 분포", "밝기 분포가 실제와 맞는가", "plot_pixel_histogram", "scale 변환 전 값도 함께 봄"],
     ["② 클래스 평균 상관", "병변의 전체 형태를 재현했는가", "mean_image_correlation", "높을수록 좋음. DF > NV여야 함"],
     ["③ 최근접 실제 거리", "학습 데이터를 외웠는가", "nearest_neighbor_distance", "0에 가까우면 암기"],
     ["④ 샘플 간 거리", "같은 그림만 반복하는가", "sample_diversity", "0에 가까우면 mode collapse"],
   ], 0.6, 2.25, 12.1, [2.4, 3.3, 3.2, 3.2], { fontSize: 13, rowH: 0.48 });
-  text(s, "to_unit_scale(x, mode) - 세 척도를 0 ~ 1로 맞춘 뒤 지표를 계산함", 0.6, 4.85, 12.1, 0.35, { fontSize: 14, bold: true, color: C.accent1 });
+  text(s, "to_unit_scale(x, mode) - 세 scale을 0 ~ 1로 맞춘 뒤 지표를 계산함", 0.6, 4.85, 12.1, 0.35, { fontSize: 14, bold: true, color: C.accent1 });
   table(s, [
     ["mode", "대상", "변환"],
     ["prob", "QGAN 출력 (patch별 합 0 ~ 1인 확률)", "이미지별 min-max"],
@@ -601,7 +601,7 @@ newSection("PART 4 · 생성과 평가");
     ["③ 최근접 실제 거리", "평균 1.579, 최솟값 0.956", "0보다 충분히 커서 암기는 아님"],
     ["④ 샘플 간 거리", "1.731", "실제 DF 2.505의 약 70% - mode collapse 아님"],
   ], 5.6, 2.3, 7.1, [2.4, 2.0, 2.7], { fontSize: 12.5, rowH: 0.6 });
-  text(s, "DF와 NV 상관이 거의 같음. 생성자가 DF 고유의 특징을 잡았는지, 16×16 그레이스케일에서 두 클래스의 평균 형태가 원래 비슷한지는 이 결과만으로 구분할 수 없음.", 5.6, 4.95, 7.1, 1.4, { fontSize: 13, color: C.accent6 });
+  text(s, "DF와 NV 상관이 거의 같음. 생성자가 DF 고유의 특징을 잡았는지, 16×16 grayscale에서 두 클래스의 평균 형태가 원래 비슷한지는 이 결과만으로 구분할 수 없음.", 5.6, 4.95, 7.1, 1.4, { fontSize: 13, color: C.accent6 });
   source(s, "Colab에서 노트북을 끝까지 실행한 결과 (400 step, 생성 64장)");
 }
 

@@ -23,8 +23,12 @@
   | 클러스터(링), 히스토그램, 그래디언트, 하이브리드, 앙상블 | cluster(ing), histogram, gradient, hybrid, ensemble |
 | 변분 양자회로, 변분층 | variational quantum circuit(VQC), variational layer (PQC는 parameterized quantum circuit) |
   | 보조큐빗, 사후선택, 모드붕괴 | ancilla qubit, post-selection, mode collapse |
+  | 미세조정, 사전학습, 잠재벡터, 기준선 | fine-tuning, pretraining(pretrained), latent vector, baseline |
+  | 척도, 복원추출, 역전파, 역방향, 추론, 기울기 | scale, sampling with replacement, backpropagation, backward, inference, gradient |
+  | 그레이스케일, 앨리어싱, 마스크, 소속도, 분할 선명도, 스펙, 레포 | grayscale, aliasing, mask, membership, fuzzy partition coefficient, spec, 저장소 |
 
-  정착된 한국어 용어(큐빗, 생성자, 판별자, 손실, 얽힘, 상태벡터, 미세조정)와 일상 외래어(데이터, 이미지, 픽셀, 파라미터)는 그대로 쓴다.
+  1일차 자료(슬라이드·대본)는 완료본이라 이 표의 아래 세 줄을 소급 적용하지 않는다.
+  정착된 한국어 용어(큐빗, 생성자, 판별자, 손실, 얽힘, 상태벡터, 가중치, 기준값)와 일상 외래어(데이터, 이미지, 픽셀, 파라미터)는 그대로 쓴다.
 - **범위 표기 `~`는 앞뒤를 띄어 쓴다**("0 ~ 1", "1 ~ 2분"). 마크다운(GitHub·Colab)에서 붙여 쓴 `~` 두 개 사이가 취소선으로 렌더링됨.
 - 근거를 함께 쓴다: 수치는 출처(논문 표 번호, 실측 환경)를, 설계 선택은 이유를 적는다.
 - 한계와 원 논문과의 차이는 숨기지 않고 본문에 명시한다.
@@ -33,7 +37,7 @@
 
 - **짧게 핵심만 쓴다.** README, 노트북 설명, 코드 주석, 슬라이드 문구 모두 해당. 표와 개조식을 우선한다.
 - 같은 설명을 여러 곳에 반복하지 않는다. 개념 설명은 슬라이드, 노트북은 실행 안내와 핵심 사실, README는 개요와 결과를 맡는다.
-- 코드 주석은 한 줄로, 코드를 다시 읽어주지 말고 이유·수치·주의점만 적는다.
+- 코드 주석은 한 줄로, 코드를 다시 읽어주지 말고 이유·수치·주의점만 적는다. 단, 배포 노트북 코드 셀은 강의 중 바로 설명할 수 있도록 tensor shape·역할 주석을 줄마다 달아도 된다.
 - 줄표(—) 대신 "-"나 문장 분리를 쓴다.
 
 ## 작업 방식
