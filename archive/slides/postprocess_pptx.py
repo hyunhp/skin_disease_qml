@@ -6,7 +6,7 @@
       텍스트 상자 1개: 상자 높이를 컨테이너에 맞추고 세로 가운데 정렬. 2개 이상(제목 + 본문): 묶음 전체를 컨테이너 가운데로 이동.
       원, 그림, 표, 다른 도형이 함께 들어 있는 컨테이너(다이어그램 틀 등)는 건드리지 않음.
 - (3) 노트 페이지: 위쪽에 슬라이드 그림, 아래에 대본(Noto Sans KR 10.5pt). PDF의 notes 보기 품질용.
-- (4) 차트: pptxgenjs 4.0.1 출력의 스키마 위반 정리(c:dPt 순서, 2D 막대의 세 번째 axId, 내장 xlsx 표 범위의 따옴표).
+- (4) 차트: pptxgenjs 4.0.1 출력의 스키마 위반 정리(c:dPt 순서, 2D 막대의 세 번째 axId, 꺾은선의 c:grouping 누락, 내장 xlsx 표 범위의 따옴표).
 """
 import io
 import re
@@ -196,24 +196,39 @@ def fix_duplicate_ids(slide):
     return n
 
 
+# CT_BarSer·CT_LineSer 자식 순서(ECMA-376). 여기에 없는 요소(꺾은선의 invertIfNegative 등)는 지움
+SER_ORDER = {
+    "barChart": ["idx", "order", "tx", "spPr", "invertIfNegative", "pictureOptions", "dPt", "dLbls",
+                 "trendline", "errBars", "cat", "val", "shape", "extLst"],
+    "lineChart": ["idx", "order", "tx", "spPr", "marker", "dPt", "dLbls", "trendline", "errBars",
+                  "cat", "val", "smooth", "extLst"],
+}
+
+
 def fix_charts(prs):
-    """c:ser 안 c:dPt를 c:dLbls 앞으로, 2D 막대의 axId를 2개로, 내장 xlsx table ref의 끝 따옴표 제거. 복구 메시지 방지용."""
+    """pptxgenjs 차트 XML을 스키마 순서로 정리(series 자식 순서, 꺾은선 grouping 누락, 2D 차트 axId 3개), 내장 xlsx table ref 끝 따옴표 제거. 복구 메시지 방지용."""
     n = 0
     for part in prs.part.package.iter_parts():
         if not part.partname.startswith("/ppt/charts/chart"):
             continue
         cs = part._element
-        for ser in cs.iter(qn("c:ser")):
-            dl = ser.find(qn("c:dLbls"))
-            dpts = ser.findall(qn("c:dPt"))
-            if dl is not None and dpts and ser.index(dpts[0]) > ser.index(dl):
-                for d in dpts:
-                    dl.addprevious(d)
-                n += 1
-        for bc in cs.iter(qn("c:barChart")):  # serAx는 3D 차트에만 있음
-            for ax in bc.findall(qn("c:axId"))[2:]:
-                bc.remove(ax)
-                n += 1
+        for kind, order in SER_ORDER.items():
+            for ch in cs.iter(qn("c:" + kind)):
+                if kind == "lineChart" and ch.find(qn("c:grouping")) is None:  # 필수 요소
+                    ch.insert(0, ch.makeelement(qn("c:grouping"), {"val": "standard"}))
+                    n += 1
+                for ax in ch.findall(qn("c:axId"))[2:]:  # 세 번째 axId(serAx)는 3D 차트에만 있음
+                    ch.remove(ax)
+                    n += 1
+                for ser in ch.findall(qn("c:ser")):
+                    kids = list(ser)
+                    rank = {qn("c:" + t): i for i, t in enumerate(order)}
+                    keep = sorted((k for k in kids if k.tag in rank), key=lambda k: rank[k.tag])  # 안정 정렬: dPt 여러 개 순서 유지
+                    if keep != kids:
+                        for k in kids:
+                            ser.remove(k)
+                        ser.extend(keep)
+                        n += 1
         xp = part.chart_workbook.xlsx_part
         if xp is None:
             continue

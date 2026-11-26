@@ -117,7 +117,9 @@ function table(s, rows, x, y, w, colW, o = {}) {
     margin: [0.06, 0.1, 0.06, 0.1], rowH: o.rowH || 0.38, autoPage: false });
 }
 function arrow(s, x1, y1, x2, y2, color = C.accent6) {
-  s.addShape(pres.shapes.LINE, { x: x1, y: y1, w: x2 - x1, h: y2 - y1, line: { color, width: 1.75, endArrowType: "triangle" } });
+  // 음수 w·h는 스키마 위반이라 PowerPoint가 복구 메시지를 띄움 - 크기는 양수로, 방향은 flip으로 지정
+  s.addShape(pres.shapes.LINE, { x: Math.min(x1, x2), y: Math.min(y1, y2), w: Math.abs(x2 - x1), h: Math.abs(y2 - y1),
+    flipH: x2 < x1, flipV: y2 < y1, line: { color, width: 1.75, endArrowType: "triangle" } });
 }
 function box(s, t, x, y, w, h, fill, color, o = {}) {
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w, h, fill: { color: fill }, rectRadius: 0.08,
