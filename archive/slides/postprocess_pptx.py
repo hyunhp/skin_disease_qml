@@ -6,7 +6,11 @@
       텍스트 상자 1개: 상자 높이를 컨테이너에 맞추고 세로 가운데 정렬. 2개 이상(제목 + 본문): 묶음 전체를 컨테이너 가운데로 이동.
       원, 그림, 표, 다른 도형이 함께 들어 있는 컨테이너(다이어그램 틀 등)는 건드리지 않음.
 - (3) 노트 페이지: 위쪽에 슬라이드 그림, 아래에 대본(Noto Sans KR 10.5pt). PDF의 notes 보기 품질용.
+- (4) 차트: pptxgenjs 4.0.1 출력의 스키마 위반 정리(c:dPt 순서, 2D 막대의 세 번째 axId, 내장 xlsx 표 범위의 따옴표).
 """
+import io
+import re
+import zipfile
 import sys
 
 from pptx import Presentation
@@ -192,6 +196,44 @@ def fix_duplicate_ids(slide):
     return n
 
 
+def fix_charts(prs):
+    """c:ser 안 c:dPt를 c:dLbls 앞으로, 2D 막대의 axId를 2개로, 내장 xlsx table ref의 끝 따옴표 제거. 복구 메시지 방지용."""
+    n = 0
+    for part in prs.part.package.iter_parts():
+        if not part.partname.startswith("/ppt/charts/chart"):
+            continue
+        cs = part._element
+        for ser in cs.iter(qn("c:ser")):
+            dl = ser.find(qn("c:dLbls"))
+            dpts = ser.findall(qn("c:dPt"))
+            if dl is not None and dpts and ser.index(dpts[0]) > ser.index(dl):
+                for d in dpts:
+                    dl.addprevious(d)
+                n += 1
+        for bc in cs.iter(qn("c:barChart")):  # serAx는 3D 차트에만 있음
+            for ax in bc.findall(qn("c:axId"))[2:]:
+                bc.remove(ax)
+                n += 1
+        xp = part.chart_workbook.xlsx_part
+        if xp is None:
+            continue
+        src = zipfile.ZipFile(io.BytesIO(xp.blob))
+        out = io.BytesIO()
+        changed = False
+        with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as dst:
+            for info in src.infolist():
+                data = src.read(info)
+                if info.filename.startswith("xl/tables/"):
+                    fixed = re.sub(rb'ref="([A-Z]+[0-9]+:[A-Z]+[0-9]+)\'"', rb'ref="\1"', data)
+                    changed |= fixed != data
+                    data = fixed
+                dst.writestr(info, data)
+        if changed:
+            xp.blob = out.getvalue()
+            n += 1
+    return n
+
+
 def process(prs):
     notesSz = prs.part._element.find(qn("p:notesSz"))
     if notesSz is not None:  # 노트 페이지 크기를 7.5 x 10인치로 통일
@@ -203,6 +245,7 @@ def process(prs):
         stats["centered"] += center_text_in_boxes(s)
         stats["ids"] = stats.get("ids", 0) + fix_duplicate_ids(s)
         style_notes(s)
+    stats["charts"] = fix_charts(prs)
     return stats
 
 
