@@ -62,6 +62,7 @@
 
 - MediQ-GAN을 `lr_g` 0.02로 학습하면 3 epoch 만에 `loss_d` 0.0027, 다양성 0.000(mode collapse)이 됨.
 - GAN 관례값(`lr` 2e-4, `betas` (0.5, 0.999), `z ~ N(0, 1)`)으로 바꿔 25 epoch을 완주함.
+- 완주한 25 epoch도 균형이 유지되지는 않음(`mediqgan_final.pt`의 `history`, epoch 평균): 11 ~ 21 epoch 판별자 우세(`loss_d` 최저 0.74, `loss_g` 최고 3.37), 22 epoch에 두 손실 급변, 23 ~ 25 epoch 기준값 근처(`loss_g` 0.72 ~ 0.77, `loss_d` 1.31 ~ 1.36). 최종본 다양성 0.30과 시기가 맞음. epoch별 이미지는 저장하지 않아 손실 기록과 최종 지표로만 판단함.
 - 원 논문이 WGAN-GP critic을 쓰는 이유에 해당함.
 
 ### 참고: CNN 증강 평가 재현 (8×8 단계)

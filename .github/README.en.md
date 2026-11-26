@@ -59,7 +59,7 @@ Measured on a local CPU. Every generation call draws fresh noise, so compare the
 
 ### Training stability
 
-MediQ-GAN with `lr_g` 0.02 collapsed in 3 epochs (`loss_d` 0.0027, diversity 0.000). GAN defaults (`lr` 2e-4, `betas` (0.5, 0.999), `z ~ N(0, 1)`) completed 25 epochs. This is why the paper uses a WGAN-GP critic.
+MediQ-GAN with `lr_g` 0.02 collapsed in 3 epochs (`loss_d` 0.0027, diversity 0.000). GAN defaults (`lr` 2e-4, `betas` (0.5, 0.999), `z ~ N(0, 1)`) completed 25 epochs. That run did not stay balanced either (epoch means from the `history` in `mediqgan_final.pt`): the discriminator dominated in epochs 11-21 (`loss_d` down to 0.74, `loss_g` up to 3.37), both losses changed abruptly in epoch 22, and epochs 23-25 sat near the baseline values (`loss_g` 0.72-0.77, `loss_d` 1.31-1.36). This matches the final diversity of 0.30. Per-epoch images were not saved, so this reading rests on the loss history and the final metrics only. This is why the paper uses a WGAN-GP critic.
 
 ### Reference: CNN augmentation protocol (8×8 stage)
 
